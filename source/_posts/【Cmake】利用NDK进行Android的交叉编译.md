@@ -73,7 +73,7 @@ sudo apt-get install cmake
 
 ##   5.创建工程 
 
-![](../../../Documents/Pictures/Camera Roll/cmake.png)
+![](https://s2.loli.net/2022/11/11/z5hJnad9U2VueKM.png)
 
 ## 6. 编写CMakeLists.txt
 
