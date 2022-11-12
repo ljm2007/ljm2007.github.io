@@ -1,13 +1,19 @@
 ---
-title: 【Cmake】利用NDK进行Android的交叉编译
+title: 利用Cmake对NDK进行Android的交叉编译
 date: 2022-11-11 18:18:40
 tags: ndk
 categories: ndk
 top_img: https://s2.loli.net/2022/11/11/roHQRqmDbCuGS9J.png
-cover: https://s2.loli.net/2022/11/11/roHQRqmDbCuGS9J.png
+cover: https://s2.loli.net/2022/11/11/roHQRqmDbCuGS9J.png	
 ---
 
+ 我是由一个windows系统开发,只会C++ MFC 编程同学转到 ndk编程,由于对这方面没什么经验,所以学习起来有点艰难,对Cmake的认识少之又少,用了一个星期的时间才把这个东西搞定.也就有了这编笔记
+
 ## 1.[下载NDK](https://developer.android.com/ndk/downloads) 
+
+ 在官网选择你对应系统的软件包,我的是kali 系统,所以我选择 linux版本的
+
+![](https://s2.loli.net/2022/11/12/l5gHBbsomTtY6kz.png)
 
 ## 2.配置VS Code对C/C++的支持
 
@@ -144,7 +150,7 @@ int main(int argc,const char * argv[])
 
 ```
 
-## 9.用 adb pushh 输入手机测试
+## 9.用 adb push 输入手机测试
 
 ```shell
 adb push test /data/local/tmp/
@@ -152,7 +158,10 @@ adb push test /data/local/tmp/
 
 ## 10.参考资料
 
-[【Cmake】利用NDK进行Android的交叉编译]: https://blog.csdn.net/qq_38410730/article/details/103622813
-[【CMake】CMakeLists.txt的超傻瓜手把手教程]: https://blog.csdn.net/qq_38410730/article/details/102477162
-[VS Code + Cmake Tools, 搭建C/C++跨平台（NDK、iOS）开发环境]: https://jay-dh.github.io/blog/vscode-cmake-cross-compile
-[将 Visual Studio Code 用作 Android C++ 编辑器]: https://donaldmunro.github.io/VSCode-Android-CC/
+【Cmake】利用NDK进行Android的交叉编译（附实例）https://blog.csdn.net/qq_38410730/article/details/103622813
+
+【CMake】CMakeLists.txt的超傻瓜手把手教程（附实例源码）https://blog.csdn.net/qq_38410730/article/details/102477162
+
+VS Code + Cmake Tools, 搭建C/C++跨平台（NDK、iOS）开发环境 https://jay-dh.github.io/blog/vscode-cmake-cross-compile
+
+Using Visual Studio Code as an Android C++ editor https://donaldmunro.github.io/VSCode-Android-CC/
