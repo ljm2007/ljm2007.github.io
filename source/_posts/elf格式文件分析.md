@@ -366,6 +366,11 @@ Section ---> Section header table
 - 每个Section主要包含Section类型.文件中的位置,大小等信息
 - 链接器依赖Section信息将不同的对象文件的代码,数据信息合并,并修复互相引用
 
+Segment与Section的关系
+
+- 相同对限的Section会放入同一个Segment,例如.text和.rodata section
+- 一个Segment包含许多Section,一个Section可以属于多个Segment
+
 ## 参考文献
 
 https://blog.csdn.net/GrayOnDream/article/details/124564129
