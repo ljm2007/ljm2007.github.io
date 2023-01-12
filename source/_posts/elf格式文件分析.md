@@ -497,7 +497,7 @@ uint32_t ModifyElfFile(char *pbyElfFile, uint32_t ulFileSize) {
 }                                                                                                   
 ```
 
-![图3](![](https://s2.loli.net/2023/01/11/PJqMhrBCQY3REUK.png)
+![图3](https://s2.loli.net/2023/01/11/PJqMhrBCQY3REUK.png)
 
 ![图4](https://s2.loli.net/2023/01/11/na2me5CNjUzwhgS.png)
 
