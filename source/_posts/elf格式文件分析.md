@@ -371,9 +371,7 @@ Segment与Section的关系
 - 相同对限的Section会放入同一个Segment,例如.text和.rodata section
 - 一个Segment包含许多Section,一个Section可以属于多个Segment
 
-# 3 ELF文件格式
-
-## 3.1感染ELF文件注入实现
+# 3 感染ELF文件注入实现
 
 ```
 1. 在dt_strtab指向的字符串中添加自定义so模块名称，将字符串表移动到文件末尾
@@ -383,6 +381,87 @@ Segment与Section的关系
 ```
 
 ```c++
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <elf.h>
+#include <libgen.h>
+
+#define SO_NAME "libhello.so"
+#define MAX_NAME_LENGTH 255
+
+void LoadElfFile(char *pszFileName, uint32_t *pFileSize, char **ppbyDataBuff);
+uint32_t ModifyElfFile(char *pbyELfFile, uint32_t ulFileSize);
+
+/* 
+ * Description: 主流程函数， 控制文件备份，加载，修改，写回的流程
+ * Input:       argc 参数个数， argv为参数列表
+ * Output:      无
+ * Return:      返回程序运行状态
+ * Others:      无
+ */
+int main(int argc, char **argv){
+    if (argc != 2) {
+        printf("Usage: %s <soname>\n", basename(argv[0]));
+        exit(-1);
+    }
+    char filename[MAX_NAME_LENGTH];
+    char *pszElfFileName = argv[1];
+    strncpy(filename, argv[1], MAX_NAME_LENGTH - 1);
+    filename[MAX_NAME_LENGTH - 1] = 0;
+    char *pszBakFileName = strcat(filename, ".bak");
+    int ret = rename(pszElfFileName, pszBakFileName);
+    if(ret != 0) {
+        printf("[Error] backup %s file failed!\n", pszElfFileName);
+        exit(-1);
+    }
+    uint32_t ulFileSize = 0;
+    char *pbyBakFile;
+
+    LoadElfFile(pszBakFileName, &ulFileSize, &pbyBakFile);
+    uint32_t ulNewFileSize = ModifyElfFile(pbyBakFile, ulFileSize);
+    FILE* pElfFile = fopen(pszElfFileName, "wb");
+    if(!pElfFile) {
+        printf("[Error] open file %s failed!\n", pszElfFileName);
+    }
+    fwrite(pbyBakFile, 1, ulNewFileSize, pElfFile);
+    fclose(pElfFile);
+}
+
+/* 
+ * Description: 加载原Elf文件的数据到内存
+ * Input:       pszFileName为Elf文件名， pFileSize为文件大小
+ * Output:      ppbyDataBuff为加载到内存后的buff指针
+ * Return:      无
+ * Others:      无
+ */
+void LoadElfFile(char *pszFileName, uint32_t *pFileSize, char **ppbyDataBuff) {
+
+    FILE* pFile= fopen(pszFileName, "rb");
+    if(pFile == NULL){
+        printf("[ERROR] %s file may couldn't be opened!\n", pszFileName);
+        exit(-2);
+    }
+    fseek(pFile, 0, SEEK_END);
+    uint32_t ulFileSize = ftell(pFile);
+    fseek(pFile, 0, SEEK_SET);
+    uint8_t *pbyDataBuff = malloc(ulFileSize*2);
+    memset(pbyDataBuff, 0, ulFileSize*2);
+    if(!pbyDataBuff) {
+        printf("[ERROR] malloc failed!\n");
+        exit(-2);
+    }
+    uint32_t ulReadLen = fread(pbyDataBuff, 1, ulFileSize, pFile);
+    if(ulReadLen != ulFileSize) {
+        printf("[ERROR] read file %s failed!\n", pszFileName);
+        exit(-2);
+    }
+    fclose(pFile);
+    *pFileSize = ulFileSize;
+    *ppbyDataBuff = pbyDataBuff;
+}
+
 /*                                                                                                  
  * Description: 修改内存中Elf文件的数据buff，使其在运行时加载自定义模块（修改ELF文件的段头表信息）                                      
  * Input:       pbyElfFile为Elf文件数据buff, ulFileSize为文件大小                                             
@@ -497,7 +576,7 @@ uint32_t ModifyElfFile(char *pbyElfFile, uint32_t ulFileSize) {
 }                                                                                                   
 ```
 
-![图3](https://s2.loli.net/2023/01/11/PJqMhrBCQY3REUK.png)
+![](https://s2.loli.net/2023/01/11/PJqMhrBCQY3REUK.png)
 
 ![图4](https://s2.loli.net/2023/01/11/na2me5CNjUzwhgS.png)
 
