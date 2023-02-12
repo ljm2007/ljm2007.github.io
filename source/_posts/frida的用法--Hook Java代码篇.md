@@ -1,9 +1,11 @@
+---
 title: FRIDA-API使用篇
 date: 2023-02-06 13:47:04
 tags: 注入so
 categories: 注入so
 top_img: https://bit.ly/3WkSvF9
 cover: https://bit.ly/3WkSvF9
+---
 
 ------
 
