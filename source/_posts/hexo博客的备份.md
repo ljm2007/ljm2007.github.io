@@ -100,7 +100,7 @@ hexo d
 输入下列命令克隆博客必须文件(hexo分支)：
 
 ```bash
-$ git clone https://github.com/yourgithubname/yourgithubname.github.io
+$ git clone https://github.com/ljm2007/ljm2007.github.io.git
 1
 ```
 
@@ -109,10 +109,8 @@ $ git clone https://github.com/yourgithubname/yourgithubname.github.io
 在clone下来的那个文件夹里面执行
 
 ```bash
-$ npm install hexo-cli
-$ npm install
+$ npm install -g hexo-cli 
 $ npm install hexo-deployer-git
-123
 ```
 
 然后再去安装原来安装的一些插件，例如我就是`matery`主题文档中的插件。
@@ -124,7 +122,6 @@ $ npm install hexo-deployer-git
 hexo clean
 hexo g
 hexo d
-123
 ```
 
 一下再开始写你的博客。转载:https://blog.csdn.net/qq_21040559/article/details/109702142
