@@ -105,3 +105,104 @@ protected void attachBaseContext(Context base) {
 ```
 
 总之，`attachBaseContext` 是 Android 应用程序中非常重要的一个初始化入口，允许你在应用程序启动之前对应用程序的全局配置和状态进行设置和调整。
+
+## getDeclaredMethod 和getMethod
+
+`getDeclaredMethod` 和 `getMethod` 是 Java 反射中两种获取方法（Method）的不同方式：
+
+1. `getMethod` 方法用于获取公共（`public`）的方法，包括从超类继承的方法。如果你想要获取一个类的公共方法，可以使用 `getMethod`。示例：
+
+   ```java
+   Method publicMethod = MyClass.class.getMethod("methodName", parameterTypes);
+   ```
+
+2. `getDeclaredMethod` 方法用于获取该类自身声明的方法，包括私有（`private`）方法，但不包括从超类继承的方法。如果你想要获取一个类自身声明的方法，可以使用 `getDeclaredMethod`。示例：
+
+   ```java
+   Method declaredMethod = MyClass.class.getDeclaredMethod("methodName", parameterTypes);
+   ```
+
+总结一下：
+
+- `getMethod` 用于获取公共方法，包括从超类继承的方法。
+- `getDeclaredMethod` 用于获取类自身声明的方法，包括私有方法，但不包括继承的方法。
+
+在使用这两个方法时，需要提供方法的名称和参数类型数组（`parameterTypes`），以便精确定位到要获取的方法。
+
+## 反射调用静态方法时需要添加 @JvmStatic 
+
+在 Kotlin 中，如果你要通过反射调用一个伴生对象（`companion object`）中的静态方法，通常需要确保该方法被标记为 `@JvmStatic`。这是因为 Kotlin 的伴生对象中的方法不像 Java 中的静态方法那样直接暴露给 Java 反射。
+
+下面是一个示例，演示如何在 Kotlin 中定义伴生对象的静态方法以及如何使用 Java 反射调用它：
+
+```kotlin
+class MyClass {
+    companion object {
+        @JvmStatic
+        fun staticMethod(): String {
+            return "This is a static method."
+        }
+    }
+}
+```
+
+上述代码中，`staticMethod` 方法被标记为 `@JvmStatic`，这使得它在 Java 中可以像普通的静态方法一样调用。
+
+然后，你可以在 Java 中使用反射调用该静态方法：
+
+```java
+import java.lang.reflect.Method;
+
+public class Main {
+    public static void main(String[] args) {
+        try {
+            Class<?> clazz = Class.forName("package_name.MyClass");
+            Method method = clazz.getMethod("staticMethod");
+            Object result = method.invoke(null); // 参数为 null，因为是静态方法
+            System.out.println(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+请将上述示例中的 `package_name` 替换为你的 Kotlin 类所在的包名。
+
+总之，通过添加 `@JvmStatic` 注解，你可以在 Kotlin 中使伴生对象的方法更易于使用 Java 反射调用。
+
+## kotlin.jvm.KotlinReflectionNotSupportedError: Kotlin reflection implementation is not found at runtime. Make sure you have kotlin-reflect.jar in the classpath
+
+这个错误表明你的应用程序在运行时缺少 Kotlin 反射库（kotlin-reflect.jar）。Kotlin 反射库是用于支持 Kotlin 的反射机制的库，如果你的代码中使用了 Kotlin 的反射功能，就需要将这个库包含在你的应用程序的 classpath 中。
+
+要解决这个问题，你可以执行以下步骤：
+
+1. 确保你的项目的 build.gradle 文件中包含了 Kotlin 反射库的依赖。在 build.gradle 文件中的 dependencies 部分添加以下依赖：
+
+   ```groovy
+   dependencies {
+       implementation "org.jetbrains.kotlin:kotlin-reflect:版本号"
+       // 其他依赖...
+   }
+   ```
+
+   请将 "版本号" 替换为你项目中使用的 Kotlin 版本号。
+
+2. 在添加完依赖后，重新构建你的项目，以确保 Kotlin 反射库被正确包含在了 classpath 中。
+
+3. 如果你在 Android 项目中遇到这个问题，还需要确保在 app 模块的 build.gradle 文件中包含了正确的 Kotlin 版本：
+
+   ```groovy
+   android {
+       ...
+       kotlinOptions {
+           jvmTarget = "1.8"
+       }
+   }
+   ```
+
+   确保 `jvmTarget` 的值与你的项目设置一致。
+
+4. 最后，重新运行你的应用程序，看看是否仍然出现反射错误。
+
+通过以上步骤，你应该能够解决 Kotlin 反射库缺失的问题，使你的应用程序能够正常使用 Kotlin 的反射功能。

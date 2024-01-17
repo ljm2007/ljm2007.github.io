@@ -187,6 +187,139 @@ public void Student() throws Exception{
 }
 ```
 
+下面这个我是用Kotlin 做的反射
+
+```kotlin
+package com.example.testreflect
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import java.lang.reflect.Constructor
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+
+class Student {
+    private var age: Int = 0
+
+    lateinit var name: String;
+
+    /**
+     * 无参构造
+     */
+     constructor() {
+        throw IllegalAccessError("使用默认构造函数会报错");
+    }
+
+    /**
+     * 有参构造
+     * @param age 年龄
+     * @param name 姓名
+     */
+     constructor(age: Int, name: String) {
+        this.age = age;
+        this.name = name;
+        mStatic = "静态反射";
+    }
+
+    fun get_Name(): String {
+        return name;
+    }
+
+    /**
+     * 静态带返回值方法
+     * @return String
+     */
+    companion object {
+        lateinit var mStatic: String;//静态属性
+        @JvmStatic //注意，在 Kotlin 中使用反射调用静态方法时需要添加 @JvmStatic 注解，否则会抛出异常。
+        fun getTest(): String {
+            return mStatic;
+        }
+    }
+
+}
+
+@Throws(Exception::class)
+fun Student1() {
+    val clazz = Class.forName("com.example.testreflect.Student")
+    val constructors: Constructor<*> = clazz.getDeclaredConstructor(
+        Int::class.javaPrimitiveType,
+        String::class.java
+    )
+    constructors.setAccessible(true) //可访问私有为true
+    //利用构造器生成对象
+    val mStudent: Any = constructors.newInstance(22, "大头")
+    Log.d("log", "构造器是否报错：$mStudent")
+    //获取隐藏的int属性
+    val mField: Field = clazz.getDeclaredField("age")
+    mField.isAccessible=true
+    val age = mField.get(mStudent) as Int
+    Log.d("log", "年龄为:$age")
+    //调用隐藏的方法
+    val getMethod: Method = clazz.getDeclaredMethod("getName")
+    getMethod.isAccessible=true
+    val newname = getMethod.invoke(mStudent) as String
+    Log.d("log", "名字为:$newname")
+    //调用静态方法
+    val getStaticMethod: Method = clazz.getMethod("getTest")
+
+    getStaticMethod.isAccessible = true
+    val result = getStaticMethod.invoke(null) as String
+    Log.d("log", "调用静态方法:$result")
+
+
+
+}
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        Student1()
+    }
+}
+```
+
+那么如何在Kotlin 中使用反射调用静态方法时不需要添加 @JvmStatic 注解 方法如下
+
+在build.gradle 添加
+
+```java
+ implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.0"
+```
+
+```kotlin
+
+@Throws(Exception::class)
+fun Student1() {
+    val clazz = Class.forName("com.example.testreflect.Student")
+    val constructors: Constructor<*> = clazz.getDeclaredConstructor(
+        Int::class.javaPrimitiveType,
+        String::class.java
+    )
+    constructors.setAccessible(true) //可访问私有为true
+    //利用构造器生成对象
+    val mStudent: Any = constructors.newInstance(22, "大头")
+    Log.d("log", "构造器是否报错：$mStudent")
+    //获取隐藏的int属性
+    val mField: Field = clazz.getDeclaredField("age")
+    mField.isAccessible=true
+    val age = mField.get(mStudent) as Int
+    Log.d("log", "年龄为:$age")
+    //调用隐藏的方法
+    val getMethod: Method = clazz.getDeclaredMethod("getName")
+    getMethod.isAccessible=true
+    val newname = getMethod.invoke(mStudent) as String
+    Log.d("log", "名字为:$newname")
+    //调用静态方法 没有添加@JvmStatic
+   val  result =  Student.Companion::getTest.call()
+    Log.d("log", "调用静态方法:$result")
+
+
+
+}
+```
 
 结果日志Log如下。
 
@@ -202,3 +335,181 @@ public void Student() throws Exception{
 
      写到这里，关于反射的介绍和使用都讲的差不多了，算是适合初学者比较轻松的认识反射吧，当然反射的使用远没有上面案例那么简单，实际使用还得需要多规范的组织一下，不能只为了实现功能，不顾代码的可读性和可维护性。另外，最好多用public来修饰，以防兼容版本风险，还有第三方开源的项目也要注意，不知道哪里突然维护修理了源码，也会出现兼容问题。
 
+https://www.cnblogs.com/KillBugMe/p/13607470.html
+
+### **Java 的动态代理**
+
+![img](https://s2.loli.net/2023/09/13/Xb1TVLOhcMv56Wt.jpg)
+
+#### InvocationHandler 接口和 Proxy 类
+
+　　我们来分析一下动态代理模式中 ProxySubject 的生成步骤：
+
+1. 获取 RealSubject 上的所有接口列表；
+2. 确定要生成的代理类的类名，系统默认生成的名字为：com.sun.proxy.$ProxyXXXX ；
+3. 根据需要实现的接口信息，在代码中动态创建该 ProxySubject 类的字节码；
+4. 将对应的字节码转换为对应的 Class 对象；
+5. 创建 InvocationHandler 的实例对象 h，用来处理 Proxy 角色的所有方法调用；
+6. 以创建的 h 对象为参数，实例化一个 Proxy 角色对象。
+
+具体的代码为：
+
+**Subject.java**
+
+```java
+public interface Subject {
+    String operation();
+}
+```
+
+**RealSubject.java**
+
+```java
+public class RealSubject implements Subject{
+    @Override
+    public String operation() {
+        return "operation by subject";
+    }
+}
+```
+
+**ProxySubject.java**
+
+```java
+public class ProxySubject implements InvocationHandler{
+     protected Subject subject;
+    public ProxySubject(Subject subject) {
+        this.subject = subject;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        //do something before
+        return method.invoke(subject, args);
+    }
+
+}
+```
+
+**测试代码**
+
+```java
+Subject subject = new RealSubject();
+ProxySubject proxy = new ProxySubject(subject);
+Subject sub = (Subject) Proxy.newProxyInstance(subject.getClass().getClassLoader(),
+        subject.getClass().getInterfaces(), proxy);
+sub.operation();
+```
+
+以上就是动态代理模式的最简单实现代码，JDK 通过使用 java.lang.reflect.Proxy 包来支持动态代理，我们来看看这个类的表述：
+
+```java
+Proxy provides static methods for creating dynamic proxy classes and instances, and it is also the 
+superclass of all dynamic proxy classes created by those methods.
+```
+
+一般情况下，我们使用下面的
+
+```java
+public static Object newProxyInstance(ClassLoader loader, Class<?>[]interfaces,InvocationHandler h) throws IllegalArgumentException { 
+    // 检查 h 不为空，否则抛异常
+    if (h == null) { 
+        throw new NullPointerException(); 
+    } 
+
+    // 获得与指定类装载器和一组接口相关的代理类类型对象
+    Class cl = getProxyClass(loader, interfaces); 
+
+    // 通过反射获取构造函数对象并生成代理类实例
+    try { 
+        Constructor cons = cl.getConstructor(constructorParams); 
+        return (Object) cons.newInstance(new Object[] { h }); 
+    } catch (NoSuchMethodException e) { throw new InternalError(e.toString()); 
+    } catch (IllegalAccessException e) { throw new InternalError(e.toString()); 
+    } catch (InstantiationException e) { throw new InternalError(e.toString()); 
+    } catch (InvocationTargetException e) { throw new InternalError(e.toString()); 
+    } 
+}
+```
+
+### **Android 中利用动态代理实现 ServiceHook**
+
+通过上面对 InvocationHandler 的介绍，我们对这个接口应该有了大体的了解，但是在运行时动态生成的代理类有什么作用呢，其实它的作用就是在调用真正业务之前或者之后插入一些额外的操作：
+
+![这里写图片描述](https://s2.loli.net/2023/09/13/a2WjsxQAZYvkSgM.png)
+
+所以简而言之，代理类的处理逻辑很简单，就是在调用某个方法前及方法后插入一些额外的业务。而我们在 Android 中的实践例子就是在真正调用系统的某个 Service 之前和之后选择性的做一些自己特殊的处理，这种思想在插件化框架上也是很重要的。那么我们具体怎么去实现 hook 系统的 Service ，在真正调用系统 Service 的时候附加上我们需要的业务呢，这就需要介绍 ServiceManager 这个类了。
+
+#### **ServiceManager 介绍以及 hook 的步骤**
+
+##### 第一步
+
+　　关于 ServiceManager 的详细介绍在我的博客：android IPC通信（下）－AIDL 中已经介绍过了，这里就不赘述了，强烈建议大家去看一下那篇博客，我们这里就着重看一下 ServiceManager 的 getService(String name) 方法：
+
+
+
+```java
+public final class ServiceManager {
+   private static final String TAG = "ServiceManager";
+private static IServiceManager sServiceManager;
+private static HashMap<String, IBinder> sCache = new HashMap<String, IBinder>();
+
+private static IServiceManager getIServiceManager() {
+    if (sServiceManager != null) {
+        return sServiceManager;
+    }
+
+    // Find the service manager
+    sServiceManager = ServiceManagerNative.asInterface(BinderInternal.getContextObject());
+    return sServiceManager;
+}
+
+/**
+ * Returns a reference to a service with the given name.
+ * 
+ * @param name the name of the service to get
+ * @return a reference to the service, or <code>null</code> if the service doesn't exist
+ */
+public static IBinder getService(String name) {
+    try {
+        IBinder service = sCache.get(name);
+        if (service != null) {
+            return service;
+        } else {
+            return getIServiceManager().getService(name);
+        }
+    } catch (RemoteException e) {
+        Log.e(TAG, "error in getService", e);
+    }
+    return null;
+}
+
+public static void addService(String name, IBinder service) {
+...
+}
+....
+}
+```
+我们可以看到，getService 方法第一步会去 sCache 这个 map 中根据 Service 的名字获取这个 Service 的 IBinder 对象，如果获取到为空，则会通过 ServiceManagerNative 通过跨进程通信获取这个 Service 的 IBinder 对象，所以我们就以 sCache 这个 map 为切入点，反射该对象，然后修改该对象，由于系统的 android.os.ServiceManager 类是 @hide 的，所以只能使用反射，根据这个初步思路，写下第一步的代码：
+
+```java
+Class c_ServiceManager = Class.forName("android.os.ServiceManager");
+if (c_ServiceManager == null) {
+    return;
+}
+
+if (sCacheService == null) {
+    try {
+        Field sCache = c_ServiceManager.getDeclaredField("sCache");
+        sCache.setAccessible(true);
+        sCacheService = (Map<String, IBinder>) sCache.get(null);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+sCacheService.remove(serviceName);
+sCacheService.put(serviceName, service);
+```
+
+
+源码下载地址：https://github.com/zhaozepeng/ServiceHook
