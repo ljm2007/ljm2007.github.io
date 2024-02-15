@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>arm64-v8a inject | 清风醉博客</title><meta name="keywords" content="注入so"><meta name="author" content="清风醉博客"><meta name="copyright" content="清风醉博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="经过了几天的学习,终于研究出一些东西来,隔行如隔山,这点玩应研究这么久,为了使自己不会忘记 就有这个编笔记.网上的一些关于  android 注入 一般都基于ndk-build生成可执行文件然后用vscode写代码,我感觉 很麻烦,我希望可以android studio+cmake 来直接生成 一 创建Native c++ 项目​      ​    android studio 帮我们创建好的项">
+<meta property="og:type" content="article">
+<meta property="og:title" content="arm64-v8a inject">
+<meta property="og:url" content="http://ljm2007.github.io/2023/01/04/arm64-v8a-inject/index.html">
+<meta property="og:site_name" content="清风醉博客">
+<meta property="og:description" content="经过了几天的学习,终于研究出一些东西来,隔行如隔山,这点玩应研究这么久,为了使自己不会忘记 就有这个编笔记.网上的一些关于  android 注入 一般都基于ndk-build生成可执行文件然后用vscode写代码,我感觉 很麻烦,我希望可以android studio+cmake 来直接生成 一 创建Native c++ 项目​      ​    android studio 帮我们创建好的项">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bit.ly/3WkSvF9">
+<meta property="article:published_time" content="2023-01-04T04:02:43.000Z">
+<meta property="article:modified_time" content="2024-02-09T04:06:41.645Z">
+<meta property="article:author" content="清风醉博客">
+<meta property="article:tag" content="注入so">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bit.ly/3WkSvF9"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2023/01/04/arm64-v8a-inject/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'arm64-v8a inject',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-02-09 12:06:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://bit.ly/3WkSvF9')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">清风醉博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">arm64-v8a inject</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-04T04:02:43.000Z" title="发表于 2023-01-04 12:02:43">2023-01-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-02-09T04:06:41.645Z" title="更新于 2024-02-09 12:06:41">2024-02-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%B3%A8%E5%85%A5so/">注入so</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="arm64-v8a inject"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>经过了几天的学习,终于研究出一些东西来,隔行如隔山,这点玩应研究这么久,为了使自己不会忘记 就有这个编笔记.网上的一些关于  android 注入 一般都基于ndk-build生成可执行文件然后用vscode写代码,我感觉 很麻烦,我希望可以android studio+cmake 来直接生成</p>
+<h2 id="一-创建Native-c-项目"><a href="#一-创建Native-c-项目" class="headerlink" title="一 创建Native c++ 项目"></a>一 创建Native c++ 项目</h2><p>​     <img src="https://s2.loli.net/2023/01/04/KfGaCVqMJ74gnE1.png" alt="image-20230104121130136"></p>
+<p>​    android studio 帮我们创建好的项目,由于我只生成arm64-v8a的可执行文件 那么在build.gradle中添加代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ndk&#123;</span><br><span class="line">            abiFilters &quot;arm64-v8a&quot;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/04/68drjupgeTBGQVq.png" alt="image-20230104121440774"></p>
+<p>对Cmakelists.txt 改写</p>
+<p><img src="https://s2.loli.net/2023/01/04/BRvdAWfrTu8Cq9Y.png" alt="image-20230104124508692"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.18.1) # 最低CMake版本要求</span><br><span class="line"></span><br><span class="line">##################### ⬇Android设置⬇ #####################</span><br><span class="line">#set(CMAKE_SYSTEM_NAME ANDROID) # 设置目标编译平台参数 Android</span><br><span class="line">#set(CMAKE_SYSTEM_VERSION 28) # 系统版本</span><br><span class="line">#set(ANDROID_PLATFORM 28) # 平台版本</span><br><span class="line">#set(ANDROID_ABI arm64-v8a) # 设置目标构架 armeabi-v7a arm64-v8a x86 x86_64</span><br><span class="line">##</span><br><span class="line">## 由于ANDROID_ABI一次编译只能设置一种架构</span><br><span class="line">## 因此该参数在build.sh脚本中单独设置 并且每种架构编译一次</span><br><span class="line">##</span><br><span class="line">#set(ANDROID_NDK /Users/hongqing/Library/Android/sdk/ndk/ollvm) # 设置ndk路径</span><br><span class="line">#set(CMAKE_TOOLCHAIN_FILE /Users/hongqing/Library/Android/sdk/ndk/ollvm/build/cmake/android.toolchain.cmake) # 设置交叉编译链的cmake配置</span><br><span class="line">##################### ⬆Android设置⬆ #####################</span><br><span class="line"></span><br><span class="line">project(testptrace) # 工程名称 + 版本</span><br><span class="line"></span><br><span class="line">##################### ⬇项目相关参数设置⬇ #####################</span><br><span class="line">#set(CMAKE_CXX_STANDARD 17) # c++ 标准</span><br><span class="line">#set(CMAKE_CXX_FLAGS &quot;-fno-rtti -fno-exceptions -DNDEBUG -fvisibility=hidden -Wno-narrowing -fdeclspec -pthread -w -s -fexceptions -Wall -O3&quot;</span><br><span class="line">#) # 参数</span><br><span class="line">##################### ⬆项目相关参数设置⬆ #####################</span><br><span class="line"></span><br><span class="line">##################### ⬇子模块设置⬇ #####################</span><br><span class="line">add_subdirectory(Inject)</span><br><span class="line">add_subdirectory(Hook)</span><br><span class="line">##################### ⬆子模块设置⬆ #####################</span><br></pre></td></tr></table></figure>
+
+<p>对Inject 和Hook 目录下的Cmakelists.txt 改写</p>
+<p><img src="https://s2.loli.net/2023/01/04/p5893OoXiGLjaD1.png" alt="image-20230104124648967"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">##################### ⬇输出文件重定向⬇ #####################</span><br><span class="line">#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY</span><br><span class="line">#    /$&#123;CMAKE_SOURCE_DIR&#125;/outputs/$&#123;CMAKE_ANDROID_ARCH_ABI&#125;/</span><br><span class="line">#) # 重定向输出产物(动态库)</span><br><span class="line">##################### ⬆输出文件重定向⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇CMake头文件设置⬇ #####################</span><br><span class="line">FILE(GLOB_RECURSE FILE_INCLUDES # 遍历子目录下所有符合情况的头文件</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/*.h*</span><br><span class="line">)</span><br><span class="line">include_directories( # 设置全局头文件目录 使其他源码文件可在任意目录&lt;头文件.h&gt;</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/include/</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬆CMake头文件设置⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇CMake源文件设置⬇ #####################</span><br><span class="line">FILE(GLOB_RECURSE FILE_SOURCES # 遍历子目录下所有符合情况的源文件</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/*.c*</span><br><span class="line">)</span><br><span class="line">##################### ⬆CMake源文件设置⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇添加产物⬇ #####################</span><br><span class="line">add_library(hook SHARED # 生成动态库</span><br><span class="line">    $&#123;FILE_INCLUDES&#125; # 头文件</span><br><span class="line">    $&#123;FILE_SOURCES&#125; # 源文件</span><br><span class="line">)</span><br><span class="line">##################### ⬆添加产物 ⬆ #####################</span><br><span class="line"></span><br><span class="line">##################### ⬇连接库文件⬇ #####################</span><br><span class="line">target_link_libraries(hook PRIVATE</span><br><span class="line">    log</span><br><span class="line">)</span><br><span class="line">##################### ⬆连接库文件⬆ #####################</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">##################### ⬇输出文件重定向⬇ #####################</span><br><span class="line">#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY</span><br><span class="line">#    /$&#123;CMAKE_SOURCE_DIR&#125;/outputs/$&#123;CMAKE_ANDROID_ARCH_ABI&#125;/</span><br><span class="line">#) # 重定向输出产物(可执行文件)</span><br><span class="line">##################### ⬆输出文件重定向⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇CMake头文件设置⬇ #####################</span><br><span class="line">FILE(GLOB_RECURSE FILE_INCLUDES # 遍历子目录下所有符合情况的头文件</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/*.h*</span><br><span class="line">)</span><br><span class="line">include_directories( # 设置全局头文件目录 使其他源码文件可在任意目录&lt;头文件.h&gt;</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/include/</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/include/Utils/</span><br><span class="line">)</span><br><span class="line">##################### ⬆CMake头文件设置⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇CMake源文件设置⬇ #####################</span><br><span class="line">FILE(GLOB_RECURSE FILE_SOURCES # 遍历子目录下所有符合情况的源文件</span><br><span class="line">    $&#123;CMAKE_CURRENT_SOURCE_DIR&#125;/*.c*</span><br><span class="line">)</span><br><span class="line">##################### ⬆CMake源文件设置⬆ #####################</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##################### ⬇添加产物⬇ #####################</span><br><span class="line">add_executable(Inject # 生成动态库</span><br><span class="line">    $&#123;FILE_INCLUDES&#125; # 头文件</span><br><span class="line">    $&#123;FILE_SOURCES&#125; # 源文件</span><br><span class="line">)</span><br><span class="line">##################### ⬆添加产物 ⬆ #####################</span><br></pre></td></tr></table></figure>
+
+<p>这是我在github上发现的源码,但需要cmake脚本来生成的可执行程序,我给改成android studio生成的</p>
+<p>源码地址:<a target="_blank" rel="noopener" href="https://github.com/SsageParuders/AndroidPtraceInject">https://github.com/SsageParuders/AndroidPtraceInject</a></p>
+<p>生成后可以在build—–&gt;intermediates——&gt;cmake—–&gt;debug——&gt;obj——&gt;arm64-v8a中生成两个文件</p>
+<p><img src="https://s2.loli.net/2023/01/04/wDqZYCHlBRgfzok.png" alt="image-20230104125357664"></p>
+<p>项目地址:<a target="_blank" rel="noopener" href="https://github.com/ljm2007/AndroidInject">https://github.com/ljm2007/AndroidInject</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">清风醉博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2023/01/04/arm64-v8a-inject/">http://ljm2007.github.io/2023/01/04/arm64-v8a-inject/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">清风醉博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%B3%A8%E5%85%A5so/">注入so</a></div><div class="post_share"><div class="social-share" data-image="https://bit.ly/3WkSvF9" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/01/07/elf%E6%A0%BC%E5%BC%8F%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/"><img class="prev-cover" src="https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">elf格式文件分析</div></div></a></div><div class="next-post pull-right"><a href="/2022/11/11/%E3%80%90Cmake%E3%80%91%E5%88%A9%E7%94%A8NDK%E8%BF%9B%E8%A1%8CAndroid%E7%9A%84%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91/"><img class="next-cover" src="https://s2.loli.net/2022/11/11/roHQRqmDbCuGS9J.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">利用Cmake对NDK进行Android的交叉编译</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/02/06/FRIDA-API%E4%BD%BF%E7%94%A8%E7%AF%87/" title="FRIDA-API使用篇"><img class="cover" src="https://bit.ly/3WkSvF9" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-06</div><div class="title">FRIDA-API使用篇</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">清风醉博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E5%88%9B%E5%BB%BANative-c-%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text">一 创建Native c++ 项目</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字"><img src="https://s2.loli.net/2023/05/20/nCWOkMglcT86x7p.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin 中 by 关键字"/></a><div class="content"><a class="title" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字">Kotlin 中 by 关键字</a><time datetime="2024-02-18T15:43:06.000Z" title="发表于 2024-02-18 23:43:06">2024-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息"><img src="https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="获取android apk信息"/></a><div class="content"><a class="title" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息">获取android apk信息</a><time datetime="2024-02-15T01:55:37.000Z" title="发表于 2024-02-15 09:55:37">2024-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题">无题</a><time datetime="2024-02-05T03:51:17.183Z" title="发表于 2024-02-05 11:51:17">2024-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/26/Lambda/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/26/Lambda/" title="无题">无题</a><time datetime="2024-01-26T06:19:49.370Z" title="发表于 2024-01-26 14:19:49">2024-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题">无题</a><time datetime="2024-01-24T04:24:08.079Z" title="发表于 2024-01-24 12:24:08">2024-01-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 清风醉博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

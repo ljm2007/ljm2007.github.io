@@ -1,0 +1,424 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>elf格式文件分析 | 清风醉博客</title><meta name="keywords" content="elf"><meta name="author" content="清风醉博客"><meta name="copyright" content="清风醉博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="1 简介  可执行与可链接格式 （Executable and Linkable Format，ELF），常被称为 ELF格式，是一种用于可执行文件、目标代码、共享库和核心转储（core dump）的标准文件格式，一般用于类Unix系统，比如Linux，Macox等。ELF 格式灵活性高、可扩展，并且跨平台。比如它支持不同的字节序和地址范围，所以它不会不兼容某一特别的 CPU 或指令架构。这也">
+<meta property="og:type" content="article">
+<meta property="og:title" content="elf格式文件分析">
+<meta property="og:url" content="http://ljm2007.github.io/2023/01/07/elf%E6%A0%BC%E5%BC%8F%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="清风醉博客">
+<meta property="og:description" content="1 简介  可执行与可链接格式 （Executable and Linkable Format，ELF），常被称为 ELF格式，是一种用于可执行文件、目标代码、共享库和核心转储（core dump）的标准文件格式，一般用于类Unix系统，比如Linux，Macox等。ELF 格式灵活性高、可扩展，并且跨平台。比如它支持不同的字节序和地址范围，所以它不会不兼容某一特别的 CPU 或指令架构。这也">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png">
+<meta property="article:published_time" content="2023-01-07T13:21:07.000Z">
+<meta property="article:modified_time" content="2024-02-09T04:06:41.645Z">
+<meta property="article:author" content="清风醉博客">
+<meta property="article:tag" content="elf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2023/01/07/elf%E6%A0%BC%E5%BC%8F%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'elf格式文件分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-02-09 12:06:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">清风醉博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">elf格式文件分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-07T13:21:07.000Z" title="发表于 2023-01-07 21:21:07">2023-01-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-02-09T04:06:41.645Z" title="更新于 2024-02-09 12:06:41">2024-02-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/elf/">elf</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="elf格式文件分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png"></p>
+<p><img src="https://s2.loli.net/2023/01/10/tEPHR4Nd1bXG2j9.png"></p>
+<h1 id="1-简介"><a href="#1-简介" class="headerlink" title="1 简介"></a>1 简介</h1><p>  可执行与可链接格式 （Executable and Linkable Format，ELF），常被称为 ELF格式，是一种用于可执行文件、目标代码、共享库和核心转储（core dump）的标准文件格式，一般用于类Unix系统，比如Linux，Macox等。ELF 格式灵活性高、可扩展，并且跨平台。比如它支持不同的字节序和地址范围，所以它不会不兼容某一特别的 CPU 或指令架构。这也使得 ELF 格式能够被运行于众多不同平台的各种操作系统所广泛采纳。<br>  ELF文件一般由三种类型的文件：</p>
+<ul>
+<li>可重定向文件：文件保存着代码和适当的数据，用来和其他的目标文件一起来创建一个可执行文件或者是一个共享目标文件。比如编译的中间产物<code>.o</code>文件；</li>
+<li>可执行文件：一个可执行文件；</li>
+<li>共享目标文件：共享库。文件保存着代码和合适的数据，用来被下连接编辑器和动态链接器链接。比如linux下的<code>.so</code>文件。</li>
+</ul>
+<h1 id="2-ELF文件格式"><a href="#2-ELF文件格式" class="headerlink" title="2 ELF文件格式"></a>2 ELF文件格式</h1><h2 id="2-1-ELF-Header"><a href="#2-1-ELF-Header" class="headerlink" title="2.1 ELF Header"></a>2.1 ELF Header</h2><p>ELF文件头描述了ELF文件的基本类型，地址偏移等信息，分为32bit和64bit两个版本，定义于linux源码的<code>/usr/include/elf.h</code>文件中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> EI_NIDENT	16</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">elf32_hdr</span>&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	e_ident[EI_NIDENT];<span class="comment">//elf 标识</span></span><br><span class="line">  Elf32_Half	e_type;</span><br><span class="line">  Elf32_Half	e_machine;</span><br><span class="line">  Elf32_Word	e_version;</span><br><span class="line">  Elf32_Addr	e_entry;  <span class="comment">/* Entry point 程序入口地址*/</span> </span><br><span class="line">  Elf32_Off	e_phoff; <span class="comment">//Program header table 文件中的偏移</span></span><br><span class="line">  Elf32_Off	e_shoff; <span class="comment">//Section header table 文件中的偏移</span></span><br><span class="line">  Elf32_Word	e_flags;</span><br><span class="line">  Elf32_Half	e_ehsize;<span class="comment">//elfheader头占的大小</span></span><br><span class="line">  Elf32_Half	e_phentsize; <span class="comment">//pht 每个表的占的大小</span></span><br><span class="line">  Elf32_Half	e_phnum;<span class="comment">//pht 表的个数</span></span><br><span class="line">  Elf32_Half	e_shentsize; <span class="comment">//sht 每个表的占的大小</span></span><br><span class="line">  Elf32_Half	e_shnum;<span class="comment">//sht 表的个数</span></span><br><span class="line">  Elf32_Half	e_shstrndx;<span class="comment">//字符串表在sht表的下标</span></span><br><span class="line">&#125; Elf32_Ehdr;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">elf64_hdr</span> &#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	e_ident[EI_NIDENT];	<span class="comment">/* ELF &quot;magic number&quot; */</span></span><br><span class="line">  Elf64_Half e_type;</span><br><span class="line">  Elf64_Half e_machine;</span><br><span class="line">  Elf64_Word e_version;</span><br><span class="line">  Elf64_Addr e_entry;		<span class="comment">/* Entry point virtual address */</span></span><br><span class="line">  Elf64_Off e_phoff;		<span class="comment">/* Program header table file offset */</span></span><br><span class="line">  Elf64_Off e_shoff;		<span class="comment">/* Section header table file offset */</span></span><br><span class="line">  Elf64_Word e_flags;</span><br><span class="line">  Elf64_Half e_ehsize;</span><br><span class="line">  Elf64_Half e_phentsize;</span><br><span class="line">  Elf64_Half e_phnum;</span><br><span class="line">  Elf64_Half e_shentsize;</span><br><span class="line">  Elf64_Half e_shnum;</span><br><span class="line">  Elf64_Half e_shstrndx;</span><br><span class="line">&#125; Elf64_Ehdr;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>从上面的结构中能够看出32bit和64bit的区别仅仅是字长的区别，字段上没有实际上的差别。每个字段的含义如下：</p>
+<ul>
+<li>e_ident：ELF文件的描述，是一个16字节的标识，表明当前文件的数据格式，位数等：<ul>
+<li>[0,3]字节为魔数，即<code>e_ident[EI_MAG0-EI_MAG3]</code>，取值为固定的<code>0x7f E L F</code>，标记当前文件为一个ELF文件；</li>
+<li>[4,4]字节为EI_CLASS即e_ident[EI_CLASS]，表明当前文件的类别：<ul>
+<li>0：表示非法的类别；</li>
+<li>1：表示32bit；</li>
+<li>2：表示64bit；</li>
+</ul>
+</li>
+<li>[5,5]字节为EI_DATA即e_ident[EI_DATA],表明当期那文件的数据排列方式：<ul>
+<li>0表示非法；</li>
+<li>1表示小端；</li>
+<li>2表示大端；</li>
+</ul>
+</li>
+<li>[6,6]字节为<code>EI_VERSION</code>即<code>e_ident[EI_VERSION]</code>，表明当前文件的版本，目前该取值必须为<code>EV_CURRENT</code>即1；</li>
+<li>[7,7]字节为<code>EI_PAD</code>即<code>e_ident[EI_PAD]</code>表明<code>e_ident</code>中未使用的字节的起点（值是相对于<code>e_ident[EI_PAD+1]</code>的偏移），未使用的字节会被初始化为0，解析ELF文件时需要忽略对应的字段；</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">  EI_MAG0,EI_MAG1,EI_MAG2,EI_MAG3,EI_CLASS,EI_DATA,EI_VERSION，EI_OSABI,EI_PAD是linux源码中定义的宏，取值分别为0-7，分别对应各个字段的下标；下面的[宏定义](https://so.csdn.net/so/search?q=宏定义&amp;spm=1001.2101.3001.7020)将采用类似EI_MAG0(0)的方式，表示EI_MAG0的值为0。</span><br></pre></td></tr></table></figure>
+
+
+</blockquote>
+<ul>
+<li>e_type：文件的标识字段标识文件的类型；<ul>
+<li><code>ET_NONE(0)</code>：未知的文件格式；</li>
+<li><code>ET_REL(1)</code>：可重定位文件，比如目标文件；</li>
+<li><code>ET_EXEC(2)</code>：可执行文件；</li>
+<li><code>ET_DYN(3)</code>：共享目标文件；</li>
+<li><code>ET_CORE(4)</code>：Core转储文件，比如程序crash之后的转储文件；</li>
+<li><code>ET_LOPROC(0xff00)</code>：特定处理器的文件标识；</li>
+<li><code>ET_HIPROC(0xffff)</code>：特定处理器的文件标识;</li>
+<li><code>[ET_LOPROC,ET_HIPROC]</code>之间的值用来表示特定处理器的文件格式；</li>
+</ul>
+</li>
+<li>e_machine：目标文件的体系结构（下面列举了少数处理器架构，具体ELF文件支持的架构在对应的文件中查看即可）；<ul>
+<li><code>ET_NONE(0)</code>：未知的处理器架构；</li>
+<li><code>EM_M32(1)</code>：AT&amp;T WE 32100；</li>
+<li><code>EM_SPARC(2)</code>：SPARC；</li>
+<li><code>EM_386(3)</code>：Intel 80386；</li>
+<li><code>EM_68K(4)</code>：Motorola 68000；</li>
+<li><code>EM_88K(5)</code>：Motorola 88000；</li>
+<li><code>EM_860(6)</code>：Intel 80860；</li>
+<li><code>EM_MIPS(7)</code>：MIPS RS3000大端；</li>
+<li><code>EM_MIPS_RS4_BE(10)</code>：MIPS RS4000大端；</li>
+<li>其他，预留；</li>
+</ul>
+</li>
+<li>e_version：当前文件的版本；<ul>
+<li><code>EV_NONE(0)</code>：非法的版本；</li>
+<li><code>EV_CURRENT(</code>)&#96;：当前版本；</li>
+</ul>
+</li>
+<li><code>e_entry</code>：程序的虚拟入口地址，如果文件没有对应的入口可以为0；</li>
+<li><code>e_phoff</code>：文件中程序头表的偏移（bytes），如果文件没有该项，则应该为0；</li>
+<li><code>e_shoff</code>：文件中段表&#x2F;节表的偏移（bytes），如果文件没有该项，则应该为0；</li>
+<li><code>e_flags</code>：处理器相关的标志位，宏格式为<code>EF_machine_flag</code>比如<code>EF_MIPS_PIC</code>；</li>
+<li><code>e_ehsize</code>：ELF文件头的大小（bytes）；</li>
+<li><code>e_phentsize</code>：程序头表中单项的大小，表中每一项的大小相同；</li>
+<li><code>e_phnum</code>：程序头表中的项数，也就是说程序头表的实际大小为<code>ephentsize x e_phnum</code>，如果文件中没有程序头表该项为0；</li>
+<li><code>e_shentsize</code>：节表中单项的大小，表中每一项的大小相同；</li>
+<li><code>e_shnum</code>：节表中项的数量；</li>
+<li><code>e_shstrndx</code>：节表中节名的索引，如果文件没有该表则该项为<code>SHN_UNDEF(0)</code>。</li>
+</ul>
+<h2 id="2-2-程序头表（Program-Header-Table）"><a href="#2-2-程序头表（Program-Header-Table）" class="headerlink" title="2.2 程序头表（Program Header Table）"></a>2.2 程序头表（Program Header Table）</h2><p>可执行文件或者共享目标文件的程序头部是一个结构数组，每个结构描述了一个段 或者系统准备程序执行所必需的其它信息。程序头表描述了ELF文件中Segment在文件中的布局，描述了OS该如何装载可执行文件到内存。程序头表的表项的描述如下，类似于ELF Header也有32和64位两个版本。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_phdr</span> &#123;</span></span><br><span class="line">	Elf32_Word p_type;   <span class="comment">//当前Segment的类型；</span></span><br><span class="line">	Elf32_Off p_offset;</span><br><span class="line">	Elf32_Addr p_vaddr;</span><br><span class="line">	Elf32_Addr p_paddr;</span><br><span class="line">	Elf32_Word p_filesz;</span><br><span class="line">	Elf32_Word p_memsz;</span><br><span class="line">	Elf32_Word p_flags;</span><br><span class="line">	Elf32_Word p_align;</span><br><span class="line">&#125; Elf32_Phdr;</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_phdr</span> &#123;</span></span><br><span class="line">	Elf64_Word p_type;</span><br><span class="line">	Elf64_Word p_flags;</span><br><span class="line">	Elf64_Off p_offset;	<span class="comment">/* Segment file offset */</span></span><br><span class="line">	Elf64_Addr p_vaddr;	<span class="comment">/* Segment virtual address */</span></span><br><span class="line">	Elf64_Addr p_paddr;	<span class="comment">/* Segment physical address */</span></span><br><span class="line">	Elf64_Xword p_filesz;	<span class="comment">/* Segment size in file */</span></span><br><span class="line">	Elf64_Xword p_memsz;	<span class="comment">/* Segment size in memory */</span></span><br><span class="line">	Elf64_Xword p_align;	<span class="comment">/* Segment alignment, file &amp; memory */</span></span><br><span class="line">&#125; Elf64_Phdr</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>p_type ：当前Segment的类型；</p>
+<ul>
+<li><code>PT_NULL(0)</code>：当前项未使用，项中的成员是未定义的，需要忽略当前项；</li>
+<li><code>PT_LOAD(1)</code>：当前Segment是一个可装载的Segment，即可以被装载映射到内存中，其大小由<code>p_filesz</code>和<code>p_memsz</code>描述。如果<code>p_memsz&gt;p_filesz</code>则剩余的字节被置零，但是<code>p_filesz&gt;p_memsz</code>是非法的。动态库一般包含两个该类型的段：代码段和数据段；</li>
+<li><strong><code>PT_DYNAMIC(2)</code>：动态段，动态库特有的段，包含了动态链接必须的一些信息，比如需要链接的共享库列表、GOT等等；</strong></li>
+<li><code>PT_INTERP(3)</code>：当前段用于存储一段以NULL为结尾的字符串，该字符串表明了程序解释器的位置。且当前段仅仅对于可执行文件有实际意义，一个可执行文件中不能出现两个当前段，如果一个文件中包含当前段。比如<code>/lib64/ld-linux-x86-64.so.2</code>；</li>
+<li><code>PT_NOTE(4)</code>：用于保存与特定供应商或者系统相关的附加信息以便于兼容性、一致性检查，但是实际上只保存了操作系统的规范信息；</li>
+<li><code>PT_SHLIB(5)</code>：保留段；</li>
+<li><code>PT_PHDR(6)</code>：保存程序头表本身的位置和大小，当前段不能在文件中出现一次以上，且仅仅当程序表头为内存映像的一部分时起作用，它必须在所有加载项目之前；</li>
+<li><code>[PT_LPROC(0x70000000),PT_HIPROC(0x7fffffff)]</code>：该范围内的值用作预留；</li>
+</ul>
+</li>
+<li><p><code>p_offset</code>：当前段相对于文件起始位置的偏移量；</p>
+</li>
+<li><p><code>p_vaddr</code>：段的第一个字节将被映射到到内存中的虚拟地址；</p>
+</li>
+<li><p><code>p_paddr</code>：此成员仅用于与物理地址相关的系统中。因为 System V 忽略所有应用程序的物理地址信息，此字段对与可执行文件和共享目标文件而言具体内容是指定的；</p>
+</li>
+<li><p><code>p_filesz</code>：段在文件映像中所占的字节数，可能为 0；</p>
+</li>
+<li><p><code>p_memsz</code>：段在内存映像中占用的字节数，可能为 0；</p>
+</li>
+<li><p><code>p_flags</code>：段相关的标志；</p>
+</li>
+<li><p>p_align：段在文件中和内存中如何对齐。可加载的进程段的</p>
+<p>p_vaddr和-p_offset 取值必须合适，相对于对页面大小的取模而言；</p>
+<ul>
+<li>0和1表示不需要对齐；</li>
+<li>其他值必须为2的幂次方，且必须 p_addr|p_align&#x3D;&#x3D;p_offset| palign</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-3-节头表（Section-Header-Table）"><a href="#2-3-节头表（Section-Header-Table）" class="headerlink" title="2.3 节头表（Section Header Table）"></a>2.3 节头表（Section Header Table）</h2><p>节头表描述了ELF文件中的节的基本信息。可执行文件不一定由节头表但是一定有节，节头表可利用特殊的方式去除。</p>
+<p><strong>段和节的区别是：</strong></p>
+<ul>
+<li><strong>段包含了程序装载可执行的基本信息，段告诉OS如何装载当前段到虚拟内存以及当前段的权限等和执行相关的信息，一个段可以包含0个或多个节；</strong></li>
+<li><strong>节包含了程序的代码和数据等内容，链接器会将多个节合并为一个段。</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_shdr</span> &#123;</span></span><br><span class="line">  Elf32_Word	sh_name;</span><br><span class="line">  Elf32_Word	sh_type;</span><br><span class="line">  Elf32_Word	sh_flags;</span><br><span class="line">  Elf32_Addr	sh_addr;</span><br><span class="line">  Elf32_Off	sh_offset;</span><br><span class="line">  Elf32_Word	sh_size;</span><br><span class="line">  Elf32_Word	sh_link;</span><br><span class="line">  Elf32_Word	sh_info;</span><br><span class="line">  Elf32_Word	sh_addralign;</span><br><span class="line">  Elf32_Word	sh_entsize;</span><br><span class="line">&#125; Elf32_Shdr;</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_shdr</span> &#123;</span></span><br><span class="line">  Elf64_Word sh_name;		<span class="comment">/* Section name, index in string tbl */</span></span><br><span class="line">  Elf64_Word sh_type;		<span class="comment">/* Type of section */</span></span><br><span class="line">  Elf64_Xword sh_flags;		<span class="comment">/* Miscellaneous section attributes */</span></span><br><span class="line">  Elf64_Addr sh_addr;		<span class="comment">/* Section virtual addr at execution */</span></span><br><span class="line">  Elf64_Off sh_offset;		<span class="comment">/* Section file offset */</span></span><br><span class="line">  Elf64_Xword sh_size;		<span class="comment">/* Size of section in bytes */</span></span><br><span class="line">  Elf64_Word sh_link;		<span class="comment">/* Index of another section */</span></span><br><span class="line">  Elf64_Word sh_info;		<span class="comment">/* Additional section information */</span></span><br><span class="line">  Elf64_Xword sh_addralign;	<span class="comment">/* Section alignment */</span></span><br><span class="line">  Elf64_Xword sh_entsize;	<span class="comment">/* Entry size if section holds table */</span></span><br><span class="line">&#125; Elf64_Shdr;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>sh_name</code>：值是节名称在字符串表中的索引；</li>
+<li>sh_type：描述节的类型和语义；<ul>
+<li><code>SHT_NULL(0)</code>：当前节是非活跃的，没有一个对应的具体的节内存；</li>
+<li><code>SHT_PROGBITS(1)</code>：包含了程序的指令信息、数据等程序运行相关的信息；</li>
+<li>SHT_SYMTAB(2)：保存了符号信息，用于重定位；<ul>
+<li>此种类型节的<code>sh_link</code>存储相关字符串表的节索引，<code>sh_info</code>存储最后一个局部符号的符号表索引+1；</li>
+</ul>
+</li>
+<li>SHT_DYNSYM(11)：保存共享库导入动态符号信息；<ul>
+<li>此种类型节的<code>sh_link</code>存储相关字符串表的节索引，<code>sh_info</code>存储最后一个局部符号的符号表索引+1；</li>
+</ul>
+</li>
+<li><code>SHT_STRTAB(3)</code>：一个字符串表，保存了每个节的节名称；</li>
+<li>SHT_RELA(4)：存储可重定位表项，可能会有附加内容，目标文件可能有多个可重定位表项；<ul>
+<li>此种类型节的<code>sh_link</code>存储相关符号表的节索引，<code>sh_info</code>存储重定位所使用节的索引；</li>
+</ul>
+</li>
+<li>SHT_HASH(5)：存储符号哈希表，所有参与动态链接的目标只能包含一个哈希表，一个目标文件只能包含一个哈希表；<ul>
+<li>此种类型节的<code>sh_link</code>存储哈希表所使用的符号表的节索引,<code>sh_info</code>为0；</li>
+</ul>
+</li>
+<li>SHT_DYAMIC(6)：存储包含动态链接的信息，一个目标文件只能包含一个；<ul>
+<li>此种类型的节的<code>sh_link</code>存储当前节中使用到的字符串表格的节的索引，<code>sh_info</code>为0；</li>
+</ul>
+</li>
+<li><code>SHT_NOTE(7)</code>：存储以某种形式标记文件的信息；</li>
+<li><code>SHT_NOBITS(8)</code>：这种类型的节不占据文件空间，但是成员<code>sh_offset</code>依然会包含对应的偏移；</li>
+<li>SHT_REL(9)：包含可重定位表项，无附加内容，目标文件可能有多个可重定位表项；<ul>
+<li>此种类型节的<code>sh_link</code>存储相关符号表的节索引，<code>sh_info</code>存储重定位所使用节的索引；</li>
+</ul>
+</li>
+<li><code>SHT_SHLIB(10)</code>：保留区，包含此节的程序与ABI不兼容；</li>
+<li><code>[SHT_LOPROC(0x70000000),SHT_HIPROC(0x7fffffff)]</code>：留给处理器专用语义；</li>
+<li><code>[SHT_LOUSER(0x80000000),SHT_HIUSER(0xffffffff)]</code>：预留；</li>
+</ul>
+</li>
+<li>sh_flags：1bit位的标志位；<ul>
+<li><code>SHF_WRITE(0x1)</code>：当前节包含进程执行过程中可写的数据；</li>
+<li><code>SHF_ALLOC(0x2)</code>：当前节在运行阶段占据内存；</li>
+<li><code>SHF_EXECINSTR(0x4)</code>：当前节包含可执行的机器指令；</li>
+<li><code>SHF_MASKPROC(0xf0000000)</code>：所有包含当前掩码都表示预留给特定处理器的；</li>
+</ul>
+</li>
+<li><code>sh_addr</code>：如果当前节需要被装载到内存，则当前项存储当前节映射到内存的首地址，否则应该为0；</li>
+<li><code>sh_offset</code>：当前节的首地址相对于文件的偏移；</li>
+<li><code>sh_size</code>：节的大小。但是对于类型为<code>SHT_NOBITS</code>的节，当前值可能不为0但是在文件中不占据任何空间；</li>
+<li><code>sh_link</code>：存储节投标中的索引，表示当前节依赖于对应的节。对于特定的节有特定的含义，其他为<code>SHN_UNDEF</code>；</li>
+<li><code>sh_info</code>：节的附加信息。对于特定的节有特定的含义，其他为<code>0</code>；</li>
+<li><code>sh_addralign</code>：地址约束对齐，值应该为0或者2的幂次方，0和1表示未进行对齐；</li>
+<li><code>sh_entsize</code>：某些节是一个数组，对于这类节当前字段给出数组中每个项的字节数，比如符号表。如果节并不包含对应的数组，值应该为0。</li>
+</ul>
+<h2 id="2-3-一些特殊的节"><a href="#2-3-一些特殊的节" class="headerlink" title="2.3 一些特殊的节"></a>2.3 一些特殊的节</h2><p>  ELF文件中有一些预定义的节来保存程序、数据和一些控制信息，这些节被用来链接或者装载程序。每个操作系统都支持一组链接模式，主要分为两类（也就是常说的动态库和静态库）：</p>
+<ul>
+<li>Static：静态绑定的一组目标文件、系统库和库档案（比如静态库），解析包含的符号引用并创建一个完全自包含的可执行文件；</li>
+<li>Dynamic：一组目标文件、库、系统共享资源和其他共享库链接在一起创建可执行文件。当加载此可执行文件时必须使系统中其他共享资源和动态库可用，程序才能正常运行。</li>
+</ul>
+<p>  库文件无论是动态库还是静态库在其文件中都包含对应的节，一些特殊的节其功能如下：</p>
+<ul>
+<li><code>.bss</code>，类型<code>SHT_NOBITS</code>，属性<code>SHF_ALLOC|SHF_WRITE</code>：存储未经初始化的数据。根据定义程序开始执行时，系统会将这些数据初始化为0，且此节不占用文件空间；</li>
+<li><code>.comment</code>，类型<code>SHT_PROGBITS</code>，属性<code>none</code>：存储版本控制信息；</li>
+<li><code>.data</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC|SHF_WRITE</code>：存放初始化的数据；</li>
+<li><code>.data1</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC|SHF_WRITE</code>：存放初始化的数据；</li>
+<li><code>.debug</code>，类型<code>SHT_PROGBITS</code>，属性<code>none</code>：存放用于符号调试的信息；</li>
+<li><code>.dynamic</code>，类型<code>SHT_DYNAMIC</code>，属性<code>SHF_ALLOC</code>，是否有属性<code>SHF_WRITE</code>屈居于处理器：包含动态链接的信息，</li>
+<li><code>.hash</code>，类型<code>SHT_HASH</code>，属性<code>SHF_ALLOC</code>：</li>
+<li><code>.line</code>，类型<code>SHT_PROGBITS</code>，属性<code>none</code>：存储调试的行号信息，描述源代码和机器码之间的对应关系；</li>
+<li><code>.note</code>，类型<code>SHT_NOTE</code>，属性<code>none</code>：</li>
+<li><code>.rodata</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC</code>：存储只读数据；</li>
+<li><code>.rodata1</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC</code>：存储只读数据；</li>
+<li><code>.shstrtab</code>，类型<code>SHT_STRTAB</code>，属性<code>none</code>：存储节的名称；</li>
+<li><code>.strtab</code>，类型<code>SHT_STRTAB</code>：存储常见的与符号表关联的字符串。如果文件有一个包含符号字符串表的可加载段，则该段的属性将包括 SHF_ALLOC 位； 否则，该位将关闭；</li>
+<li><code>.symtab</code>，类型<code>SHT_SYMTAB</code>，属性&#96;&#96;&#96;&#96;&#96;&#96;：存储一个符号表。如果文件具有包含符号表的可加载段，则该节的属性将包括 SHF_ALLOC 位；否则，该位将关闭；</li>
+<li><code>.text</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC|SHF_EXECINSTR</code>：存储程序的代码指令；</li>
+<li><code>.dynstr</code>，类型<code>SHT_STRTAB</code>，属性<code>SHF_ALLOC</code>：存储动态链接所需的字符串，最常见的是表示与符号表条目关联的名称的字符串；</li>
+<li><code>.dynsym</code>，类型<code>SHT_DYNSYM</code>，属性<code>SHF_ALLOC</code>：存储动态链接符号表；</li>
+<li><code>.fini</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC|SHF_EXECINSTR</code>：存储有助于进程终止代码的可执行指令。 当程序正常退出时，系统执行本节代码；</li>
+<li><code>.init</code>，类型<code>SHT_PROGBITS</code>，属性<code>SHF_ALLOC|SHF_EXECINSTR</code>：存储有助于进程初始化代码的可执行指令。 当程序开始运行时，系统会在调用主程序入口点（C 程序称为 main）之前执行本节中的代码；</li>
+<li><code>.interp</code>，类型<code>SHT_PROGBITS</code>：保存程序解释器的路径名。 如果文件有一个包含该节的可加载段，则该节的属性将包括 SHF_ALLOC 位； 否则，该位将关闭；</li>
+<li><code>.relname</code>，类型<code>SHT_REL</code>：包含重定位信息。如果文件具有包含重定位的可加载段，则这些部分的属性将包括 SHF_ALLOC 位；否则，该位将关闭。通常，名称由 重定位适用的部分。因此<code>.text</code>的重定位部分通常具有名称.<code>rel.text</code>或<code>.rela.text</code>；</li>
+<li><code>.relaname</code>，类型<code>SHT_RELA</code>：同<code>relname</code>。</li>
+<li>其他：对于C++程序有些版本会有<code>.ctors</code>（有时也会是<code>.init_array</code>，见<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/16569495/cant-find-dtors-and-ctors-in-binary">Can’t find .dtors and .ctors in binary</a>）和<code>dtors</code>两个节存储构造和析构相关的代码。</li>
+</ul>
+<blockquote>
+<p>  带有点 (.) 前缀的部分名称是为系统保留的，但如果它们的现有含义令人满意，应用程序可以使用这些部分。 应用程序可以使用不带前缀的名称以避免与系统部分冲突。 目标文件格式允许定义不在上面列表中的部分。 一个目标文件可能有多个同名的部分。</p>
+</blockquote>
+<h2 id="2-4-字符串表"><a href="#2-4-字符串表" class="headerlink" title="2.4 字符串表"></a>2.4 字符串表</h2><p>  字符串表是一个存储字符串的表格，而每个字符串是以NULL也就是<code>\0</code>为结尾的。字符串表格中索引为0处的字符串被定义为空字符串。符号表中保存的字符串是节名和目标文件中使用到的符号。而需要使用对应字符串时，只需要在需要使用的地方指明对应字符在字符串表中的索引即可，使用的字符串就是索引处到第一个<code>\0</code>之间的字符串。<br><img src="https://img-blog.csdnimg.cn/c069cbc6a3f9496ca578e856d7f5a421.png" alt="在这里插入图片描述"></p>
+<h2 id="2-5-符号表"><a href="#2-5-符号表" class="headerlink" title="2.5 符号表"></a>2.5 符号表</h2><p>  目标文件的符号表包含定位和重定位程序的符号定义和引用所需的信息。符号表索引是该数组的下标。索引0既指定表中的第一个条目，又用作未定义的符号索引。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf32_sym</span>&#123;</span></span><br><span class="line">  Elf32_Word	st_name;</span><br><span class="line">  Elf32_Addr	st_value;</span><br><span class="line">  Elf32_Word	st_size;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	st_info;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	st_other;</span><br><span class="line">  Elf32_Half	st_shndx;</span><br><span class="line">&#125; Elf32_Sym;</span><br><span class="line"><span class="number">12345678</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_sym</span> &#123;</span></span><br><span class="line">  Elf64_Word st_name;		<span class="comment">/* Symbol name, index in string tbl */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	st_info;	<span class="comment">/* Type and binding attributes */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>	st_other;	<span class="comment">/* No defined meaning, 0 */</span></span><br><span class="line">  Elf64_Half st_shndx;		<span class="comment">/* Associated section index */</span></span><br><span class="line">  Elf64_Addr st_value;		<span class="comment">/* Value of the symbol */</span></span><br><span class="line">  Elf64_Xword st_size;		<span class="comment">/* Associated symbol size */</span></span><br><span class="line">&#125; Elf64_Sym;</span><br><span class="line"><span class="number">12345678</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>st_name</code>：存储一个指向字符串表的索引来表示对应符号的名称；</li>
+<li>st_value：存储对应符号的取值，具体值依赖于上下文，可能是一个指针地址，立即数等。另外，不同对象文件类型的符号表条目对 st_value 成员的解释略有不同：<ul>
+<li>在重定位文件中在可重定位文件中，<code>st_value</code>保存节索引为<code>SHN_COMMON</code>的符号的对齐约束；</li>
+<li>在可重定位文件中，<code>st_value</code>保存已定义符号的节偏移量。 也就是说，<code>st_value</code>是从<code>st_shndx</code>标识的部分的开头的偏移量；</li>
+<li>在可执行文件和共享对象文件中，<code>st_value</code>保存一个虚拟地址。 为了使这些文件的符号对动态链接器更有用，节偏移（文件解释）让位于与节号无关的虚拟地址（内存解释）。</li>
+</ul>
+</li>
+<li><code>st_size</code>：符号的大小，具体指为<code>sizeof(instance)</code>，如果未知则为0；</li>
+<li><code>st_info</code>：指定符号的类型和绑定属性。可以用下面的代码分别解析出<code>bind,type,info</code>三个属性：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ELF32_ST_BIND(i) ((i)&gt;&gt;4) </span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ELF32_ST_TYPE(i) ((i)&amp;0xf) </span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ELF32_ST_INFO(b,t) (((b)&lt;&lt;4)+((t)&amp;0xf))</span></span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>BIND<ul>
+<li><code>STB_LOCAL(0)</code>：局部符号在包含其定义的目标文件之外是不可见的。 同名的本地符号可以存在于多个文件中，互不干扰；</li>
+<li><code>STB_GLOBAL(1)</code>：全局符号对所有正在组合的目标文件都是可见的。 一个文件对全局符号的定义将满足另一个文件对同一全局符号的未定义引用；</li>
+<li><code>STB_WEAK(2)</code>：弱符号类似于全局符号，但它们的定义具有较低的优先级；</li>
+<li><code>[STB_LOPROC(13),STB_HIPROC(15)]</code>：预留位，用于特殊处理器的特定含义；</li>
+</ul>
+</li>
+<li>TYPE：<ul>
+<li><code>STT_NOTYPE(0)</code>：符号的类型未指定；</li>
+<li><code>STT_OBJECT(1)</code>：符号与数据对象相关联，例如变量、数组等；</li>
+<li><code>STT_FUNC(2)</code>：符号与函数或其他可执行代码相关联；</li>
+<li><code>STT_SECTION(3)</code>：该符号与一个节相关联。 这种类型的符号表条目主要用于重定位，通常具有<code>STB_LOCAL</code>BIND属性；</li>
+<li><code>STT_FILE(4)</code>：一个有<code>STB_LOCAL</code>的BIND属性的文件符号的节索引为<code>SHN_ABS</code>。并且如果存在其他<code>STB_LOCAL</code>属性的符号，则当前符号应该在其之前；</li>
+<li><code>[STT_LOPROC(13),STT_HIPROC(15)]</code>：预留位，用于特殊处理器的特定含义；</li>
+</ul>
+</li>
+<li>INFO：<ul>
+<li><code>SHN_ABS</code>：符号有一个绝对值，不会因为重定位而改变；</li>
+<li><code>SHN_COMMON</code>：该符号标记尚未分配的公共块。 符号的值给出了对齐约束，类似于节的 sh_addralign 成员。 也就是说，链接编辑器将为符号分配存储空间，该地址是 st_value 的倍数。 符号的大小表明需要多少字节；</li>
+<li><code>SHN_UNDEF</code>：此节表索引表示该符号未定义。 当链接编辑器将此对象文件与另一个定义指定符号的文件组合时，此文件对符号的引用将链接到实际定义；</li>
+</ul>
+</li>
+<li><code>st_other</code>：该成员当前持有 0 并且没有定义的含义；</li>
+<li><code>st_shndx</code>：每个符号都有属于的节，当前成员存储的就是对应节的索引。</li>
+</ul>
+<p>Segment —&gt;Program header table</p>
+<ul>
+<li>用于告诉内核,在执行ELF文件时应该如何映射内存</li>
+<li>每个Segment主要包含加载地址,文件中的范围,内存权限,对齐等信息</li>
+<li>是运行时必须提供的信息</li>
+</ul>
+<p>Section —&gt; Section header table</p>
+<ul>
+<li>用于告诉链接器,ELF中每个部份是什么,哪里是代码,哪里是只读数据,哪里是重定位信息</li>
+<li>每个Section主要包含Section类型.文件中的位置,大小等信息</li>
+<li>链接器依赖Section信息将不同的对象文件的代码,数据信息合并,并修复互相引用</li>
+</ul>
+<p>Segment与Section的关系</p>
+<ul>
+<li>相同对限的Section会放入同一个Segment,例如.text和.rodata section</li>
+<li>一个Segment包含许多Section,一个Section可以属于多个Segment</li>
+</ul>
+<h1 id="3-感染ELF文件注入实现"><a href="#3-感染ELF文件注入实现" class="headerlink" title="3 感染ELF文件注入实现"></a>3 感染ELF文件注入实现</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. 在dt_strtab指向的字符串中添加自定义so模块名称，将字符串表移动到文件末尾</span><br><span class="line">2. 添加一个pt_load表，用于能够内存映射我们添加的字符串，phdr移动到文件末尾</span><br><span class="line">3. 修改dt_strtab,dt_strsz,添加dt_needed</span><br><span class="line">4. 修改ELF Header关于段头表的信息字段，偏移，大小</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;elf.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;libgen.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SO_NAME <span class="string">&quot;libhello.so&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_NAME_LENGTH 255</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">LoadElfFile</span><span class="params">(<span class="type">char</span> *pszFileName, <span class="type">uint32_t</span> *pFileSize, <span class="type">char</span> **ppbyDataBuff)</span></span>;</span><br><span class="line"><span class="function"><span class="type">uint32_t</span> <span class="title">ModifyElfFile</span><span class="params">(<span class="type">char</span> *pbyELfFile, <span class="type">uint32_t</span> ulFileSize)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * Description: 主流程函数， 控制文件备份，加载，修改，写回的流程</span></span><br><span class="line"><span class="comment"> * Input:       argc 参数个数， argv为参数列表</span></span><br><span class="line"><span class="comment"> * Output:      无</span></span><br><span class="line"><span class="comment"> * Return:      返回程序运行状态</span></span><br><span class="line"><span class="comment"> * Others:      无</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Usage: %s &lt;soname&gt;\n&quot;</span>, <span class="built_in">basename</span>(argv[<span class="number">0</span>]));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">char</span> filename[MAX_NAME_LENGTH];</span><br><span class="line">    <span class="type">char</span> *pszElfFileName = argv[<span class="number">1</span>];</span><br><span class="line">    <span class="built_in">strncpy</span>(filename, argv[<span class="number">1</span>], MAX_NAME_LENGTH - <span class="number">1</span>);</span><br><span class="line">    filename[MAX_NAME_LENGTH - <span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="type">char</span> *pszBakFileName = <span class="built_in">strcat</span>(filename, <span class="string">&quot;.bak&quot;</span>);</span><br><span class="line">    <span class="type">int</span> ret = <span class="built_in">rename</span>(pszElfFileName, pszBakFileName);</span><br><span class="line">    <span class="keyword">if</span>(ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[Error] backup %s file failed!\n&quot;</span>, pszElfFileName);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">uint32_t</span> ulFileSize = <span class="number">0</span>;</span><br><span class="line">    <span class="type">char</span> *pbyBakFile;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">LoadElfFile</span>(pszBakFileName, &amp;ulFileSize, &amp;pbyBakFile);</span><br><span class="line">    <span class="type">uint32_t</span> ulNewFileSize = <span class="built_in">ModifyElfFile</span>(pbyBakFile, ulFileSize);</span><br><span class="line">    FILE* pElfFile = <span class="built_in">fopen</span>(pszElfFileName, <span class="string">&quot;wb&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(!pElfFile) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[Error] open file %s failed!\n&quot;</span>, pszElfFileName);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">fwrite</span>(pbyBakFile, <span class="number">1</span>, ulNewFileSize, pElfFile);</span><br><span class="line">    <span class="built_in">fclose</span>(pElfFile);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * Description: 加载原Elf文件的数据到内存</span></span><br><span class="line"><span class="comment"> * Input:       pszFileName为Elf文件名， pFileSize为文件大小</span></span><br><span class="line"><span class="comment"> * Output:      ppbyDataBuff为加载到内存后的buff指针</span></span><br><span class="line"><span class="comment"> * Return:      无</span></span><br><span class="line"><span class="comment"> * Others:      无</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">LoadElfFile</span><span class="params">(<span class="type">char</span> *pszFileName, <span class="type">uint32_t</span> *pFileSize, <span class="type">char</span> **ppbyDataBuff)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    FILE* pFile= <span class="built_in">fopen</span>(pszFileName, <span class="string">&quot;rb&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(pFile == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[ERROR] %s file may couldn&#x27;t be opened!\n&quot;</span>, pszFileName);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">fseek</span>(pFile, <span class="number">0</span>, SEEK_END);</span><br><span class="line">    <span class="type">uint32_t</span> ulFileSize = <span class="built_in">ftell</span>(pFile);</span><br><span class="line">    <span class="built_in">fseek</span>(pFile, <span class="number">0</span>, SEEK_SET);</span><br><span class="line">    <span class="type">uint8_t</span> *pbyDataBuff = <span class="built_in">malloc</span>(ulFileSize*<span class="number">2</span>);</span><br><span class="line">    <span class="built_in">memset</span>(pbyDataBuff, <span class="number">0</span>, ulFileSize*<span class="number">2</span>);</span><br><span class="line">    <span class="keyword">if</span>(!pbyDataBuff) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[ERROR] malloc failed!\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">uint32_t</span> ulReadLen = <span class="built_in">fread</span>(pbyDataBuff, <span class="number">1</span>, ulFileSize, pFile);</span><br><span class="line">    <span class="keyword">if</span>(ulReadLen != ulFileSize) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[ERROR] read file %s failed!\n&quot;</span>, pszFileName);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">fclose</span>(pFile);</span><br><span class="line">    *pFileSize = ulFileSize;</span><br><span class="line">    *ppbyDataBuff = pbyDataBuff;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*                                                                                                  </span></span><br><span class="line"><span class="comment"> * Description: 修改内存中Elf文件的数据buff，使其在运行时加载自定义模块（修改ELF文件的段头表信息）                                      </span></span><br><span class="line"><span class="comment"> * Input:       pbyElfFile为Elf文件数据buff, ulFileSize为文件大小                                             </span></span><br><span class="line"><span class="comment"> * Output:      ppbyDataBuff为加载到内存后的buff指针                                                          </span></span><br><span class="line"><span class="comment"> * Return:      修改之后的ELF文件大小                                                                        </span></span><br><span class="line"><span class="comment"> * Others:      无                                                                                   </span></span><br><span class="line"><span class="comment"> */</span>                                                                                                 </span><br><span class="line"><span class="function"><span class="type">uint32_t</span> <span class="title">ModifyElfFile</span><span class="params">(<span class="type">char</span> *pbyElfFile, <span class="type">uint32_t</span> ulFileSize)</span> </span>&#123;                                     </span><br><span class="line">    <span class="comment">//将pEhdr指针定位到Phdr数据                                                                             </span></span><br><span class="line">    Elf32_Ehdr *pEhdr = (Elf32_Ehdr *) pbyElfFile;                                                  </span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">IS_ELF</span>(*pEhdr)) &#123;                                                                          </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[ERROR] elf magic error!\n&quot;</span>);                                                       </span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-3</span>);                                                                                   </span><br><span class="line">    &#125;                                                                                               </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="comment">//将程序头表移动到文件尾以便新增表项                                                                             </span></span><br><span class="line">    Elf32_Phdr *pPhdr = (Elf32_Phdr *) (pbyElfFile +                                                </span><br><span class="line">                                        pEhdr-&gt;e_phoff);   <span class="comment">//得到Program header table 在elf文件中的偏移量     </span></span><br><span class="line">    <span class="type">uint32_t</span> ulPhdrSize = pEhdr-&gt;e_phnum * pEhdr-&gt;e_phentsize;    <span class="comment">//e_phnum 多少个表  e_phentsize每个表的长度 </span></span><br><span class="line">    <span class="built_in">memcpy</span>(pbyElfFile + ulFileSize, pPhdr, ulPhdrSize); <span class="comment">//把整个Program header talbe 放到尾部              </span></span><br><span class="line">    pPhdr = (Elf32_Phdr *) (pbyElfFile + ulFileSize);                                               </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[INFO] move phdr success!\n&quot;</span>);                                                          </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="comment">//增加一个程序头表项                                                                                     </span></span><br><span class="line">    Elf32_Phdr *pPTLoad = pPhdr + pEhdr-&gt;e_phnum;                                                   </span><br><span class="line">    pEhdr-&gt;e_phoff = ulFileSize;    <span class="comment">//修昨段头表的偏移地址                                                    </span></span><br><span class="line">    pEhdr-&gt;e_phnum += <span class="number">1</span>;         <span class="comment">//段头表加1                                                            </span></span><br><span class="line">    ulPhdrSize += pEhdr-&gt;e_phentsize;    <span class="comment">//加一个表的长度                                                  </span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[INFO] add phdr ent success!\n&quot;</span>);                                                       </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="comment">//将DT_STRTAB移到文件尾并且添加新so的名字                                                                   </span></span><br><span class="line">    <span class="type">char</span> *pOldStrTab = <span class="literal">NULL</span>;                                                                        </span><br><span class="line">    <span class="type">uint32_t</span> ulOldStrTabLen = <span class="number">0</span>;                                                                    </span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;                                                                                      </span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; pEhdr-&gt;e_phnum; i++) &#123;                                                          </span><br><span class="line">        <span class="keyword">if</span> (pPhdr[i].p_type == PT_DYNAMIC) &#123;                                                        </span><br><span class="line">            Elf32_Dyn *pDyn = (Elf32_Dyn *) (pbyElfFile + pPhdr[i].p_offset);  <span class="comment">//获取到dynamic segment </span></span><br><span class="line">            <span class="keyword">for</span> (; (<span class="type">char</span> *) pDyn - (pbyElfFile + pPhdr[i].p_offset + pPhdr[i].p_filesz) &lt;           </span><br><span class="line">                   <span class="number">0</span>; pDyn++) &#123;                                                                     </span><br><span class="line">                <span class="keyword">if</span> (pDyn-&gt;d_tag == DT_STRTAB) &#123;                                                     </span><br><span class="line">                    pOldStrTab = pbyElfFile + pDyn-&gt;d_un.d_ptr;                                     </span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pDyn-&gt;d_tag == DT_STRSZ) &#123;                                               </span><br><span class="line">                    ulOldStrTabLen = pDyn-&gt;d_un.d_val;                                              </span><br><span class="line">                &#125;                                                                                   </span><br><span class="line">            &#125;                                                                                       </span><br><span class="line">            <span class="keyword">break</span>;                                                                                  </span><br><span class="line">        &#125;                                                                                           </span><br><span class="line">    &#125; <span class="comment">//可以用010工具手工查询[图3][图4]0694偏移就是字符串 021b是字符串大小</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[INFO] get DT_STRTAB success!\n&quot;</span>);                                                      </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="type">char</span> *pNewStrTab = (<span class="type">char</span> *) (pPhdr + pEhdr-&gt;e_phnum);                                           </span><br><span class="line">    <span class="type">uint32_t</span> ulNewStrTabLen = ulOldStrTabLen;                                                                                                                                          </span><br><span class="line">    <span class="built_in">memcpy</span>(pNewStrTab, pOldStrTab, ulOldStrTabLen); <span class="comment">//把字符串表0964指针复制到新的程序头尾部 长度是021b       </span></span><br><span class="line">    <span class="built_in">strncpy</span>(pNewStrTab + ulNewStrTabLen, SO_NAME, MAX_NAME_LENGTH); <span class="comment">//把libhello.so字符串放到尾部             </span></span><br><span class="line">    <span class="type">char</span> *pNewModuleName = pNewStrTab + ulNewStrTabLen;                                             </span><br><span class="line">    ulNewStrTabLen += <span class="built_in">strlen</span>(SO_NAME) + <span class="number">1</span>;                                                                                                              </span><br><span class="line">    <span class="comment">//计算文件尾映射时的虚拟地址                                                                               </span></span><br><span class="line">    <span class="type">uint32_t</span> ulVAOffset = <span class="number">0</span>;                                                                        </span><br><span class="line">    <span class="type">uint32_t</span> ulPageSize = <span class="built_in">sysconf</span>(_SC_PAGESIZE);                                                    </span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; pEhdr-&gt;e_phnum; i++) &#123;                                                          </span><br><span class="line">        <span class="keyword">if</span> (pPhdr[i].p_type == PT_LOAD) &#123;                                                           </span><br><span class="line">            <span class="comment">//由于不能与原始PT_Load项映射的内存地址重叠,                                                         </span></span><br><span class="line">            <span class="comment">//并且原始的PT_Load为了能够映射.bss段而在内存中占用了更多的空间,                                       </span></span><br><span class="line">            <span class="comment">//所以在添加PT_Load项时,在映射的内存地址与文件偏移地址之间需要保留合理的差值,                           </span></span><br><span class="line">            <span class="comment">//即:ulVAOffset变量值                                                                       </span></span><br><span class="line">            ulVAOffset = pPhdr[i].p_vaddr - pPhdr[i].p_offset;                                      </span><br><span class="line">            ulVAOffset += (pPhdr[i].p_memsz - pPhdr[i].p_filesz) &amp; ~(ulPageSize - <span class="number">1</span>);               </span><br><span class="line">            ulVAOffset += ulPageSize;                                                               </span><br><span class="line">        &#125;                                                                                           </span><br><span class="line">    &#125;                                                                                               </span><br><span class="line">                                                                                                    </span><br><span class="line">    pPTLoad-&gt;p_type = PT_LOAD;                                                                      </span><br><span class="line">    pPTLoad-&gt;p_offset = ulFileSize;                                                                 </span><br><span class="line">    pPTLoad-&gt;p_vaddr = pPTLoad-&gt;p_paddr = pPTLoad-&gt;p_offset + ulVAOffset;                           </span><br><span class="line">    pPTLoad-&gt;p_filesz = pPTLoad-&gt;p_memsz = ulPhdrSize + ulNewStrTabLen;                             </span><br><span class="line">    pPTLoad-&gt;p_flags = PF_X | PF_W | PF_R;                                                          </span><br><span class="line">    pPTLoad-&gt;p_align = ulPageSize;                                                                  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[INFO] add PT_LOAD success!\n&quot;</span>);                                                        </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="comment">//修改PT_PHDR中文件偏移和虚拟地址    上面有PT_PHDR函义                                                       </span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; pEhdr-&gt;e_phnum; i++) &#123;                                                          </span><br><span class="line">        <span class="keyword">if</span> (pPhdr[i].p_type == PT_PHDR) &#123;                                                           </span><br><span class="line">            pPhdr[i].p_offset = ulFileSize;                                                         </span><br><span class="line">            pPhdr[i].p_paddr = pPhdr[i].p_vaddr = ulFileSize + ulVAOffset;                          </span><br><span class="line">            pPhdr[i].p_filesz = pPhdr[i].p_memsz = pEhdr-&gt;e_phnum * pEhdr-&gt;e_phentsize;             </span><br><span class="line">        &#125;                                                                                           </span><br><span class="line">    &#125;                                                                                               </span><br><span class="line">                                                                                                    </span><br><span class="line">    <span class="comment">//修改DT_STRTAB和DT_STRSZ                                                                          </span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; pEhdr-&gt;e_phnum; i++) &#123;                                                          </span><br><span class="line">        <span class="keyword">if</span> (pPhdr[i].p_type == PT_DYNAMIC) &#123;                                                        </span><br><span class="line">            Elf32_Dyn *pDyn = (Elf32_Dyn *) (pbyElfFile + pPhdr[i].p_offset);                       </span><br><span class="line">            <span class="keyword">for</span> (; (<span class="type">char</span> *) pDyn - (pbyElfFile + pPhdr[i].p_offset + pPhdr[i].p_filesz) &lt;           </span><br><span class="line">                   <span class="number">0</span>; pDyn++) &#123;                                                                     </span><br><span class="line">                <span class="keyword">if</span> (pDyn-&gt;d_tag == DT_STRTAB) &#123;                                                     </span><br><span class="line">                    pDyn-&gt;d_un.d_ptr = pNewStrTab - pbyElfFile + ulVAOffset;                        </span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pDyn-&gt;d_tag == DT_STRSZ) &#123;                                               </span><br><span class="line">                    pDyn-&gt;d_un.d_val = ulNewStrTabLen;                                              </span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pDyn-&gt;d_tag == DT_NULL) &#123;                                                </span><br><span class="line">                    pDyn-&gt;d_tag = DT_NEEDED;                                                        </span><br><span class="line">                    pDyn-&gt;d_un.d_ptr = pNewModuleName - pNewStrTab;                                 </span><br><span class="line">                    <span class="keyword">break</span>;                                                                          </span><br><span class="line">                &#125;                                                                                   </span><br><span class="line">            &#125;                                                                                       </span><br><span class="line">            <span class="keyword">break</span>;                                                                                  </span><br><span class="line">        &#125;                                                                                           </span><br><span class="line">    &#125;                                                                                               </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[INFO] modify DT_STRTAB success!\n&quot;</span>);                                                   </span><br><span class="line">    <span class="keyword">return</span> ulFileSize + ulPhdrSize + ulNewStrTabLen;                                                </span><br><span class="line">&#125;                                                                                                   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s2.loli.net/2023/01/11/PJqMhrBCQY3REUK.png"></p>
+<p><img src="https://s2.loli.net/2023/01/11/na2me5CNjUzwhgS.png" alt="图4"></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/GrayOnDream/article/details/124564129">https://blog.csdn.net/GrayOnDream/article/details/124564129</a></p>
+<p><a target="_blank" rel="noopener" href="https://xinqiu.gitbooks.io/linux-inside-zh/content/Theory/linux-theory-2.html">https://xinqiu.gitbooks.io/linux-inside-zh/content/Theory/linux-theory-2.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://paper.seebug.org/papers/Archive/refs/elf/Understanding_ELF.pdf">https://paper.seebug.org/papers/Archive/refs/elf/Understanding_ELF.pdf</a></p>
+<p><a target="_blank" rel="noopener" href="http://chuquan.me/2018/05/21/elf-introduce/">http://chuquan.me/2018/05/21/elf-introduce/</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/nirendao/article/details/123883856">https://blog.csdn.net/nirendao/article/details/123883856</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">清风醉博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2023/01/07/elf%E6%A0%BC%E5%BC%8F%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/">http://ljm2007.github.io/2023/01/07/elf%E6%A0%BC%E5%BC%8F%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">清风醉博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/elf/">elf</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2023/01/07/W8nPCv2isQMcrTp.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/02/06/FRIDA-API%E4%BD%BF%E7%94%A8%E7%AF%87/"><img class="prev-cover" src="https://bit.ly/3WkSvF9" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">FRIDA-API使用篇</div></div></a></div><div class="next-post pull-right"><a href="/2023/01/04/arm64-v8a-inject/"><img class="next-cover" src="https://bit.ly/3WkSvF9" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">arm64-v8a inject</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">清风醉博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">1 简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-ELF%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">2 ELF文件格式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-ELF-Header"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 ELF Header</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E7%A8%8B%E5%BA%8F%E5%A4%B4%E8%A1%A8%EF%BC%88Program-Header-Table%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 程序头表（Program Header Table）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E8%8A%82%E5%A4%B4%E8%A1%A8%EF%BC%88Section-Header-Table%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 节头表（Section Header Table）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E4%B8%80%E4%BA%9B%E7%89%B9%E6%AE%8A%E7%9A%84%E8%8A%82"><span class="toc-number">2.4.</span> <span class="toc-text">2.3 一些特殊的节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%A1%A8"><span class="toc-number">2.5.</span> <span class="toc-text">2.4 字符串表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-%E7%AC%A6%E5%8F%B7%E8%A1%A8"><span class="toc-number">2.6.</span> <span class="toc-text">2.5 符号表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E6%84%9F%E6%9F%93ELF%E6%96%87%E4%BB%B6%E6%B3%A8%E5%85%A5%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">3 感染ELF文件注入实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">3.1.</span> <span class="toc-text">参考文献</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字"><img src="https://s2.loli.net/2023/05/20/nCWOkMglcT86x7p.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin 中 by 关键字"/></a><div class="content"><a class="title" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字">Kotlin 中 by 关键字</a><time datetime="2024-02-18T15:43:06.000Z" title="发表于 2024-02-18 23:43:06">2024-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息"><img src="https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="获取android apk信息"/></a><div class="content"><a class="title" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息">获取android apk信息</a><time datetime="2024-02-15T01:55:37.000Z" title="发表于 2024-02-15 09:55:37">2024-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题">无题</a><time datetime="2024-02-05T03:51:17.183Z" title="发表于 2024-02-05 11:51:17">2024-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/26/Lambda/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/26/Lambda/" title="无题">无题</a><time datetime="2024-01-26T06:19:49.370Z" title="发表于 2024-01-26 14:19:49">2024-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题">无题</a><time datetime="2024-01-24T04:24:08.079Z" title="发表于 2024-01-24 12:24:08">2024-01-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 清风醉博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

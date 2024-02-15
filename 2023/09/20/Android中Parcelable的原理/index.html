@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Parcelable | 清风醉博客</title><meta name="keywords" content="android"><meta name="author" content="清风醉博客"><meta name="copyright" content="清风醉博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一.Parcel的简介在介绍之前我们需要先了解Parcel是什么?Parcel翻译过来是打包的意思,其实就是包装了我们需要传输的数据,然后在Binder中传输,也就是用于跨进程传输数据 简单来说，Parcel提供了一套机制，可以将序列化之后的数据写入到一个共享内存中，其他进程通过Parcel可以从这块共享内存中读出字节流，并反序列化成对象,下图是这个过程的模型。   Parcel可以包含原始数据类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Parcelable">
+<meta property="og:url" content="http://ljm2007.github.io/2023/09/20/Android%E4%B8%ADParcelable%E7%9A%84%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="清风醉博客">
+<meta property="og:description" content="一.Parcel的简介在介绍之前我们需要先了解Parcel是什么?Parcel翻译过来是打包的意思,其实就是包装了我们需要传输的数据,然后在Binder中传输,也就是用于跨进程传输数据 简单来说，Parcel提供了一套机制，可以将序列化之后的数据写入到一个共享内存中，其他进程通过Parcel可以从这块共享内存中读出字节流，并反序列化成对象,下图是这个过程的模型。   Parcel可以包含原始数据类">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp">
+<meta property="article:published_time" content="2023-09-20T06:04:43.000Z">
+<meta property="article:modified_time" content="2024-02-09T04:06:41.612Z">
+<meta property="article:author" content="清风醉博客">
+<meta property="article:tag" content="android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2023/09/20/Android%E4%B8%ADParcelable%E7%9A%84%E5%8E%9F%E7%90%86/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Parcelable',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-02-09 12:06:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">清风醉博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Parcelable</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-09-20T06:04:43.000Z" title="发表于 2023-09-20 14:04:43">2023-09-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-02-09T04:06:41.612Z" title="更新于 2024-02-09 12:06:41">2024-02-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/android/">android</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Parcelable"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="一-Parcel的简介"><a href="#一-Parcel的简介" class="headerlink" title="一.Parcel的简介"></a>一.Parcel的简介</h3><p>在介绍之前我们需要先了解Parcel是什么?Parcel翻译过来是打包的意思,其实就是包装了我们需要传输的数据,然后在Binder中传输,也就是用于跨进程传输数据</p>
+<p>简单来说，Parcel提供了一套机制，可以将序列化之后的数据写入到一个共享内存中，其他进程通过Parcel可以从这块共享内存中读出字节流，并反序列化成对象,下图是这个过程的模型。</p>
+<p><img src="https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp" alt="img"></p>
+<blockquote>
+<p>Parcel可以包含原始数据类型（用各种对应的方法写入，比如writeInt(),writeFloat()等），可以包含Parcelable对象，它还包含了一个活动的IBinder对象的引用，这个引用导致另一端接收到一个指向这个IBinder的代理IBinder。</p>
+</blockquote>
+<blockquote>
+<p>Parcelable通过Parcel实现了read和write的方法,从而实现序列化和反序列化,我们在源码中看一下</p>
+</blockquote>
+<img src="https://s2.loli.net/2023/09/02/CGTn9pZQYilRwLD.webp" alt="img" style="zoom:80%;">
+
+<img src="https://upload-images.jianshu.io/upload_images/5889165-919800e7bad91a23.png?imageMogr2/auto-orient/strip|imageView2/2/w/425/format/webp" alt="img" style="zoom:80%;">
+
+<p>可以看出包含了各种各样的read和write方法,最终都是通过native方法实现</p>
+<p><img src="https://s2.loli.net/2023/09/02/mzZVr7ltUFKxh6G.webp" alt="img"></p>
+<h3 id="二-Parcelable中的三大过程介绍-序列化-反序列化-描述"><a href="#二-Parcelable中的三大过程介绍-序列化-反序列化-描述" class="headerlink" title="二. Parcelable中的三大过程介绍(序列化,反序列化,描述)"></a>二. Parcelable中的三大过程介绍(序列化,反序列化,描述)</h3><p>到这里,基本上关系都理清了,也明白简单的介绍和原理了,接下来在实现Parcelable之前,介绍下实现Parcelable的三大流程<br> 首先写一个类实现Parcelable接口,会让我们实现两个方法</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/5889165-5bda10bee0ac8a3d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/965/format/webp" alt="img"></p>
+<p>要实现的方法</p>
+<h4 id="1-描述"><a href="#1-描述" class="headerlink" title="1 描述"></a>1 描述</h4><p>其中describeContents就是负责文件描述,首先看一下源码的解读</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/5889165-19dcef6f8b585f1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1053/format/webp" alt="img"></p>
+<p>描述的源码</p>
+<blockquote>
+<p>通过上面的描述可以看出,只针对一些特殊的需要描述信息的对象,需要返回1,其他情况返回0就可以</p>
+</blockquote>
+<h4 id="2-序列化"><a href="#2-序列化" class="headerlink" title="2 序列化"></a>2 序列化</h4><blockquote>
+<p>我们通过writeToParcel方法实现序列化,writeToParcel返回了Parcel,所以我们可以直接调用Parcel中的write方法,基本的write方法都有,对象和集合比较特殊下面单独讲,基本的数据类型除了boolean其他都有,Boolean可以使用int或byte存储</p>
+</blockquote>
+<p>举个例子:我们将上面的User对象实现序列化,User对象包含三个字段 age,name,isMale</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 该方法负责序列化</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> dest</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> flags</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeToParcel</span><span class="params">(Parcel dest, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">    dest.writeInt(age);</span><br><span class="line">    dest.writeString(name);</span><br><span class="line">    <span class="comment">// boolean 可以使用int或byte方式进行存储,怎么存就怎么取</span></span><br><span class="line">    dest.writeInt(isMale ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-反序列化"><a href="#3-反序列化" class="headerlink" title="3 反序列化"></a>3 反序列化</h4><blockquote>
+<p>反序列化需要定义一个CREATOR的变量,上面也说了具体的做法,这里可以直接复制Android给的例子中的,也可以自己定义一个(名字千万不能改),通过匿名内部类实现Parcelable中的Creator的接口</p>
+</blockquote>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 负责反序列化</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> final Creator&lt;User&gt; CREATOR = <span class="keyword">new</span> Creator&lt;User&gt;() &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 从序列化后的对象中创建原始对象</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    @Override</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">createFromParcel</span>(<span class="params">Parcel source</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User(source);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建指定长度的原始对象数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    @Override</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User[] <span class="title">newArray</span>(<span class="params"><span class="built_in">int</span> size</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> User[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">User</span>(<span class="params">Parcel parcel</span>)</span> &#123;</span><br><span class="line">    age = parcel.readInt();</span><br><span class="line">    name = parcel.readString();</span><br><span class="line">    isMale = parcel.readInt() == <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-Parcelable的实现和使用"><a href="#三-Parcelable的实现和使用" class="headerlink" title="三. Parcelable的实现和使用"></a>三. Parcelable的实现和使用</h2><blockquote>
+<p>根据上面三个过程的介绍,Parcelable就写完了,就可以直接在Intent中传输了,可以自己写两个Activity传输一下数据试一下,其中一个putExtra另一个getParcelableExtra即可</p>
+</blockquote>
+<p>这里实现Parcelable也很简单</p>
+<blockquote>
+<p>1.写一个类实现Parcelable然后alt+enter 添加Parcelable所需的代码块,AndroidStudio会自动帮我们实现(这里需要注意如果其中包含对象或集合需要把对象也实现Parcelable)</p>
+</blockquote>
+<p><img src="https://upload-images.jianshu.io/upload_images/5889165-933096221307b5c0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/888/format/webp" alt="img"></p>
+<p>Paste_Image.png</p>
+<h3 id="1-Parcelable中对象和集合的处理"><a href="#1-Parcelable中对象和集合的处理" class="headerlink" title="1. Parcelable中对象和集合的处理"></a>1. Parcelable中对象和集合的处理</h3><p><strong>如果实现Parcelable接口的对象中包含对象或者集合,那么其中的对象也要实现Parcelable接口</strong><br> 如果包含对象Author和集合:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Book</span> <span class="keyword">implements</span> <span class="title class_">Parcelable</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> id;</span><br><span class="line">  <span class="keyword">public</span> String name;</span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> isCell;</span><br><span class="line">  <span class="keyword">public</span> ArrayList&lt;String&gt; tags;</span><br><span class="line">  <span class="keyword">public</span> Author author;</span><br><span class="line">  <span class="comment">// ***** 注意: 这里如果是集合 ,一定要初始化 *****</span></span><br><span class="line">  <span class="keyword">public</span> ArrayList&lt;Author&gt; authors = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Book</span><span class="params">()</span> &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里包含一个Author对象和Author集合</p>
+</blockquote>
+<blockquote>
+<p>首先Author需要先实现Parcelable,实现步骤就不贴出来了,和普通的对象一样,实现三个过程</p>
+</blockquote>
+<p>针对上面Book对象的序列化和反序列化的实现:</p>
+<p>反序列化:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//反序列化</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Creator&lt;Book&gt; CREATOR = <span class="keyword">new</span> <span class="title class_">Creator</span>&lt;Book&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Book <span class="title function_">createFromParcel</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Book</span>(in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Book[] newArray(<span class="type">int</span> size) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Book</span>[size];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="title function_">Book</span><span class="params">(Parcel in)</span> &#123;</span><br><span class="line">    id = in.readInt();</span><br><span class="line">    name = in.readString();</span><br><span class="line">    isCell = in.readByte() != <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    tags = in.createStringArrayList();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 读取对象需要提供一个类加载器去读取,因为写入的时候写入了类的相关信息</span></span><br><span class="line">    author = in.readParcelable(Author.class.getClassLoader());</span><br><span class="line"></span><br><span class="line">    <span class="comment">//读取集合也分为两类,对应写入的两类</span></span><br><span class="line">    <span class="comment">//这一类需要用相应的类加载器去获取</span></span><br><span class="line">    <span class="comment">//in.readList(authors, Author.class.getClassLoader()); // 对应writeList</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这一类需要使用类的CREATOR去获取</span></span><br><span class="line">    in.readTypedList(authors, Author.CREATOR); <span class="comment">//对应writeTypeList</span></span><br><span class="line">    <span class="comment">//authors = in.createTypedArrayList(Author.CREATOR);//对应writeTypeList</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这里获取类加载器主要有几种方式</span></span><br><span class="line">    getClass().getClassLoader();</span><br><span class="line">    Thread.currentThread().getContextClassLoader();</span><br><span class="line">    Author.class.getClassLoader();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>序列化:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeToParcel</span><span class="params">(Parcel dest, <span class="type">int</span> flags)</span> &#123;</span><br><span class="line">    <span class="comment">//下面三种是基本类型就不多说</span></span><br><span class="line">    dest.writeInt(id);</span><br><span class="line">    dest.writeString(name);</span><br><span class="line">    dest.writeByte((<span class="type">byte</span>) (isCell ? <span class="number">1</span> : <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//序列化一个String的集合</span></span><br><span class="line">    dest.writeStringList(tags);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 序列化对象的时候传入要序列化的对象和一个flag,</span></span><br><span class="line">    <span class="comment">// 这里的flag几乎都是0,除非标识当前对象需要作为返回值返回,不能立即释放资源</span></span><br><span class="line">    dest.writeParcelable(author, flags);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 序列化一个对象的集合有两种方式,以下两种方式都可以</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这些方法们把类的信息和数据都写入Parcel，以使将来能使用合适的类装载器重新构造类的实例.所以效率不高</span></span><br><span class="line">    dest.writeList(authors);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这些方法不会写入类的信息，取而代之的是：读取时必须能知道数据属于哪个类并传入正确的Parcelable.Creator来创建对象</span></span><br><span class="line">    <span class="comment">// 而不是直接构造新对象。（更加高效的读写单个Parcelable对象的方法是：</span></span><br><span class="line">    <span class="comment">// 直接调用Parcelable.writeToParcel()和Parcelable.Creator.createFromParcel()）</span></span><br><span class="line">    dest.writeTypedList(authors);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>写入和读取集合有两种方式,<br> 一种是写入类的相关信息,然后通过类加载器去读取, –&gt; writeList |  readList<br> 二是不用类相关信息,创建时传入相关类的CREATOR来创建 –&gt; writeTypeList | readTypeList | createTypedArrayList<br> 第二种效率高一些</p>
+</blockquote>
+<blockquote>
+<h5 id="一定要注意如果有集合定义的时候一定要初始化-like-this-–-gt"><a href="#一定要注意如果有集合定义的时候一定要初始化-like-this-–-gt" class="headerlink" title="一定要注意如果有集合定义的时候一定要初始化 like this –&gt;"></a>一定要注意如果有集合定义的时候一定要初始化 like this –&gt;</h5><p>public ArrayList<Author> authors &#x3D; new ArrayList&lt;&gt;();</Author></p>
+</blockquote>
+<h3 id="2-Parcelable和Serializable的区别和比较"><a href="#2-Parcelable和Serializable的区别和比较" class="headerlink" title="2. Parcelable和Serializable的区别和比较"></a>2. Parcelable和Serializable的区别和比较</h3><blockquote>
+<p>Parcelable和Serializable都是实现序列化并且都可以用于Intent间传递数据,Serializable是Java的实现方式,可能会频繁的IO操作,所以消耗比较大,但是实现方式简单   Parcelable是Android提供的方式,效率比较高,但是实现起来复杂一些 , 二者的选取规则是:*<strong>内存序列化上选择Parcelable, 存储到设备或者网络传输上选择Serializable*</strong>(当然Parcelable也可以但是稍显复杂)</p>
+</blockquote>
+<p><strong>希望这篇文章可以帮助到需要的人,如果还有其他问题或者补充可以联系我~~~</strong></p>
+<p>©著作权归作者所有,转载或内容合作请联系作者</p>
+<p><a href>Android-深入探索</a></p>
+<p>作者：MrQ_Android<br>链接：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/32a2ec8f35ae">https://www.jianshu.com/p/32a2ec8f35ae</a><br>来源：简书<br>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">清风醉博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2023/09/20/Android%E4%B8%ADParcelable%E7%9A%84%E5%8E%9F%E7%90%86/">http://ljm2007.github.io/2023/09/20/Android%E4%B8%ADParcelable%E7%9A%84%E5%8E%9F%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">清风醉博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/android/">android</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/09/25/android%E8%AF%BE%E7%A8%8B%E8%AE%B2%E4%B9%89/AndroidBinder/"><img class="prev-cover" src="https://s2.loli.net/2023/02/13/JoBMthknSd29bID.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">AndroidBinder</div></div></a></div><div class="next-post pull-right"><a href="/2023/09/08/%E6%B5%85%E6%98%BE%E6%98%93%E6%87%82%E7%9A%84startActivity%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/"><img class="next-cover" src="https://s2.loli.net/2023/09/09/qIJnlMTRFeWhciy.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">浅显易懂的startActivity原理分析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/08/30/Android%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-PackageManagerService%EF%BC%88PMS%EF%BC%89%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B8%80)/" title="PackageManagerService"><img class="cover" src="https://s2.loli.net/2023/08/29/LQAcvPmrTH1NwW6.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-30</div><div class="title">PackageManagerService</div></div></a></div><div><a href="/2023/08/26/android%E5%A4%B8%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1-AIDL/" title="android夸进程通信-AIDL"><img class="cover" src="https://s2.loli.net/2023/08/26/GjXxt3wIDgW8Js2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-26</div><div class="title">android夸进程通信-AIDL</div></div></a></div><div><a href="/2022/11/02/android%E5%BC%80%E6%9C%BA%E8%BF%87%E7%A8%8B/" title="android开机过程"><img class="cover" src="https://s2.loli.net/2022/11/02/sa9YJcMAbWQ2Umz.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-02</div><div class="title">android开机过程</div></div></a></div><div><a href="/2023/02/12/%E3%80%90Android%E3%80%91%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93so%E7%9A%84%E5%8A%A0%E8%BD%BD%E5%8E%9F%E7%90%86/" title="【Android】动态链接库so的加载原理"><img class="cover" src="https://itimetraveler.github.io/gallery/android_common/Android3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-12</div><div class="title">【Android】动态链接库so的加载原理</div></div></a></div><div><a href="/2023/02/12/%E8%80%81%E5%A4%A7%E9%9A%BE%E7%9A%84%20Java%20ClassLoader%20%E5%86%8D%E4%B8%8D%E7%90%86%E8%A7%A3%E5%B0%B1%E8%80%81%E4%BA%86/" title="Java ClassLoader"><img class="cover" src="https://s2.loli.net/2023/02/12/oqHg28FldTCwXB3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-12</div><div class="title">Java ClassLoader</div></div></a></div><div><a href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息"><img class="cover" src="https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-02-15</div><div class="title">获取android apk信息</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">清风醉博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-Parcel%E7%9A%84%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">一.Parcel的简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-Parcelable%E4%B8%AD%E7%9A%84%E4%B8%89%E5%A4%A7%E8%BF%87%E7%A8%8B%E4%BB%8B%E7%BB%8D-%E5%BA%8F%E5%88%97%E5%8C%96-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-%E6%8F%8F%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">二. Parcelable中的三大过程介绍(序列化,反序列化,描述)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%8F%8F%E8%BF%B0"><span class="toc-number">2.1.</span> <span class="toc-text">1 描述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">2.2.</span> <span class="toc-text">2 序列化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">2.3.</span> <span class="toc-text">3 反序列化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-Parcelable%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%92%8C%E4%BD%BF%E7%94%A8"><span class="toc-number"></span> <span class="toc-text">三. Parcelable的实现和使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Parcelable%E4%B8%AD%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%9B%86%E5%90%88%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">1. Parcelable中对象和集合的处理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E5%AE%9A%E8%A6%81%E6%B3%A8%E6%84%8F%E5%A6%82%E6%9E%9C%E6%9C%89%E9%9B%86%E5%90%88%E5%AE%9A%E4%B9%89%E7%9A%84%E6%97%B6%E5%80%99%E4%B8%80%E5%AE%9A%E8%A6%81%E5%88%9D%E5%A7%8B%E5%8C%96-like-this-%E2%80%93-gt"><span class="toc-number">1.0.1.</span> <span class="toc-text">一定要注意如果有集合定义的时候一定要初始化 like this –&gt;</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Parcelable%E5%92%8CSerializable%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E6%AF%94%E8%BE%83"><span class="toc-number">2.</span> <span class="toc-text">2. Parcelable和Serializable的区别和比较</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字"><img src="https://s2.loli.net/2023/05/20/nCWOkMglcT86x7p.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin 中 by 关键字"/></a><div class="content"><a class="title" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字">Kotlin 中 by 关键字</a><time datetime="2024-02-18T15:43:06.000Z" title="发表于 2024-02-18 23:43:06">2024-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息"><img src="https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="获取android apk信息"/></a><div class="content"><a class="title" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息">获取android apk信息</a><time datetime="2024-02-15T01:55:37.000Z" title="发表于 2024-02-15 09:55:37">2024-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题">无题</a><time datetime="2024-02-05T03:51:17.183Z" title="发表于 2024-02-05 11:51:17">2024-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/26/Lambda/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/26/Lambda/" title="无题">无题</a><time datetime="2024-01-26T06:19:49.370Z" title="发表于 2024-01-26 14:19:49">2024-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题">无题</a><time datetime="2024-01-24T04:24:08.079Z" title="发表于 2024-01-24 12:24:08">2024-01-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 清风醉博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

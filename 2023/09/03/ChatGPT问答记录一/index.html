@@ -1,0 +1,236 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ChatGPT问答记录一 | 清风醉博客</title><meta name="keywords" content="HeiBao"><meta name="author" content="清风醉博客"><meta name="copyright" content="清风醉博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Context 这是什么怎么到处都是在Android应用程序中，Context 是一个非常重要的类，它代表了Android应用程序的运行环境。Context 提供了访问应用程序的资源、系统服务以及执行各种操作的方法。因此，您会在Android开发中到处看到 Context 的存在。 以下是 Context 的一些主要用途和常见的应用场景：  资源访问：通过 Context，您可以访问应用程序的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ChatGPT问答记录一">
+<meta property="og:url" content="http://ljm2007.github.io/2023/09/03/ChatGPT%E9%97%AE%E7%AD%94%E8%AE%B0%E5%BD%95%E4%B8%80/index.html">
+<meta property="og:site_name" content="清风醉博客">
+<meta property="og:description" content="Context 这是什么怎么到处都是在Android应用程序中，Context 是一个非常重要的类，它代表了Android应用程序的运行环境。Context 提供了访问应用程序的资源、系统服务以及执行各种操作的方法。因此，您会在Android开发中到处看到 Context 的存在。 以下是 Context 的一些主要用途和常见的应用场景：  资源访问：通过 Context，您可以访问应用程序的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png">
+<meta property="article:published_time" content="2023-09-03T01:04:07.000Z">
+<meta property="article:modified_time" content="2024-02-09T04:06:41.614Z">
+<meta property="article:author" content="清风醉博客">
+<meta property="article:tag" content="HeiBao">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2023/09/03/ChatGPT%E9%97%AE%E7%AD%94%E8%AE%B0%E5%BD%95%E4%B8%80/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ChatGPT问答记录一',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-02-09 12:06:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">清风醉博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ChatGPT问答记录一</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-09-03T01:04:07.000Z" title="发表于 2023-09-03 09:04:07">2023-09-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-02-09T04:06:41.614Z" title="更新于 2024-02-09 12:06:41">2024-02-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Context/">Context</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ChatGPT问答记录一"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><img src="https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png" alt="ChatGPT" style="zoom:50%;">
+
+<h2 id="Context-这是什么怎么到处都是"><a href="#Context-这是什么怎么到处都是" class="headerlink" title="Context 这是什么怎么到处都是"></a>Context 这是什么怎么到处都是</h2><p>在Android应用程序中，<code>Context</code> 是一个非常重要的类，它代表了Android应用程序的运行环境。<code>Context</code> 提供了访问应用程序的资源、系统服务以及执行各种操作的方法。因此，您会在Android开发中到处看到 <code>Context</code> 的存在。</p>
+<p>以下是 <code>Context</code> 的一些主要用途和常见的应用场景：</p>
+<ol>
+<li><p><strong>资源访问</strong>：通过 <code>Context</code>，您可以访问应用程序的资源，如布局文件、字符串、图像等。例如，<code>context.getResources().getString(R.string.app_name)</code> 可以用来获取应用程序的名称。</p>
+</li>
+<li><p><strong>启动组件</strong>：<code>Context</code> 允许您启动其他Android组件，如Activity、Service和BroadcastReceiver。通过 <code>startActivity()</code>、<code>startService()</code> 和 <code>sendBroadcast()</code> 等方法，您可以在应用程序内部或与其他应用程序进行通信。</p>
+</li>
+<li><p><strong>访问系统服务</strong>：<code>Context</code> 提供了访问各种系统服务的方法，如获取设备的电池状态、连接到网络、访问位置信息、播放声音等。例如，<code>context.getSystemService(Context.LOCATION_SERVICE)</code> 可以用来获取位置服务。</p>
+</li>
+<li><p><strong>数据库操作</strong>：如果您需要在应用程序中使用SQLite数据库，您可以使用 <code>Context</code> 的 <code>openOrCreateDatabase()</code> 方法来创建或打开数据库。</p>
+</li>
+<li><p><strong>应用程序信息</strong>：通过 <code>Context</code>，您可以获取有关应用程序本身的信息，如包名、版本号、安装路径等。</p>
+</li>
+<li><p><strong>文件操作</strong>：<code>Context</code> 提供了访问应用程序的私有文件和目录的方法，以及在外部存储上创建文件的能力。</p>
+</li>
+<li><p><strong>主题和样式</strong>：通过 <code>Context</code>，您可以获取和设置应用程序的主题和样式，以自定义应用程序的外观。</p>
+</li>
+</ol>
+<p>由于 <code>Context</code> 在Android应用程序中的广泛用途，因此几乎每个Android组件（如Activity、Service、BroadcastReceiver）都具有与之相关的 <code>Context</code>。这使得在应用程序的各个部分之间传递 <code>Context</code> 变得非常普遍。</p>
+<p>需要注意的是，<code>Context</code> 不是线程安全的，通常只能在UI线程中使用。如果需要在后台线程中执行操作，您可以使用 <code>Context</code> 的派生类，如 <code>ApplicationContext</code>，以避免潜在的内存泄漏问题。</p>
+<h2 id="Context-getPackageManager"><a href="#Context-getPackageManager" class="headerlink" title="Context.getPackageManager"></a>Context.getPackageManager</h2><p><code>Context.getPackageManager()</code> 是 Android 中的一个方法，用于获取与应用程序包管理相关的对象，即 <code>PackageManager</code> 对象。<code>PackageManager</code> 提供了许多方法，用于查询和操作与应用程序包（APK文件）相关的信息，包括应用程序的安装、卸载、权限、组件信息等。</p>
+<p>您可以使用 <code>Context.getPackageManager()</code> 方法从当前的上下文（通常是一个 <code>Activity</code> 或 <code>Application</code>）中获取 <code>PackageManager</code> 对象，然后使用该对象执行各种任务，例如：</p>
+<ol>
+<li><p>获取应用程序的版本信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PackageManager</span> <span class="variable">packageManager</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line"><span class="type">PackageInfo</span> <span class="variable">packageInfo</span> <span class="operator">=</span> packageManager.getPackageInfo(getPackageName(), <span class="number">0</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">versionName</span> <span class="operator">=</span> packageInfo.versionName;</span><br><span class="line"><span class="type">int</span> <span class="variable">versionCode</span> <span class="operator">=</span> packageInfo.versionCode;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查询其他应用程序的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PackageManager</span> <span class="variable">packageManager</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">ApplicationInfo</span> <span class="variable">appInfo</span> <span class="operator">=</span> packageManager.getApplicationInfo(<span class="string">&quot;com.example.someapp&quot;</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="type">String</span> <span class="variable">appName</span> <span class="operator">=</span> appInfo.loadLabel(packageManager).toString();</span><br><span class="line">    <span class="type">Drawable</span> <span class="variable">appIcon</span> <span class="operator">=</span> appInfo.loadIcon(packageManager);</span><br><span class="line">    <span class="comment">// 其他应用程序信息的获取</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查询已安装应用程序的列表：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PackageManager</span> <span class="variable">packageManager</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line">List&lt;PackageInfo&gt; installedPackages = packageManager.getInstalledPackages(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">for</span> (PackageInfo packageInfo : installedPackages) &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">packageName</span> <span class="operator">=</span> packageInfo.packageName;</span><br><span class="line">    <span class="comment">// 处理已安装应用程序的信息</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查询应用程序权限信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PackageManager</span> <span class="variable">packageManager</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">PackageInfo</span> <span class="variable">packageInfo</span> <span class="operator">=</span> packageManager.getPackageInfo(getPackageName(), PackageManager.GET_PERMISSIONS);</span><br><span class="line">    String[] permissions = packageInfo.requestedPermissions;</span><br><span class="line">    <span class="comment">// 处理应用程序的权限信息</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (PackageManager.NameNotFoundException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>这只是 <code>PackageManager</code> 可能用法的一小部分。根据您的需求，您可以使用它来获取各种应用程序信息和执行不同的操作。请注意，某些操作可能需要应用程序具有适当的权限，因此请确保在执行这些操作时进行适当的权限检查。</p>
+<h2 id="getPackageArchiveInfo"><a href="#getPackageArchiveInfo" class="headerlink" title="getPackageArchiveInfo"></a>getPackageArchiveInfo</h2><p><code>getPackageArchiveInfo</code> 是 <code>PackageManager</code> 类的一个方法，用于获取给定 APK 文件的包信息，而不需要将 APK 安装到设备上。这个方法非常有用，因为它允许您在安装应用之前查看 APK 文件的一些基本信息。</p>
+<p>以下是如何使用 <code>getPackageArchiveInfo</code> 方法的示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> android.content.pm.PackageInfo;</span><br><span class="line"><span class="keyword">import</span> android.content.pm.PackageManager;</span><br><span class="line"><span class="keyword">import</span> android.content.pm.ApplicationInfo;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传入 APK 文件的路径</span></span><br><span class="line"><span class="type">String</span> <span class="variable">apkFilePath</span> <span class="operator">=</span> <span class="string">&quot;/sdcard/myapp.apk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取 PackageManager 对象</span></span><br><span class="line"><span class="type">PackageManager</span> <span class="variable">packageManager</span> <span class="operator">=</span> getPackageManager();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取 PackageInfo 对象</span></span><br><span class="line"><span class="type">PackageInfo</span> <span class="variable">packageInfo</span> <span class="operator">=</span> packageManager.getPackageArchiveInfo(apkFilePath, PackageManager.GET_ACTIVITIES);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (packageInfo != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="comment">// 从 PackageInfo 对象中提取应用程序信息</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">packageName</span> <span class="operator">=</span> packageInfo.packageName;</span><br><span class="line">    <span class="type">String</span> <span class="variable">versionName</span> <span class="operator">=</span> packageInfo.versionName;</span><br><span class="line">    <span class="type">int</span> <span class="variable">versionCode</span> <span class="operator">=</span> packageInfo.versionCode;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取应用程序图标（如果需要）</span></span><br><span class="line">    <span class="type">ApplicationInfo</span> <span class="variable">appInfo</span> <span class="operator">=</span> packageInfo.applicationInfo;</span><br><span class="line">    appInfo.sourceDir = apkFilePath;</span><br><span class="line">    appInfo.publicSourceDir = apkFilePath;</span><br><span class="line">    <span class="comment">// 应用程序图标</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">iconResId</span> <span class="operator">=</span> appInfo.icon;</span><br><span class="line">    <span class="comment">// 应用程序名称</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">appName</span> <span class="operator">=</span> packageManager.getApplicationLabel(appInfo).toString();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 其他信息也可以通过 PackageInfo 获取，例如权限、组件等</span></span><br><span class="line">    <span class="comment">// 权限</span></span><br><span class="line">    String[] permissions = packageInfo.requestedPermissions;</span><br><span class="line">    <span class="comment">// 组件</span></span><br><span class="line">    String[] activities = packageInfo.activities;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 打印信息</span></span><br><span class="line">    Log.d(TAG, <span class="string">&quot;Package Name: &quot;</span> + packageName);</span><br><span class="line">    Log.d(TAG, <span class="string">&quot;Version Name: &quot;</span> + versionName);</span><br><span class="line">    Log.d(TAG, <span class="string">&quot;Version Code: &quot;</span> + versionCode);</span><br><span class="line">    Log.d(TAG, <span class="string">&quot;App Name: &quot;</span> + appName);</span><br><span class="line">    Log.d(TAG, <span class="string">&quot;Icon Resource ID: &quot;</span> + iconResId);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (permissions != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (String permission : permissions) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;Permission: &quot;</span> + permission);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (activities != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (String activity : activities) &#123;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;Activity: &quot;</span> + activity);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// APK 文件无效或包信息无法获取</span></span><br><span class="line">    Log.e(TAG, <span class="string">&quot;Unable to get package info for APK: &quot;</span> + apkFilePath);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码将从给定的 APK 文件路径中获取包信息，包括包名、版本信息、应用程序图标、应用程序名称、权限和组件等。这些信息可用于在不安装应用的情况下了解 APK 文件的内容。请注意，<code>GET_ACTIVITIES</code> 标志是一个示例，您可以根据需要选择获取的信息类型。</p>
+<h2 id="getAbsolutePath"><a href="#getAbsolutePath" class="headerlink" title="getAbsolutePath"></a>getAbsolutePath</h2><p><code>getAbsolutePath</code> 是一个用于获取文件或目录的绝对路径的方法。在 Android 开发中，它通常是通过 <code>java.io.File</code> 类的实例调用的。</p>
+<p>这个方法返回一个字符串，表示文件或目录在文件系统中的完整路径，包括根目录。绝对路径是唯一标识文件或目录的路径，不受相对路径或当前工作目录的影响。</p>
+<p>下面是一个示例，演示如何使用 <code>getAbsolutePath</code> 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/sdcard/myfile.txt&quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">absolutePath</span> <span class="operator">=</span> file.getAbsolutePath();</span><br><span class="line">Log.d(<span class="string">&quot;AbsolutePath&quot;</span>, <span class="string">&quot;File Absolute Path: &quot;</span> + absolutePath);</span><br></pre></td></tr></table></figure>
+
+<p>在这个示例中，我们首先创建了一个 <code>File</code> 对象，表示一个文件，然后使用 <code>getAbsolutePath</code> 方法获取该文件的绝对路径，并将其记录到 Android 日志中。</p>
+<p>请注意，<code>getAbsolutePath</code> 方法返回的路径可能会因设备、操作系统和文件系统而异。因此，在实际开发中，最好不要将硬编码的绝对路径用于生产代码，而是使用适当的方法来获取文件路径，以便您的应用程序能够在不同的设备上正常工作。</p>
+<h2 id="zipFile-entries"><a href="#zipFile-entries" class="headerlink" title="zipFile.entries()"></a>zipFile.entries()</h2><p><code>zipFile.entries()</code> 是 Java 中处理 ZIP 文件的一种方法。它用于获取 ZIP 文件中包含的所有条目（即文件和目录）的枚举。</p>
+<p>下面是一个示例，演示如何使用 <code>zipFile.entries()</code> 遍历 ZIP 文件中的所有条目：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ZipFileExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">zipFilePath</span> <span class="operator">=</span> <span class="string">&quot;path/to/your/archive.zip&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ZipFile</span> <span class="variable">zipFile</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipFile</span>(zipFilePath)) &#123;</span><br><span class="line">            Enumeration&lt;? <span class="keyword">extends</span> <span class="title class_">ZipEntry</span>&gt; entries = zipFile.entries();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (entries.hasMoreElements()) &#123;</span><br><span class="line">                <span class="type">ZipEntry</span> <span class="variable">entry</span> <span class="operator">=</span> entries.nextElement();</span><br><span class="line">                <span class="type">String</span> <span class="variable">entryName</span> <span class="operator">=</span> entry.getName();</span><br><span class="line">                <span class="type">long</span> <span class="variable">entrySize</span> <span class="operator">=</span> entry.getSize();</span><br><span class="line">                <span class="type">long</span> <span class="variable">entryCompressedSize</span> <span class="operator">=</span> entry.getCompressedSize();</span><br><span class="line">                <span class="type">boolean</span> <span class="variable">isDirectory</span> <span class="operator">=</span> entry.isDirectory();</span><br><span class="line"></span><br><span class="line">                System.out.println(<span class="string">&quot;Entry Name: &quot;</span> + entryName);</span><br><span class="line">                System.out.println(<span class="string">&quot;Is Directory: &quot;</span> + isDirectory);</span><br><span class="line">                System.out.println(<span class="string">&quot;Original Size: &quot;</span> + entrySize + <span class="string">&quot; bytes&quot;</span>);</span><br><span class="line">                System.out.println(<span class="string">&quot;Compressed Size: &quot;</span> + entryCompressedSize + <span class="string">&quot; bytes&quot;</span>);</span><br><span class="line">                System.out.println(<span class="string">&quot;------------------------------------&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个示例中，我们首先打开了一个 ZIP 文件，然后使用 <code>zipFile.entries()</code> 获取 ZIP 文件中所有条目的枚举。然后，我们遍历每个条目，获取条目的名称、大小、压缩大小和是否为目录等信息。</p>
+<p>这个示例允许您查看 ZIP 文件中的所有内容，以便进一步处理或提取文件。</p>
+<h2 id="package-top-niunaijun-blackbox-core-env"><a href="#package-top-niunaijun-blackbox-core-env" class="headerlink" title="package top.niunaijun.blackbox.core.env;"></a>package top.niunaijun.blackbox.core.env;</h2><p>public class BEnvironmen</p>
+<p>这段代码是关于应用程序环境的配置，主要用于获取应用程序的各种目录和文件路径。以下是其中一些重要的方法和目录：</p>
+<ul>
+<li><code>getVirtualRoot()</code>：获取虚拟根目录，即 “blackbox” 目录。</li>
+<li><code>getExternalVirtualRoot()</code>：获取外部虚拟根目录，用于外部存储。</li>
+<li><code>getSystemDir()</code>：获取系统目录，用于存储系统相关的配置文件。</li>
+<li><code>getProcDir()</code>：获取进程目录，每个进程有一个对应的目录。</li>
+<li><code>getCacheDir()</code>：获取缓存目录，用于存储临时文件和缓存数据。</li>
+<li><code>getUserInfoConf()</code>、<code>getAccountsConf()</code>、<code>getUidConf()</code>、<code>getSharedUserConf()</code>：获取系统配置文件的路径。</li>
+<li><code>getXPModuleConf()</code>、<code>getFakeLocationConf()</code>：获取特定配置文件的路径。</li>
+<li><code>getPackageConf(String packageName)</code>：获取特定应用程序包的配置文件路径。</li>
+<li><code>getExternalUserDir(int userId)</code>：获取外部用户目录，用于外部存储。</li>
+<li><code>getUserDir(int userId)</code>：获取用户目录。</li>
+<li><code>getDeDataDir(String packageName, int userId)</code>：获取用户的数据目录。</li>
+<li><code>getExternalDataDir(String packageName, int userId)</code>：获取外部数据目录。</li>
+<li><code>getDataDir(String packageName, int userId)</code>：获取数据目录。</li>
+<li><code>getProcDir(int pid)</code>：获取特定进程的目录。</li>
+<li><code>getExternalDataFilesDir(String packageName, int userId)</code>：获取外部数据文件目录。</li>
+<li><code>getDataFilesDir(String packageName, int userId)</code>：获取数据文件目录。</li>
+<li><code>getExternalDataCacheDir(String packageName, int userId)</code>：获取外部数据缓存目录。</li>
+<li><code>getDataCacheDir(String packageName, int userId)</code>：获取数据缓存目录。</li>
+<li><code>getDataLibDir(String packageName, int userId)</code>：获取数据库目录。</li>
+<li><code>getDataDatabasesDir(String packageName, int userId)</code>：获取数据库目录。</li>
+<li><code>getAppRootDir()</code>：获取应用程序根目录。</li>
+<li><code>getAppDir(String packageName)</code>：获取特定应用程序的目录。</li>
+<li><code>getBaseApkDir(String packageName)</code>：获取应用程序的基本APK文件目录。</li>
+<li><code>getAppLibDir(String packageName)</code>：获取应用程序的库目录。</li>
+<li><code>getXSharedPreferences(String packageName, String prefFileName)</code>：获取应用程序的共享首选项文件路径。</li>
+</ul>
+<p>这些方法和目录主要用于在虚拟环境中模拟应用程序的文件和目录结构，以实现应用程序的运行和数据存储。这在一些应用程序虚拟化和沙箱化的场景中非常有用。</p>
+<p>accounts.conf</p>
+<p><code>accounts.conf</code> 是一个配置文件，用于存储系统中的账户信息。这些账户信息可能包括用户的登录凭据、访问令牌、身份验证密钥等等。通常，这些信息是以安全的方式存储在系统中，以便应用程序可以访问并执行与用户账户相关的操作，例如登录、同步数据等。</p>
+<p>具体的 <code>accounts.conf</code> 文件的格式和内容会根据系统和应用程序的要求而有所不同。通常，这些文件包含了账户标识符、账户名称、账户类型、账户密钥等信息。这些信息在应用程序需要进行用户身份验证或与特定账户相关的操作时会被读取和使用。</p>
+<p>在 Android 系统中，<code>accounts.conf</code> 可能与 Android 账户系统相关，用于管理设备上的各种账户，例如 Google 账户、Exchange 账户、社交媒体账户等。这些账户信息可以被应用程序用来访问云服务、同步数据、发送通知等。</p>
+<p>请注意，<code>accounts.conf</code> 文件通常包含敏感信息，因此应该受到适当的安全保护，只有经过授权的应用程序才能访问它。在 Android 中，这些账户信息通常由系统进行管理和保护，应用程序可以通过系统提供的 API 来访问它们，而不是直接操作 <code>accounts.conf</code> 文件。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">清风醉博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2023/09/03/ChatGPT%E9%97%AE%E7%AD%94%E8%AE%B0%E5%BD%95%E4%B8%80/">http://ljm2007.github.io/2023/09/03/ChatGPT%E9%97%AE%E7%AD%94%E8%AE%B0%E5%BD%95%E4%B8%80/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">清风醉博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HeiBao/">HeiBao</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/09/04/BlackReflection/"><img class="prev-cover" src="https://s2.loli.net/2023/09/09/qIJnlMTRFeWhciy.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">BlackReflection</div></div></a></div><div class="next-post pull-right"><a href="/2023/09/02/HeiBaoBox%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)----%E8%A3%85%E8%BD%BDAPK/"><img class="next-cover" src="https://s2.loli.net/2023/09/02/JmQp1xFdUXbIZvH.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">HeiBaoBox源码分析(1)----装载APK</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/09/07/ChatGPT%E9%97%AE%E7%AD%94%E8%AE%B0%E5%BD%95%E4%BA%8C/" title="ChatGPT问答记录二"><img class="cover" src="https://s2.loli.net/2023/09/09/6TOqdeHAXBh9YPJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-07</div><div class="title">ChatGPT问答记录二</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">清风醉博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-%E8%BF%99%E6%98%AF%E4%BB%80%E4%B9%88%E6%80%8E%E4%B9%88%E5%88%B0%E5%A4%84%E9%83%BD%E6%98%AF"><span class="toc-number">1.</span> <span class="toc-text">Context 这是什么怎么到处都是</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-getPackageManager"><span class="toc-number">2.</span> <span class="toc-text">Context.getPackageManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#getPackageArchiveInfo"><span class="toc-number">3.</span> <span class="toc-text">getPackageArchiveInfo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#getAbsolutePath"><span class="toc-number">4.</span> <span class="toc-text">getAbsolutePath</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#zipFile-entries"><span class="toc-number">5.</span> <span class="toc-text">zipFile.entries()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#package-top-niunaijun-blackbox-core-env"><span class="toc-number">6.</span> <span class="toc-text">package top.niunaijun.blackbox.core.env;</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字"><img src="https://s2.loli.net/2023/05/20/nCWOkMglcT86x7p.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin 中 by 关键字"/></a><div class="content"><a class="title" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字">Kotlin 中 by 关键字</a><time datetime="2024-02-18T15:43:06.000Z" title="发表于 2024-02-18 23:43:06">2024-02-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息"><img src="https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="获取android apk信息"/></a><div class="content"><a class="title" href="/2024/02/15/%E8%8E%B7%E5%8F%96android%20apk%E4%BF%A1%E6%81%AF(%E5%8C%85%E5%90%8D%E3%80%81%E5%90%AF%E5%8A%A8Activity)/" title="获取android apk信息">获取android apk信息</a><time datetime="2024-02-15T01:55:37.000Z" title="发表于 2024-02-15 09:55:37">2024-02-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/02/05/Kotlin%E5%8D%8F%E7%A8%8B%E5%87%BD%E6%95%B0%20/" title="无题">无题</a><time datetime="2024-02-05T03:51:17.183Z" title="发表于 2024-02-05 11:51:17">2024-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/26/Lambda/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/26/Lambda/" title="无题">无题</a><time datetime="2024-01-26T06:19:49.370Z" title="发表于 2024-01-26 14:19:49">2024-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2024/01/24/%E5%9C%A8Activity%E4%B8%AD%E4%BD%BF%E7%94%A8ViewBinding/" title="无题">无题</a><time datetime="2024-01-24T04:24:08.079Z" title="发表于 2024-01-24 12:24:08">2024-01-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 清风醉博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
