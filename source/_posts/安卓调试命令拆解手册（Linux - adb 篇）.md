@@ -1,7 +1,10 @@
 ---
 title: 安卓调试命令拆解手册（Linux / adb 篇）
 date: 2026-09-20 10:07:14
-tags: Android, adb, 调试
+tags:
+  - Android
+  - adb
+  - 调试
 categories: Android
 ---
 > 写给"能照着敲、但不知道为什么这么写"的人。
