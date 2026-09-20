@@ -1,0 +1,1205 @@
+---
+title: 安卓调试命令拆解手册（Linux / adb 篇）
+date: 2026-09-20 10:07:14
+tags: Android, adb, 调试
+categories: Android
+---
+> 写给"能照着敲、但不知道为什么这么写"的人。
+> 全部例子都来自真实的安卓逆向调试场景（远程调试手机上的命令行程序）。
+> 阅读顺序建议：**第 1 章一定要先看**（它是所有命令的语法底座），后面按需查。
+
+> **📌 修订记录 v2（2026-09-20）**：本文经用户逐条技术审查 + 真机实测校对，修正 10 处表述问题：
+> `g` 的含义、DWARF 与 stripped 的区别、`adb forward` 的生命周期、`pkill` 匹配语义、
+> `TracerPid` 的适用边界、ptrace 独占规则（非 Android 特有）、SIGTERM/setsid/`&` 的因果表述、
+> 引号口诀。并补入官方 usage 原文（`lldb-server gdbserver`、`help gdb-remote`、`target create`）。
+>
+> ⚠️ **表述原则**：**只写机制本身，不把"某种效果/副作用"写成"机制的定义"**；
+> **不把"本项目实测现象"写成"普遍规律"**。
+
+---
+
+## 0. 一句话总纲
+
+一条命令 = **交给谁干 + 干什么**。
+
+```bash
+adb shell "su -c 'pkill -9 lldb-server'"
+ ↑                ↑          ↑
+谁（程序）      怎么干       干的活儿
+```
+
+看着复杂，只是因为**中间转了好几手**。第 1 章专门解决"转手"问题。
+
+---
+
+## 1. 语法零件（最重要的一章）
+
+### 1.1 命令的基本形状
+
+```bash
+程序名 参数1 参数2 ...
+```
+
+例：
+
+```bash
+pkill -9 lldb-server
+```
+
+- `pkill` = 程序名（要执行的程序）
+- `-9` = **选项**（以 `-` 开头，控制程序的行为）
+- `lldb-server` = **参数**（要处理的对象，这里是进程名）
+
+> **打比方**：`pkill` 是工人，`-9` 是"用多大劲"，`lldb-server` 是"砸哪个东西"。
+
+### 1.2 ⭐ 引号：这是所有困惑的源头
+
+服务器/手机上调试，命令经常要**穿过两道壳**：
+
+```
+你在 Mac 上敲的          →  Mac 的 shell 先处理一遍（zsh/bash）
+   ↓
+交给 adb                  →  adb 把收到的参数/命令交给手机端执行
+   ↓
+手机上的 shell 再处理一遍  →  sh/mksh
+   ↓
+最后交给 root 执行
+```
+
+**所以引号的使命是：让「当前这一层 shell」跳过里面的内容，不去展开 / 解释它。**
+
+> ⚠️ **注意"这一层"三个字**。引号只管**自己这一层**：
+> 如果引号在往下传的过程中被剥掉了，**下一层 shell 照样会解释**它看到的特殊字符。
+> 所以真正要掌握的是"按层控制"——见 1.3 节与文末《引号速记卡》。
+
+```bash
+adb shell "su -c 'pkill -9 lldb-server'"
+```
+
+拆开看这个"千层饼"：
+
+| 层 | 谁处理 | 引号 | 作用 |
+|---|---|---|---|
+| 最外 | Mac 的 shell | `"` 双引号 | 把整块内容当成**一个**参数交给 `adb` |
+| 中间 | 手机上的 shell | `'` 单引号 | 把 `pkill -9 lldb-server` 当成**一个**参数交给 `su` |
+| 最里 | root 身份 | — | 真正执行 |
+
+**为什么必须有最外面那对双引号？**
+
+> 📌 **本节 2026-09-20 经真机实测推翻重写。** 我最初写的解释（"不加引号参数会被拆散导致命令失效"）
+> **是错的**，被用户实测推翻。以下保留正确结论 + 证据。
+> **教训：shell 行为不能靠推理，必须实测。**
+
+**⚡ 先看一个反直觉的事实：**
+
+```bash
+adb shell su -c pkill -9 sleep     # ✅ 这条其实能正常杀掉 sleep！
+```
+
+在本项目的设备上（**MagiskSU**），**不加引号也能工作**。原因：
+
+1. Mac 的 shell 确实把参数拆成了 **5 块**
+2. 但 `adb` 会**用空格把它们重新拼回一整条**再发给手机 → 手机收到的还是 `su -c pkill -9 sleep`
+3. MagiskSU 的用法是 `su [options] [-] [user [argument...]]` —— **`-c` 后面的剩余参数它也会一起拼成命令**
+   （实测 `adb shell su -c echo hello world` → 输出 `hello world`，两个词都进去了）
+
+⇒ **"参数被拆散导致失败"这个担心，在纯字母数字的命令上不成立。**
+
+**🎯 那真正的危险在哪？**
+
+不在"拆散"，在于 ⭐ **本机的 shell 会抢先把特殊字符解释掉，而且覆水难收**。
+
+只要命令里有这些字符，**Mac 的 shell 会在 adb 转发之前就动手**：
+
+| 字符 | Mac 会干的事 |
+|---|---|
+| `$HOME` / `$VAR` | 换成 **Mac 上**那个变量的值 |
+| `$(命令)` | 在 **Mac 上**执行，把结果填进去 |
+| `;` | 把后半句当**新命令**，在 **Mac 上**跑 |
+| `\|` | 管道接到 **Mac 的命令**上 |
+| `*` `?` | 在 **Mac 的目录**里展开成文件名 |
+| `>` `<` | 读写的文件在 **Mac 上** |
+| `&` | 后台跑的是 **Mac 上**那半句 |
+
+**实测对照**（Mac：HOME=`/Users/ljm2007`、hostname=`ljm2007deMacBook-Pro.local`；
+手机：HOME=`/`、hostname=`localhost`）：
+
+```bash
+# ── 测试 1：变量由谁解释 ──
+$ adb shell su -c echo $HOME
+/Users/ljm2007            ← ❌ 输出的是 Mac 的 HOME（被 Mac 抢先换掉了）
+
+$ adb shell "su -c 'echo \$HOME'"
+/                         ← ✅ 手机的 HOME
+
+# ── 测试 2：分号由谁解释 ──
+$ adb shell su -c echo A ; pidof lldb-server
+A
+pidof: command not found  ← ❌ 后半句跑到 Mac 上执行了（Mac 没有 pidof）
+
+$ adb shell "su -c 'echo A; pidof lldb-server'"
+A
+16457                     ← ✅ 后半句在手机上执行（返回真实 PID）
+
+# ── 测试 3：命令替换由谁执行 ──
+$ adb shell su -c echo $(hostname)
+ljm2007deMacBook-Pro.local ← ❌ Mac 的 hostname
+
+$ adb shell "su -c 'echo \$(hostname)'"
+localhost                  ← ✅ 手机的 hostname
+```
+
+**⇒ 引号的真正使命（这是准确版）：**
+
+> **不是"把参数包成一块"**（adb 自己会拼回去，拆散无损），
+> **而是"让本机的 shell 跳过里面的内容，一个字符都别动"。**
+
+**什么时候必须加引号 —— 一句话判断：**
+
+> 命令里出现 `$ ; | & > < * ? ~ 引号` 这些字符 → **必须加**。
+> 纯字母数字（如 `pkill -9 sleep`）→ 不加也能跑。
+
+⭐ **实用建议：一律按"加法"写（宁可多加引号）。**
+
+因为"不加也偶尔能跑"这种**时灵时不灵**的写法最要命：
+
+- 今天 `pkill -9 sleep` 对了 → 你以为不用加引号
+- 明天写 `grep TracerPid /proc/$(pidof zygote64)/status` → **`$(...)` 悄悄在 Mac 上执行了**，
+  报一个跟手机毫无关系的错，你能查半天
+
+**别赌，一律加引号。**
+
+> 💡 **顺带一提**：那对引号仍然值得打个比方 —— 它是**快递箱**，
+> 作用是"告诉本机 shell：这箱货别拆，原样送到对面"。
+> 只是它防的是"被拆开检查/改写"，不是"零件散落"。
+
+### 1.3 单引号 vs 双引号（关键区别）
+
+| | 双引号 `"..."` | 单引号 `'...'` |
+|---|---|---|
+| 里面的 `$变量` | **会**展开 | **不**展开，原样 |
+| 里面的 `$(命令)` | **会**执行 | **不**执行，原样 |
+| 里面的 `\` | 对 `$`、`"`、`\` 等**特定字符**有转义作用 | 一律按普通字符处理（不做转义） |
+| 里面再放引号 | 可以放 `'` | 不能放 `'` |
+
+**记住一句（准确版）**：
+
+> **在当前这一层 shell 里，单引号会让里面的内容按字面处理** ——
+> `$`、`$(...)`、`*`、`;` 等都不会被**这一层**展开或解释。
+
+⚠️ **别理解成"包上单引号就永远安全"。** 单引号只管**当前这一层**；
+如果引号在往下传的过程中被剥掉了，**下一层 shell 仍可能继续解释**它看到的内容。
+
+统一口径见文末《引号速记卡》：
+> **哪一层 shell 需要解释特殊字符，就在哪一层控制引用和转义。**
+
+### 1.4 ⭐ `\$` 转义 —— 调试命令里最常见的翻车点
+
+```bash
+# ❌ 错的
+adb shell "su -c 'grep TracerPid /proc/$(pidof zygote64)/status'"
+
+# ✅ 对的
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'"
+```
+
+**为什么？**
+
+`$(...)` 是**命令替换**——shell 看到它，就会**先执行里面的命令，再把结果填进去**。
+
+上面那条错的命令，**Mac 的 shell 会抢先在 Mac 上执行 `pidof zygote64`**。Mac 上当然没有 zygote64 → 算出**空字符串** → 命令变成：
+
+```
+/proc//status     ← 路径里少了一层
+```
+
+手机上执行就报 `No such file or directory`。**你以为是路径写错了，其实是"谁先展开"的问题。**
+
+加上 `\` 之后，`$` 被"钉住"，不再被 Mac 的 shell 处理，而是原样传给手机，由**手机**去算 `pidof zygote64` —— 这才是我们想要的。
+
+> **口诀**：**`$` 要由哪台机器算，就得在哪一层转义。要手机算 → Mac 这层加 `\`。**
+
+### 1.5 管道 `|` —— 把上一条的输出喂给下一条
+
+```bash
+ps -A | grep Inject
+```
+
+- `ps -A` 输出一堆进程
+- `|` 把这一堆**当成下一条命令的输入**塞过去
+- `grep Inject` 从里面筛出含 `Inject` 的行
+
+> **打比方**：`|` 就是流水线上的传送带。左边产出，右边加工。
+
+可以连着接：
+
+```bash
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'" | tr -d '\r' | awk '{print $2}'
+```
+
+`去回车` → `取第 2 列`，两道理序。
+
+### 1.6 重定向 `>` `>>` `2>&1`
+
+```bash
+setsid ./Inject.dbg > /data/local/tmp/x.log 2>&1 &
+```
+
+| 符号 | 意思 |
+|---|---|
+| `>` | 把输出**写进**文件（**覆盖**，原内容没了） |
+| `>>` | 追加到文件末尾（**不覆盖**） |
+| `2>&1` | 把"报错信息"也一起送到上面那个文件 |
+| `&` | 丢到后台跑，不占着当前终端 |
+
+**为什么需要 `2>&1`？**
+
+程序有两条输出通道（专业叫"文件描述符"）：
+
+- **1** = 正常输出（stdout）
+- **2** = 报错信息（stderr）
+
+`> x.log` **只管 1**，报错还是直接喷在屏幕上。`2>&1` = "把 2 也送到 1 现在去的那个地方"。
+
+> ⚠️ **顺序不能反**：必须 `> file 2>&1`。写成 `2>&1 > file` 是"先让 2 跟着屏幕，再把 1 改到文件"，报错还是没进文件。
+
+### 1.7 后台 `&` 和它的坑
+
+```bash
+./long_task &
+```
+
+`&` = 让这个程序在后台跑，终端立刻还给你。
+
+**但是**：如果在 `adb shell` 里用 `&`，**有可能**遇到一个很阴险的问题 ——
+**`adb shell` 长时间不返回**（本项目实测卡过 560 秒）。
+
+原因：`adb shell` **会等自己那条管道被关掉**才收工；而 `&` 起的子进程
+**继承了它的 stdout/stderr 管道**，子进程活着 → 管道不关 →
+**adb 就在等一个（在子进程存活期间）不会关闭的管道**。
+
+> 📌 **说"永远不返回"太绝对**：这是"**某些情况下会发生**"，取决于子进程有没有继承管道、
+> 用的哪个 adb 客户端。但风险足够大，**一律按最坏情况处理**。
+
+**解决要三件套一起上**（第 5 章细讲）：
+
+```bash
+su -c 'exec 0</dev/null; cd /data/local/tmp && setsid ./Inject.dbg > x.log 2>&1 &'
+```
+
+### 1.8 命令替换 `$(...)`
+
+```bash
+ZT=$(adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'" | awk '{print $2}')
+```
+
+`$(...)` = **把里面命令的输出结果，当成一个值存起来**。左边 `ZT=` 是这个值的名字。
+
+之后就能用 `$ZT` 引用它：
+
+```bash
+kill -9 $ZT
+```
+
+> ⚠️ 引用变量时，如果**后面紧跟中文或全角符号**，要写成 `${ZT}`，否则 shell 会把中文当成变量名的一部分，报 `unbound variable`。
+> 例：`echo "就绪（:$PORT）"` ❌ → `echo "就绪（:${PORT}）"` ✅
+
+### 1.9 一行里串联多个命令
+
+| 写法 | 意思 |
+|---|---|
+| `a; b` | a 干完干 b（不管 a 成不成功） |
+| `a && b` | a **成功**才干 b |
+| `a \|\| b` | a **失败**才干 b |
+
+```bash
+adb push x /data/local/tmp/ && adb shell chmod 755 /data/local/tmp/x
+```
+
+---
+
+## 2. adb 篇
+
+### 2.1 adb 是什么
+
+**adb = Android Debug Bridge**，"安卓调试桥"。
+
+**打比方**：手机是台远程机器，`adb` 就是你手上唯一的**遥控手柄**。后面所有命令都通过它转发到手机。
+
+数据线（或 USB/WiFi 调试）就是那根"电线"。
+
+### 2.2 `adb devices` —— 看设备在不在
+
+```bash
+adb devices
+```
+
+```
+List of devices attached
+94NY19J44	device
+```
+
+- `94NY19J44` = 设备序列号（`device` 是**状态**，不是名字）
+- 常见状态：
+
+| 状态 | 意思 | 怎么办 |
+|---|---|---|
+| `device` | 正常 ✅ | — |
+| `unauthorized` | 手机上有"允许 USB 调试"弹窗没点 | 手机上点允许 |
+| `offline` | 掉线了 | 拔插数据线 / `adb kill-server` 重启 |
+| **列表为空** | 根本没连上 | 检查线、检查手机上 USB 调试开关 |
+
+> 💡 **为什么这步永远排第一**：`adb` 是唯一通道。设备不认，后面全部白搭。
+
+### 2.3 `adb shell` —— 在手机上执行命令
+
+```bash
+adb shell ls /data/local/tmp
+```
+
+相当于"让手机的 shell 跑一条命令，结果传回来"。
+
+**不带命令**单独执行 `adb shell`，会给你一个**手机上的交互终端**（像登录到手机里），敲 `exit` 退出。
+
+> 注意：手机上的 Linux 是**精简版**（busybox / toybox），不少命令和 Mac 不完全一样，参数支持有差异。
+
+### 2.4 `adb push` / `adb pull` —— 传文件
+
+```bash
+adb push  本地文件  手机路径      # 电脑 → 手机
+adb pull  手机文件  本地路径      # 手机 → 电脑
+```
+
+```bash
+adb push ./Inject /data/local/tmp/Inject.dbg
+```
+
+> ⚠️ **不要假定 `adb push` 之后的文件具有你需要的执行权限。**
+> 它受 umask / 目标目录 / 已有文件等多种因素影响，**别依赖 push 出来的默认状态**，
+> 运行前显式给一次：
+> ```bash
+> adb shell chmod 755 /data/local/tmp/Inject.dbg
+> ```
+
+### 2.5 ⭐ `adb forward` —— 拉"电话线"
+
+```bash
+adb forward tcp:6040 tcp:6040
+```
+
+意思是：**把电脑的 6040 端口，接到手机的 6040 端口上**。
+
+**为什么必需？**
+
+手机上的调试服务器（`lldb-server`）只会监听**手机自己**的 6040（专业说法：监听 localhost，不对外网开放）。电脑直接连是连不上的。`adb forward` 给你搭了一座**隧道**：
+
+```
+Mac 的调试器 → 127.0.0.1:6040  ---[隧道]--->  手机的 6040 → lldb-server
+```
+
+**常用变体：**
+
+```bash
+adb forward --list          # 看现在有哪些隧道
+adb forward --remove tcp:6040    # 拆掉这一条
+adb forward --remove-all    # 全拆掉
+```
+
+> ⚠️ **`adb forward` 的生命周期属于 adb server，不属于你当前这个终端。**
+>
+> ```
+> adb forward → 注册到 adb server → 不是当前 shell 的临时进程
+>             → 但 adb server 退出/重启后，这些 forward 通常就没了
+> ```
+>
+> 所以两边都别搞错：
+> - 它**不会**因为你关掉终端窗口而消失（比"当前终端"持久）
+> - 但它**也不是永久保存**的（`adb kill-server` / 重启电脑 / adb server 崩溃后就没了）
+> - 旧隧道残留时，可能连到"上一轮留下的僵尸端口"
+>
+> **收工必做**：`adb forward --remove-all`；开工时用 `adb forward --list` 确认现状。
+
+### 2.6 启动 / 杀掉 App
+
+```bash
+# 启动某个 App（monkey 本来是压力测试工具，这里借它发一个"启动"事件）
+adb shell monkey -p com.ss.android.ugc.aweme -c android.intent.category.LAUNCHER 1
+
+# 强制停掉某个 App
+adb shell am force-stop com.ss.android.ugc.aweme
+```
+
+- `-p <包名>` = 指定目标 App
+- `-c android.intent.category.LAUNCHER` = 走"点桌面图标启动"那条路
+- 结尾的 `1` = 只发 1 个事件
+
+---
+
+## 3. 手机里的 Linux 篇
+
+### 3.1 `su -c` —— 为什么每条命令都要它
+
+```bash
+su -c 'pkill -9 lldb-server'
+```
+
+- `su` = switch user，"切换用户"
+- `-c` = command，"执行这条命令"
+
+不给用户名时默认切到 **root**（最高权限）。
+
+> ⚠️ **注意：Android 上的 `su` 不是标准 Unix `su`。** 本项目设备上是 **MagiskSU**
+> （实测 `adb shell su --help` 输出 `MagiskSU` + `Usage: su [options] [-] [user [argument...]]`）。
+> 不同实现（MagiskSU / KernelSU / 厂商自带 su）在**参数解析细节上会有差异** ——
+> 例如 `-c` 后面剩余的参数怎么处理，各家就不一样
+> （实测 MagiskSU 会把它们**一起拼成命令**，详见 1.2 节）。
+> **遇到 su 相关的怪异行为，先 `su --help` 看这个版本的官方 usage。**
+
+**为什么调试命令几乎都要 root？**
+
+| 要干的事 | 需要 root 的原因 |
+|---|---|
+| 跟踪别的进程（ptrace） | 普通 App 之间互相隔离，不许越界 |
+| 看/杀别的进程 | 同上 |
+| 访问 `/data/local/tmp` 之外的东西 | 权限限制 |
+
+> **打比方**：手机里的 Linux 权限像小区门禁。普通 App 只能进自己家；`su` 就是拿**万能钥匙**去开所有门。
+
+### 3.2 `/proc` —— 内核给每个进程开的"体检报告"
+
+`/proc` 是**内存里的假目录**（不占硬盘），每个运行中的进程都有一个以 PID 命名的文件夹：
+
+```
+/proc/1234/          ← 进程 1234 的信息
+├── status           ← 体检报告（状态、内存、谁在跟踪它…）
+├── cmdline          ← 启动时的完整命令行
+├── maps             ← 内存里都加载了哪些 so / 库
+└── ...
+```
+
+**例子：看 zygote64 的 PID**
+
+```bash
+adb shell "su -c 'pidof zygote64'"
+
+> ⚠️ **本文假设 `pidof zygote64` 返回单个 PID。**
+> 如果设备上返回了**多个 PID**（理论上可能），`/proc/$(pidof zygote64)/status`
+> 会展开成 `/proc/1234 5678/status` —— **这个路径不成立**。
+> 那种情况下要逐个检查：`/proc/<每个PID>/status`。
+```
+
+**读它的状态报告：**
+
+```bash
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'"
+```
+
+```
+TracerPid:	0
+```
+
+⭐ **`TracerPid` 是什么？**
+
+> "**正在用 ptrace 跟踪我的那个进程的 PID**"。没有就是 `0`。
+
+**它只能说明这一件事（别扩大解释）：**
+
+- `TracerPid: 0` → **当前这个进程没有被任何 ptrace tracer 跟踪**
+- `TracerPid: 1234` → **PID 1234 正在 ptrace 跟踪它**
+
+> ⚠️ **不要把它读成"环境干净"。** 它证明不了下面这些（这些压根不在它的表达能力范围内）：
+> 没有 Frida、没有其他 Hook 框架、没有 Magisk 模块、没有别的监控、
+> 没有 SELinux 策略干预、没有其它调试机制。
+> **它只是某个进程的一个"有没有人跟踪我"字段，就这么多。**
+
+**那为什么它对调试这么关键？**
+
+因为 ptrace 有一条**通用规则**（Linux 内核层面就是这样，**不是 Android 为 zygote 特设的**）：
+
+> **一个进程，同一时刻只能有一个 ptrace tracer。**
+
+所以：**只要已经有 tracer 占着 `zygote64`，新的 `PTRACE_SEIZE` 就会失败** ——
+本项目遇到的就是下面这个（EPERM）：
+
+```
+PTRACE_SEIZE ... Operation not permitted
+```
+
+**⇒ 排查口径（本文档的用法）：**
+
+- `TracerPid` **非 0** → **确定有个东西占着它，必须清掉**（这是唯一能下的确定结论）
+- `TracerPid` 是 **0** → 至少说明**没有 tracer 占着**，可以试注入；
+  但**不代表**没有 Frida / Hook / 监控在别的地方等着你
+
+**把它当"这个进程有没有被占"的快速探针，不要当"环境安全/干净"的体检结论。**
+
+### 3.3 看进程：`ps` / `pidof` / `pgrep`
+
+```bash
+adb shell "su -c 'ps -A'"                       # 列出所有进程
+adb shell "su -c 'ps -A | grep Inject'"         # 筛出含 Inject 的行
+adb shell "su -c 'pidof lldb-server'"           # 只要 PID（可能返回多个，空格分隔）
+```
+
+**`ps -A -o PID,USER,NAME`** —— 自己挑要显示哪几列：
+
+```bash
+adb shell "su -c 'ps -A -o PID,USER,NAME | grep -i inject'"
+```
+
+```
+29944 u0_a232   com.example.testptrace     ← 真 App
+22341 root      com.example.testptrace     ← 伪装过的我们的程序（靠 USER 区分！）
+```
+
+- `-o` = 指定输出哪些列
+- ⚠️ **改名伪装过的进程，`pidof` / `pkill` 按原名全都找不到** → 只能靠"属主是 root"来认
+
+### 3.4 杀进程：`kill` / `pkill` / `killall`
+
+| 命令 | 用法 | 说明 |
+|---|---|---|
+| `kill` | `kill -9 <PID>` | 按 **PID** 杀 —— **最精确，推荐** |
+| `pkill` | `pkill -9 <模式>` | 按**进程名匹配模式**后发送 SIGKILL |
+| `killall` | `killall <名字>` | 按进程名处理（匹配语义随实现不同） |
+
+**信号号是最关键的知识点：**
+
+| 信号 | 名字 | 效果 |
+|---|---|---|
+| `-15` | SIGTERM | "**好好说**"——进程**可以捕获**它，在 handler 里做清理，**甚至可以选择不退出**（默认动作才是终止） |
+| `-9` | SIGKILL | "**直接断电**"——内核强杀。**不可忽略、不可捕获**，进程没有说"不"的机会 |
+| `-CONT` | SIGCONT | "**继续跑**"——把暂停（STOP）的进程唤醒 |
+
+```bash
+pkill -9 lldb-server      # 斩掉调试服务器
+pkill -9 Inject.dbg       # 斩掉它拉起的病人（可能已是孤儿进程）
+kill -CONT $ZT; kill -9 $ZT   # 先唤醒，再斩（保险动作）
+```
+
+> ⚠️ **`pkill` 是按进程名 / 模式匹配，不是按 ELF 文件路径精确匹配。**
+> 清理时若担心误杀，先确认会匹配到谁：
+> ```bash
+> pgrep -l Inject.dbg
+> ```
+> 看清 PID 再 `kill -9 <PID>`。
+
+> **为什么清理要用 `-9` 不用默认的 `-15`**：这些进程本来就卡在异常状态（可能正 STOP 着），跟它"好好说"它听不见。直接 `-9` 最省事。
+
+> ⚠️ **macOS 的一个坑**：`xargs -r` 是 GNU 的扩展，**BSD/macOS 版本的 `xargs` 不认 `-r`**，会直接报错。
+> ```bash
+> # ❌ 在 Mac 上会报错
+> pidof lldb-server | xargs -r kill -9
+>
+> # ✅ 通用写法
+> for p in $(pidof lldb-server); do kill -9 $p; done
+> ```
+> ⚠️ **`pkill` 的匹配语义**：它是**按模式匹配进程名**，
+> 不要理解成"名字里含这个字符串就一定杀"。不同 Android / toybox / procps 实现
+> 的匹配行为和选项支持**可能有差异**。
+> **稳妥做法**：先 `pgrep -l <模式>` 看会匹配到哪些进程，确认无误再 `pkill`；
+> 要百分之百精确就用 `kill -9 <PID>`。
+
+### 3.5 权限：`chmod 755`
+
+```bash
+chmod 755 /data/local/tmp/Inject.dbg
+```
+
+`chmod` = change mode，改文件权限。
+
+**三位数字的读法**（每位对应"一类人能干什么"）：
+
+```
+7        5        5
+│        │        └─ 其他人 other
+│        └────────── 同组的人 group
+└─────────────────── 属主 owner
+```
+
+每一位 = **r(4) + w(2) + x(1) 相加**：
+
+| 数字 | 含义 | 组合 |
+|---|---|---|
+| 7 | 读+写+执行 | 4+2+1 |
+| 5 | 读+执行 | 4+1 |
+| 6 | 读+写 | 4+2 |
+
+所以 `755` = 属主全权，其他人能读能跑。
+
+> **推上去的可执行文件必须 755**（至少要带那个"1/x"）。否则报 `Permission denied` —— 这个错看着像"没权限访问"，其实只是"这个文件不许执行"。
+
+### 3.6 找最新产物：`ls -t | head -1`
+
+```bash
+ls -t app/build/intermediates/cxx/Debug/*/obj/arm64-v8a/Inject | head -1
+```
+
+- `ls -t` = 列出文件，**按修改时间排序（新的在前）**
+- `| head -1` = 只取**第一行**，也就是最新的那个
+
+**为什么需要它**：编译产物的路径里有**每次都会变的随机目录名**（`Debug/5n4z6p38/…` → 下次变成 `3e554l13`）。
+**写死路径必失效**，所以要"动态找最新的"。
+
+> ⚠️ **别用通配符**（`*`）在 IDE 的符号路径设置里 —— 大多数 IDE **不展开通配符**。
+
+### 3.7 确认文件对不对：`file`
+
+```bash
+file Inject.dbg
+```
+
+```
+Inject.dbg: ELF 64-bit LSB pie executable, ARM aarch64,
+            dynamically linked, interpreter /system/bin/linker64,
+            with debug_info, not stripped
+```
+
+**先分清三个不同的东西**（新手最容易把 "debug_info" 和 "符号" 混成一个概念）：
+
+| 东西 | 里面装什么 | 干什么用 |
+|---|---|---|
+| **DWARF 调试信息**（`.debug_info` / `.debug_line` / `.debug_str` …） | **源码文件名、行号、局部变量、类型** | ⭐ **源码级调试全靠它** |
+| **`.symtab`**（完整符号表） | 函数名 / 全局变量名等符号 | 按名字下断点、看函数名 |
+| **`.dynsym`**（动态符号表） | 动态链接**必需**的那部分符号 | 让程序自己能跑起来（loader 靠它找符号） |
+
+**`file` 给的那两个词，分别是什么意思：**
+
+- `with debug_info` → 里面有 **DWARF 调试信息** → **有做源码级调试的可能**
+- `not stripped` → **`.symtab` 这类符号表还在**，没被 `strip` 工具削掉
+
+**⇒ 关键纠正：`not stripped` 不等于"有源码调试信息"。**
+
+- `strip` 削掉的通常是 `.symtab` 这类**非必需**符号
+- `.debug_*` 段是否保留，与"stripped 与否"**不是同一件事**：
+  可以 `stripped` 却保留 debug info，也可能**没 strip 但编译时压根没生成 DWARF**（例如 `-g0`）
+
+**所以"能不能源码级断点"取决于两件事：**
+
+1. ELF 里**是否真的保留了 DWARF**（`with debug_info` 是必要线索）
+2. **LLDB 能不能找到并匹配上**那份调试信息 —— 文件要对得上（名字 + UUID）、目录要找得到
+   （找目录可以靠 `settings set target.debug-file-search-paths`，实测存在）
+
+**实操判据：**
+
+```bash
+file Inject.dbg     # 第一步：看有没有 with debug_info
+```
+```
+(lldb) image list Inject                  # 第二步：看符号有没有被加载
+(lldb) breakpoint set -n init_inject      # 第三步：看能不能解析出"文件:行号"
+```
+
+```
+Breakpoint 1: where = Inject`init_inject + ..., address = ...
+                                  ↑ 出现 文件名:行号 = 源码级 OK
+                                  ↑ 只给地址 / locations = 0 = 没对上
+```
+
+> ✅ `with debug_info, not stripped` 是**理想的调试状态**（本项目 Debug 产物就是）。
+> ❌ 但别把 `stripped` 直接翻译成"一定不能源码断点" —— 那两件事**不等价**。
+> **最终以 `breakpoint set` 能不能给出「文件:行号」为准。**
+
+### 3.8 看程序自己的打印：`tail -f`
+
+```bash
+adb shell "su -c 'tail -f /data/local/tmp/x.log'"
+```
+
+- `tail` = 看文件末尾
+- `-f` = follow，"跟着"——文件**新增内容会自动刷出来**（像看直播），`Ctrl+C` 退出
+
+⭐ **一个必知的坑**：远程调试时，**被调试程序的 `printf` 不会出现在你的 IDE 里**！
+
+因为程序是**手机端的 lldb-server 拉起来的**，它的输出落在**手机上的文件**里，IDE 的"调试控制台"只显示调试器自己的消息。
+→ 想知道程序打印了什么，必须另开一个终端 `tail -f` 那个日志文件。
+
+### 3.9 看端口占用：`ss` / `netstat`
+
+```bash
+adb shell "su -c 'ss -tlnp | grep 6040'"
+```
+
+| 参数 | 意思 |
+|---|---|
+| `-t` | 只看 TCP |
+| `-l` | 只看"在监听"的（LISTEN） |
+| `-n` | 不做域名解析，直接显示数字端口 |
+| `-p` | 显示是哪个进程占着 |
+
+用于：确认调试服务器**真的起来了**、端口对不对。
+
+---
+
+## 4. 文本处理三件套
+
+调试脚本里满屏 `grep` / `awk` / `tr`，其实只干三件事：**筛、切、换**。
+
+### 4.1 `grep` —— 筛出想要的行
+
+```bash
+grep TracerPid /proc/1234/status     # 只要含 TracerPid 的那行
+```
+
+| 选项 | 作用 |
+|---|---|
+| `-i` | 忽略大小写 |
+| `-v` | 反着来：**不**含这个的才留下 |
+| `-r` | 递归搜整个目录 |
+| `-c` | 只输出**匹配到几行**（例：`grep -c "error:" build.log`） |
+
+> 💡 调试常用技巧：`ps -A | grep [l]ldb-server` —— 方括号里的 `l` 让 grep **自己不被匹配到**（否则 grep 自己那条命令也会出现在结果里）。
+
+### 4.2 `awk` —— 按列切
+
+```bash
+awk '{print $2}'
+```
+
+默认**按空白（空格/制表符）分列**：
+
+```
+TracerPid:	1234
+   $1       $2
+```
+
+所以 `awk '{print $2}'` = **取出第二列** = `1234`。
+
+> **打比方**：`grep` 是筛行（横着切），`awk` 是取列（竖着切）。
+
+### 4.3 `tr` —— 换/删字符
+
+```bash
+tr -d '\r'
+```
+
+- `tr` = translate（字符替换/删除）
+- `-d` = delete，删掉指定的字符
+- `\r` = 回车符（CR）
+
+**为什么**有时**要删它**：**某些** adb shell 输出链路会带上 `\r`（CR）。
+（⚠️ 不要理解成"Android 一定返回 CRLF" —— **是否带 `\r` 随链路 / 设备 / 实现而变，以实际输出为准**。）
+
+如果不去掉、又把它读进变量，就可能出现：
+不删掉，变量里就**多藏一个看不见的 `\r`**：
+
+```bash
+# 看着是 0，实际值是 "0\r"，判断不等于 "0" → 逻辑全错
+if [ "$ZT" != "0" ]; then ...
+```
+
+这个坑非常阴——**肉眼看输出完全正常**，但判断就是不生效。
+
+---
+
+## 5. 后台进程三件套（最邪门的一节）
+
+目标：让程序在手机上**脱离 adb 一直跑**。
+
+```bash
+su -c 'exec 0</dev/null; cd /data/local/tmp && setsid ./Inject.dbg > x.log 2>&1 &'
+```
+
+**只用 `&` 为什么**可能**出问题？**
+
+`adb shell` **会等自己那条管道被关掉**才收工。而 `&` 起的子进程**继承了 `adb shell` 的
+stdout/stderr 管道** —— 只要它还活着，管道就不关 → **adb 客户端就可能一直等下去**。
+
+> 📌 **说"永远不返回"太绝对。** 这是"**某些情况下会发生**"：
+> 取决于子进程有没有继承管道、用的是哪个 adb 客户端、平台实现细节。
+> **本项目实测记录**：曾出现 adb shell 长时间不返回（卡 560 秒）。
+> 风险足够大 ⇒ **一律按最坏情况处理。**
+
+而且这个坑会**伪装成"脚本正常"**：如果调用方带了超时（比如代码里 `subprocess.run(timeout=60)`），超时后代码继续往下走，**设备上的进程其实活着**——你直到某天用纯 shell 跑才发现卡死。
+
+**三个零件各修一个毛病：**
+
+| 零件 | 干什么 | 为什么这样能解决问题 |
+|---|---|---|
+| `exec 0</dev/null` | 把 **stdin（文件描述符 0）** 接到"空设备" | 子进程不再持有输入管道；读它立即得到 EOF |
+| `setsid` | **创建一个新 session**（顺带创建新 process group，调用进程成为 session leader） | 让进程**脱离原来的控制终端 / 会话** —— 减少"终端/会话生命周期"对后台进程的影响 |
+| `> x.log 2>&1 &` | 输出重定向到文件 + 丢后台 | 子进程不再持有 `adb shell` 的输出管道 → adb 能正常收工 |
+
+> 💡 **`setsid` 的正确定位**（别把它当成"防 SIGHUP 工具"）：
+> ```
+> setsid() → 创建新 session → 创建新 process group → 调用进程成为 session leader
+> ```
+> "父进程退出时不会被 SIGHUP 带走"是**常见的结果/好处**，**不是 setsid 的定义**。
+> 我们用它的目的是：**让 adb shell / su 这层退出之后，设备端的调试进程还能继续活着。**
+
+**宿主侧还要配合一招**（防 adb 客户端僵住）：
+
+```bash
+launch_detached(){
+  adb shell "$1" >/dev/null 2>&1 &
+  local p=$! i
+  disown "$p" 2>/dev/null        # 否则 kill 时会打印 "Killed: 9" 噪音
+  for i in $(seq 1 25); do
+    kill -0 "$p" 2>/dev/null || { wait "$p" 2>/dev/null; return 0; }
+    sleep 0.2
+  done
+  kill -9 "$p" 2>/dev/null; return 0   # 5 秒还不返回就杀掉客户端；设备端已 setsid，不受影响
+}
+```
+
+`kill -0 <pid>` = **不发信号，只检查"这个进程还活着吗"**。活着返回 0，死了返回非 0。（很常用的探活技巧）
+
+**验证脱离成功**：看 PPID 是不是 **1**
+
+```bash
+adb shell "su -c 'ps -A -o PID,PPID,ARGS | grep [l]ldb-server'"
+```
+
+PPID = 1 表示它的"爹"已经变成内核了（原来的爹走了）→ 成功脱钩。
+
+---
+
+## 6. 拼回去：远程调试完整流水线
+
+三样东西（回顾）：
+
+| 东西 | 是谁 |
+|---|---|
+| **图纸**（本地带符号 ELF） | Mac 上的 `Inject.latest` |
+| **机械臂**（设备端 server） | 手机上的 `lldb-server` |
+| **电话线** | `adb forward` |
+
+### 第 1 步：认设备
+
+```bash
+adb devices
+```
+
+### 第 2 步：备料（推文件 + 给执行权）
+
+```bash
+ELF=$(ls -t ~/Documents/androidsrc/AndroidInject-master/app/build/intermediates/cxx/Debug/*/obj/arm64-v8a/Inject | head -1)
+file "$ELF"                                  # 确认 with debug_info, not stripped
+adb push "$ELF" /data/local/tmp/Inject.dbg
+adb shell "su -c 'chmod 755 /data/local/tmp/Inject.dbg'"
+```
+
+同时**本地留一份与设备端对应的 ELF**当"图纸"，让 LLDB 能加载到正确的模块和调试信息。
+
+> ⚠️ **关键不是"文件名相同"，而是"和手机上实际跑的那一份对应"。**
+> LLDB 会依据模块身份信息、以及能否找到匹配的调试信息来关联 ——
+> **别把"名字相同 + UUID 相同"当成整套匹配机制**。
+> 最稳妥：本地这份就是**从同一个产物复制**出来的。
+
+### 第 3 步：清残留（**每次开工前都要做**）
+
+```bash
+adb shell "su -c 'pkill -9 lldb-server; pkill -9 Inject.dbg'"
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'"   # 应看到 0（= 没有 tracer 占着它）
+```
+
+> 为什么要先清：**Linux 里一个进程同一时刻只能有一个 ptrace tracer**（内核通用规则，
+> 不是 Android 给 zygote 定的特殊规矩）。`zygote64` 已被上一轮的残留占着 → 再 `PTRACE_SEIZE` 直接失败（EPERM）。
+
+### 第 4 步：接机械臂（起设备端 server）
+
+```bash
+adb shell "su -c 'exec 0</dev/null; cd /data/local/tmp && setsid ./lldb-server gdbserver :6040 -- ./Inject.dbg -w -f -n com.ss.android.ugc.aweme -so /data/local/tmp/libinlinehook.so > /data/local/tmp/gsrv.log 2>&1 &'"
+```
+
+**先看手机端 `lldb-server` 的官方 usage（实测原文）：**
+
+```
+Usage:
+  /data/local/tmp/lldb-server v[ersion]
+  /data/local/tmp/lldb-server g[dbserver] [options]
+  /data/local/tmp/lldb-server p[latform] [options]
+Invoke subcommand for additional help
+```
+
+⇒ **`g` 就是 `gdbserver` 的简写**（usage 里方括号 `[]` 的含义 = "可省略"）。
+写 `g :6040` 和 `gdbserver :6040` **完全等价**（实测：两者漏写端口时，报错一字不差）。
+
+> ⚠️ **别把 `g` 理解成"g = GDB remote 协议"** —— `g` 是 **lldb-server 的一个子命令名**，
+> 意思是"**进 gdbserver 模式**"。这个模式**通信时**用的才是 GDB remote 协议。
+> （本手册第一版就是这么写错的，已改。）
+
+**再看 `lldb-server gdbserver --help` 的官方 USAGE（实测原文）：**
+
+```
+USAGE: lldb-server g[dbserver] [options] [[host]:port] [[--] program args...]
+
+GENERAL OPTIONS:
+  --log-file <file>          Destination file to log to. If empty, log to stderr.
+  --setsid                   Run lldb-server in a new session.
+
+TARGET SELECTION:
+  --attach <pid-or-name>     Attach to the process given by a (numeric) process id or a name.
+  -- program args            Launch program for debugging.
+```
+
+**逐块对照我们那条命令：**
+
+| 片段 | 含义（官方口径） |
+|---|---|
+| `gdbserver` | 子命令 —— 进 gdbserver 模式（可简写 `g`） |
+| `:6040` | `[host]:port`，监听地址。**host 省略时默认 `localhost`** → 所以**必须靠 `adb forward` 才能从 Mac 连进来** |
+| `--` | 分隔符：后面是 `program args...`，即**被调试的程序 + 它的参数** |
+| `./Inject.dbg -w -f ...` | 被调试程序（我们自己的注入器）及其参数 |
+
+**顺带两个官方选项，知道有就行：**
+
+- `--setsid` —— lldb-server **自带**"在新 session 里跑"的选项（等价于外面套一层 `setsid`）
+- `--attach <pid-or-name>` —— 附加到已有进程，**pid 或进程名都可以**
+  （⚠️ 若那个值是空的，端口会被当成它的值 → 报 `error: no connection arguments`）
+
+> ⚠️ **本项目实测表现**：在这套 `lldb-server gdbserver` 调试流程中，
+> **客户端断开后 server 会退出**，所以下一次调试前需要重新启动它。
+> —— 这就是"第一次好使、第二次连不上"的原因，也是所有一键脚本里要有"前置脚本"的原因。
+>
+> 📌 **别把它当成 gdbserver 模式的定义。** "客户端断开后一定退出"**不是**普遍规律：
+> 具体生命周期行为还取决于 lldb-server 版本、启动方式、调试目标状态等因素。
+
+### 第 5 步：拉电话线
+
+```bash
+adb forward tcp:6040 tcp:6040
+adb forward --list          # 确认隧道在
+```
+
+### 第 6 步：上手术台（客户端连接）⭐
+
+```bash
+/usr/bin/lldb \
+  -o "target create /Users/<你>/tools/inject-debug/Inject.latest" \
+  -o "settings set target.debug-file-search-paths /Users/<你>/tools/inject-debug" \
+  -o "gdb-remote 127.0.0.1:6040"
+```
+
+**一、`help gdb-remote` 官方原文（实测）：**
+
+```
+Connect to a process via remote GDB server.
+If no host is specifed, localhost is assumed.
+gdb-remote is an abbreviation for 'process connect --plugin gdb-remote
+connect://<hostname>:<port>'
+Syntax: gdb-remote [<hostname>:]<portnum>
+```
+
+⭐ **重要**：`gdb-remote host:port` **只是缩写**，完整形式是
+
+```
+process connect --plugin gdb-remote connect://127.0.0.1:6040
+```
+
+⇒ 这就解释了很多工具（如 CLion 的远程调试配置）为什么要求写 `connect://host:port`。
+**两种写法等价**，`gdb-remote` 更省事。
+
+**二、`help target create` 官方原文（实测）：**
+
+```
+Create a target using the argument as the main executable.
+Syntax: target create <cmd-options> <filename>
+
+  -s <filename> ( --symfile )      单独指定调试符号文件
+  -r <filename> ( --remote-file )  远端那个文件的完整路径（远程调试用）
+  -a <arch>     ( --arch )         指定架构
+  -p <name>     ( --platform )     指定 platform
+```
+
+> 💡 **两个实用选项**：
+> - `-r / --remote-file`：本地这份是符号副本、手机上跑的是**另一个路径**时，用它告诉 LLDB "远端文件在哪"
+> - `-s / --symfile`：调试信息和可执行文件**分开存放**时（符号单独一个文件），指过去
+
+**三、`settings set target.debug-file-search-paths`（实测确认存在）：**
+
+```
+target.debug-file-search-paths -- List of directories to be searched when
+                                 locating debug symbol files.
+```
+
+⇒ 就是"**当调试信息不在可执行文件里时，去哪些目录找**"。
+
+> 🚨 **本文这套流程建议的顺序：先 `target create`，再 `gdb-remote`。**
+>
+> 这样 LLDB 会**先建立本地 target 并加载本地符号**，然后才去连设备端 gdbserver。
+> **本文的配置按这个顺序写，已在本项目实测跑通。**
+>
+> 反过来（先 `gdb-remote`）在本项目环境里出现过**卡死 + 报一个跟真实原因无关的错**：
+> ```
+> error: no modules found that match 'Inject'
+> ```
+> **实测范围**：Apple lldb-1400（`/usr/bin/lldb`）与 CodeLLDB 的 lldb 22，两个客户端都出现过。
+>
+> ⚠️ **但这不构成"LLDB 的普遍铁律"** —— 不同版本 / 不同连接方式下行为可能有差异。
+>
+> **机理（供理解）**：先挂图纸（建立 target、加载符号），再通电话（连远端进程）；
+> 反过来就没有 target 可挂模块，对面报的模块名你一个都不认识。
+
+> 📌 **关于 platform 模式**：`lldb-server` 还有 `p[latform]` 子命令，客户端侧对应
+> `platform select remote-android`。实测 Apple lldb-1400 **支持**这个 platform（能选中，返回 `Connected: no`）。
+> 但**本项目走的是 gdbserver 模式**（`g`），因为那条路当时跑通了、链路更短更稳。
+> **本文档只保证 gdbserver 模式这条路。**
+
+### 第 7 步：干活（lldb 交互命令）
+
+| 命令 | 作用 |
+|---|---|
+| `c` | continue，继续跑 |
+| `n` / `s` / `fin` | 步过 / 步入 / 步出 |
+| `b 函数名`（`breakpoint set -n xxx`） | 按函数名下断点 |
+| `b 文件:行号`（`b WatchInject.h:483`） | 按源码位置下断点 |
+| `breakpoint list` | 看所有断点（`locations = 0` 表示没匹配上！） |
+| `bt` | backtrace，看调用栈 |
+| `frame variable` | 看当前函数**所有**局部变量 |
+| `p 表达式` | 求值，例 `p argc`、`p argv[0]` |
+| `thread list` | 看线程 |
+| `reg read pc lr x0` | 读寄存器 |
+| `image list` | 看已加载的模块（so/可执行文件） |
+| `quit` | 退出 |
+
+**断点命中不了？先自查这两条**：
+
+1. **这个代码在不在这个进程里？**
+   调试器**只看得到被调试进程真正加载的模块**。
+   例：`install_hooks()` 在 `libinlinehook.so` 里，而那个 so 是被注入到**目标 App** 里的 → 在**注入器**的调试会话里**永远断不到**。那是**另一个调试会话**的事。
+2. **断点设晚了？**
+   `so` 的 `constructor`（加载瞬间自动执行的代码）在你 attach 之前早就跑完了 → 必须在代码里手动插一个"停车窗口"（`raise(SIGSTOP)` 或 `sleep(20)`），才来得及下断点。
+
+### 第 8 步：拆现场（**千万别跳**）
+
+```bash
+adb shell "su -c 'pkill -9 lldb-server; pkill -9 Inject.dbg'"
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'"   # 应看到 0（= 没有 tracer 占着它）
+adb forward --remove-all
+```
+
+**不做的后果**：
+
+| 症状 | 真因 |
+|---|---|
+| 下轮注入报 `PTRACE_SEIZE ... Operation not permitted` | 残留孤儿占着 zygote64 |
+| **手机上启动任何 App 都卡住** | 同上 |
+
+**通用兜底（进程名被改过、`pkill` 找不到时）** —— 不问名字，直接问 zygote"谁在跟踪你"：
+
+```bash
+ZT=$(adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'" | tr -d '\r' | awk '{print $2}')
+if [ -n "$ZT" ] && [ "$ZT" != "0" ]; then
+  adb shell "su -c 'kill -CONT $ZT; kill -9 $ZT'"
+fi
+```
+
+---
+
+## 7. 故障速查：症状 → 真因 → 命令
+
+| 你看到的 | 别以为 | 其实是 | 怎么办 |
+|---|---|---|---|
+| `PTRACE_SEIZE ... Operation not permitted` | 手机不给 root | 已经有 tracer 占着这个进程（上一轮残留）—— 一个进程同时只能有一个 ptrace tracer | 第 3 步清理 |
+| `no modules found that match 'X'` / 连接卡死超时 | 符号丢了 / 网络问题 | `target create` 和 `gdb-remote` **顺序反了** | 换顺序 |
+| `error: no connection arguments` | 参数没写对 | `--attach` 后面那个值是**空的**，导致端口被当成了它的值 | 确认进程存在（`--attach` 可接 **pid 或进程名**） |
+| `Failed to connect port`（走 platform 模式时） | 端口 / 防火墙 | platform 那条路在本项目没走通（注意：`platform select remote-android` 本身是**可用**的） | 改用 `gdbserver` 模式 + `gdb-remote` |
+| `Address already in use`（手机 gsrv.log 里） | 网络 | 旧 lldb-server **没杀干净** | 先 `pkill -9 lldb-server` |
+| TCP 通了但**收不到回应** | 协议不兼容 | 连到**僵尸 server** 了 | `adb forward --remove-all` 后重来 |
+| `unbound variable` + 变量名后面跟问号 | 脚本坏了 | **`$VAR` 后面紧跟了全角符号** | 改成 `${VAR}` |
+| `No such file or directory`（路径看着没错） | 路径写错 | `$(...)` 被**本机 shell 先展开**了 | 加 `\` 转义 |
+| `Permission denied`（文件明明在） | 没权限访问 | 文件**没有执行权限** | `chmod 755` |
+| 断点是 `0 locations` | 断点下错地方 | 本地图纸和手机上跑的不是**同一份** | 重推产物 + 更新同名副本 |
+| 程序打印看不见 | 程序没跑起来 | 它的输出在**手机上的文件**里 | `adb shell tail -f <日志>` |
+| adb 命令卡好久不返回 | 命令写错了 | 后台子进程**继承了 `adb shell` 的 stdout/stderr 管道**，adb 在等管道关闭 | 三件套（第 5 章） |
+| lldb 里看不到源码，只有地址 | 调试器不行 | 缺 DWARF 调试信息，或符号没对上（`stripped` 只是可能原因之一） | `file` 看有没有 `debug_info`；`image list` 看符号加载；`breakpoint set` 看能不能出"文件:行号" |
+
+---
+
+## 8. 一页小抄（贴在屏幕边）
+
+```bash
+# ── 认设备 ──────────────────────────────
+adb devices
+
+# ── 传文件 + 给执行权 ────────────────────
+adb push <本地> <手机路径>
+adb shell "su -c 'chmod 755 <手机路径>'"
+
+# ── 清理残留（开工前 + 收工后都要）──────
+adb shell "su -c 'pkill -9 lldb-server; pkill -9 Inject.dbg'"
+adb shell "su -c 'grep TracerPid /proc/\$(pidof zygote64)/status'"    # 应看到 0（= 没有 tracer 占着它）
+
+# ── 起设备端 server（脱离 adb）───────────
+adb shell "su -c 'exec 0</dev/null; cd /data/local/tmp && setsid ./lldb-server gdbserver :6040 -- ./Inject.dbg <参数> > /data/local/tmp/gsrv.log 2>&1 &'"     # gdbserver 可简写 g
+
+# ── 拉隧道 ──────────────────────────────
+adb forward tcp:6040 tcp:6040
+adb forward --list
+adb forward --remove-all
+
+# ── 连接（顺序不能反！）──────────────────
+/usr/bin/lldb -o "target create <本地带符号ELF>" -o "gdb-remote 127.0.0.1:6040"
+
+# ── 看日志 / 看进程 ─────────────────────
+adb shell "su -c 'tail -f /data/local/tmp/gsrv.log'"
+adb shell "su -c 'ps -A -o PID,USER,NAME | grep -i inject'"
+adb shell "su -c 'ss -tlnp | grep 6040'"
+
+# ── 启动 App / 强杀 App ─────────────────
+adb shell monkey -p <包名> -c android.intent.category.LAUNCHER 1
+adb shell am force-stop <包名>
+```
+
+---
+
+## 附：引号速记卡
+
+| 写法 | 谁处理 | 用途 |
+|---|---|---|
+| `'...'` | **不过本机 shell**，原样传递 | 要原封不动交给里层 |
+| `"..."` | 本机 shell **会**展开 `$` 和 `$(...)` | 需要本机先算的时候 |
+| `"…\$…"` | `\$` 挡住本机展开 | 要让**手机**去算这个 `$` |
+| `"…'…'…"` | 外层给本机，内层给手机 | 最常见的双层结构 |
+| `"${VAR}中文"` | 用花括号隔离 | 防止变量名把中文吃进去 |
+
+**更准确的说法**（原来写的"引号层数 = 穿几道壳"**不严格**）：
+
+> **哪一层 shell 需要解释特殊字符，就在哪一层控制引用和转义。**
+
+因为决定引号写法的**不是"壳的数量"**，而是"**这个 `$` / `;` / `|` 你想让谁去解释**"：
+
+- 想让**手机**解释 → 在本机这层用 `\` 或单引号挡住（大多数情况）
+- 想让**本机**先算（少见，例如拼本地路径）→ 就用双引号让它展开
+- `adb shell "su -c '...'"` 只是**最常见的一种组合**，不是"层数的必然结果"
+
+（`"` 和 `'` 在这个双层结构里各管一层：外层管本机、内层管手机。）
+
+---
+
+## 附二：本文命令的核对状态（2026-09-20）
+
+> 这是"**可执行版本**"的诚实标注：哪些语法来自**官方 usage 原文**、哪些**本项目真跑通过**、
+> 哪些**只是语法正确但没实测**。别把没实测的当"已验证"。
+
+| 命令 / 章节 | 语法来源 | 本项目跑通 |
+|---|---|---|
+| `adb devices` / `push` / `pull` / `shell` | adb 标准 | ✅ 日常在用 |
+| `adb forward tcp:A tcp:B` / `--list` / `--remove-all` | adb 标准 | ✅ |
+| `su -c '...'` | MagiskSU 实测 `su --help` | ✅ |
+| `pkill -9 <模式>` / `kill -9 <pid>` / `kill -CONT` | toybox / procps | ✅ 实测 |
+| `grep TracerPid /proc/<pid>/status` | Linux procfs 标准 | ✅ 实测 |
+| `chmod 755` / `ls -t \| head -1` / `tr` / `awk` | POSIX / BSD | ✅ |
+| `file <elf>` | BSD `file` | ✅ |
+| `setsid` / `exec 0</dev/null` / `> f 2>&1 &` | POSIX shell | ✅ 实测（脱钩成功） |
+| **`lldb-server g[dbserver] :PORT -- prog args...`** | ✅ 官方 usage 原文 | ✅ |
+| `lldb-server --attach <pid-or-name>` | ✅ 官方 usage 原文 | ⚠️ **未单独实测** |
+| `lldb-server --setsid` | ✅ 官方 usage 原文 | ⚠️ **未实测**（我们用外层 setsid） |
+| `target create <elf>` | ✅ 官方 `help` 原文 | ✅ |
+| `gdb-remote <host>:<port>` | ✅ 官方 `help` 原文 | ✅ |
+| `process connect --plugin gdb-remote connect://h:p` | ✅ 官方 `help` 原文 | ⚠️ **未单独实测**（与上一行等价） |
+| `settings set target.debug-file-search-paths` | ✅ 实测 `settings list` 存在 | ✅ |
+| `platform select remote-android` | ✅ 实测可选中 | ⚠️ **完整流程未跑通**（本项目走 gdbserver） |
+| `monkey -p <pkg> -c android.intent.category.LAUNCHER 1` | Android 标准 | ✅ |
+| `am force-stop <pkg>` | Android 标准 | ✅ |
+| `ss -tlnp` | iproute2 | ⚠️ **未在本项目实测**（Android 上可能是 `netstat`） |
+
+**图例**：✅ = 官方原文 / 实测跑通 ｜ ⚠️ = 语法来自官方，但**本项目还没单独验过**
+
+> 🔍 **用法**：以后照这份手册敲命令，遇到 ⚠️ 那几行**先小步验证再用**。
+> 遇到 ✅ 那几行基本可以放心。
+
+---
+
+*文档位置：`/volume3/hermes/data/reports/安卓调试命令拆解手册.md`*
