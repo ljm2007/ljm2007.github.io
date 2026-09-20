@@ -1,0 +1,1346 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>安卓调试命令拆解手册（Linux / adb 篇） | 清风醉博客</title><meta name="keywords" content="Android, adb, 调试"><meta name="author" content="清风醉博客"><meta name="copyright" content="清风醉博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="写给”能照着敲、但不知道为什么这么写”的人。全部例子都来自真实的安卓逆向调试场景（远程调试手机上的命令行程序）。阅读顺序建议：第 1 章一定要先看（它是所有命令的语法底座），后面按需查。   📌 修订记录 v2（2026-09-20）：本文经用户逐条技术审查 + 真机实测校对，修正 10 处表述问题：g 的含义、DWARF 与 stripped 的区别、adb forward 的生命周期、pk">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓调试命令拆解手册（Linux &#x2F; adb 篇）">
+<meta property="og:url" content="http://ljm2007.github.io/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/index.html">
+<meta property="og:site_name" content="清风醉博客">
+<meta property="og:description" content="写给”能照着敲、但不知道为什么这么写”的人。全部例子都来自真实的安卓逆向调试场景（远程调试手机上的命令行程序）。阅读顺序建议：第 1 章一定要先看（它是所有命令的语法底座），后面按需查。   📌 修订记录 v2（2026-09-20）：本文经用户逐条技术审查 + 真机实测校对，修正 10 处表述问题：g 的含义、DWARF 与 stripped 的区别、adb forward 的生命周期、pk">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7">
+<meta property="article:published_time" content="2026-09-20T02:07:14.000Z">
+<meta property="article:modified_time" content="2026-09-20T02:11:59.901Z">
+<meta property="article:author" content="清风醉博客">
+<meta property="article:tag" content="Android, adb, 调试">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '安卓调试命令拆解手册（Linux / adb 篇）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-20 10:11:59'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">18</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">18</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">清风醉博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">安卓调试命令拆解手册（Linux / adb 篇）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-20T02:07:14.000Z" title="发表于 2026-09-20 10:07:14">2026-09-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-20T02:11:59.901Z" title="更新于 2026-09-20 10:11:59">2026-09-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Android/">Android</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="安卓调试命令拆解手册（Linux / adb 篇）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>写给”能照着敲、但不知道为什么这么写”的人。<br>全部例子都来自真实的安卓逆向调试场景（远程调试手机上的命令行程序）。<br>阅读顺序建议：<strong>第 1 章一定要先看</strong>（它是所有命令的语法底座），后面按需查。</p>
+</blockquote>
+<blockquote>
+<p><strong>📌 修订记录 v2（2026-09-20）</strong>：本文经用户逐条技术审查 + 真机实测校对，修正 10 处表述问题：<br><code>g</code> 的含义、DWARF 与 stripped 的区别、<code>adb forward</code> 的生命周期、<code>pkill</code> 匹配语义、<br><code>TracerPid</code> 的适用边界、ptrace 独占规则（非 Android 特有）、SIGTERM&#x2F;setsid&#x2F;<code>&amp;</code> 的因果表述、<br>引号口诀。并补入官方 usage 原文（<code>lldb-server gdbserver</code>、<code>help gdb-remote</code>、<code>target create</code>）。</p>
+<p>⚠️ <strong>表述原则</strong>：**只写机制本身，不把”某种效果&#x2F;副作用”写成”机制的定义”**；<br>**不把”本项目实测现象”写成”普遍规律”**。</p>
+</blockquote>
+<hr>
+<h2 id="0-一句话总纲"><a href="#0-一句话总纲" class="headerlink" title="0. 一句话总纲"></a>0. 一句话总纲</h2><p>一条命令 &#x3D; <strong>交给谁干 + 干什么</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;pkill -9 lldb-server&#x27;&quot;</span></span><br><span class="line"> ↑                ↑          ↑</span><br><span class="line">谁（程序）      怎么干       干的活儿</span><br></pre></td></tr></table></figure>
+
+<p>看着复杂，只是因为<strong>中间转了好几手</strong>。第 1 章专门解决”转手”问题。</p>
+<hr>
+<h2 id="1-语法零件（最重要的一章）"><a href="#1-语法零件（最重要的一章）" class="headerlink" title="1. 语法零件（最重要的一章）"></a>1. 语法零件（最重要的一章）</h2><h3 id="1-1-命令的基本形状"><a href="#1-1-命令的基本形状" class="headerlink" title="1.1 命令的基本形状"></a>1.1 命令的基本形状</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">程序名 参数1 参数2 ...</span><br></pre></td></tr></table></figure>
+
+<p>例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pkill -9 lldb-server</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>pkill</code> &#x3D; 程序名（要执行的程序）</li>
+<li><code>-9</code> &#x3D; <strong>选项</strong>（以 <code>-</code> 开头，控制程序的行为）</li>
+<li><code>lldb-server</code> &#x3D; <strong>参数</strong>（要处理的对象，这里是进程名）</li>
+</ul>
+<blockquote>
+<p><strong>打比方</strong>：<code>pkill</code> 是工人，<code>-9</code> 是”用多大劲”，<code>lldb-server</code> 是”砸哪个东西”。</p>
+</blockquote>
+<h3 id="1-2-⭐-引号：这是所有困惑的源头"><a href="#1-2-⭐-引号：这是所有困惑的源头" class="headerlink" title="1.2 ⭐ 引号：这是所有困惑的源头"></a>1.2 ⭐ 引号：这是所有困惑的源头</h3><p>服务器&#x2F;手机上调试，命令经常要<strong>穿过两道壳</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">你在 Mac 上敲的          →  Mac 的 shell 先处理一遍（zsh/bash）</span><br><span class="line">   ↓</span><br><span class="line">交给 adb                  →  adb 把收到的参数/命令交给手机端执行</span><br><span class="line">   ↓</span><br><span class="line">手机上的 shell 再处理一遍  →  sh/mksh</span><br><span class="line">   ↓</span><br><span class="line">最后交给 root 执行</span><br></pre></td></tr></table></figure>
+
+<p><strong>所以引号的使命是：让「当前这一层 shell」跳过里面的内容，不去展开 &#x2F; 解释它。</strong></p>
+<blockquote>
+<p>⚠️ <strong>注意”这一层”三个字</strong>。引号只管<strong>自己这一层</strong>：<br>如果引号在往下传的过程中被剥掉了，<strong>下一层 shell 照样会解释</strong>它看到的特殊字符。<br>所以真正要掌握的是”按层控制”——见 1.3 节与文末《引号速记卡》。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;pkill -9 lldb-server&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>拆开看这个”千层饼”：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>谁处理</th>
+<th>引号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最外</td>
+<td>Mac 的 shell</td>
+<td><code>&quot;</code> 双引号</td>
+<td>把整块内容当成<strong>一个</strong>参数交给 <code>adb</code></td>
+</tr>
+<tr>
+<td>中间</td>
+<td>手机上的 shell</td>
+<td><code>&#39;</code> 单引号</td>
+<td>把 <code>pkill -9 lldb-server</code> 当成<strong>一个</strong>参数交给 <code>su</code></td>
+</tr>
+<tr>
+<td>最里</td>
+<td>root 身份</td>
+<td>—</td>
+<td>真正执行</td>
+</tr>
+</tbody></table>
+<p><strong>为什么必须有最外面那对双引号？</strong></p>
+<blockquote>
+<p>📌 <strong>本节 2026-09-20 经真机实测推翻重写。</strong> 我最初写的解释（”不加引号参数会被拆散导致命令失效”）<br><strong>是错的</strong>，被用户实测推翻。以下保留正确结论 + 证据。<br><strong>教训：shell 行为不能靠推理，必须实测。</strong></p>
+</blockquote>
+<p><strong>⚡ 先看一个反直觉的事实：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell su -c pkill -9 <span class="built_in">sleep</span>     <span class="comment"># ✅ 这条其实能正常杀掉 sleep！</span></span><br></pre></td></tr></table></figure>
+
+<p>在本项目的设备上（<strong>MagiskSU</strong>），<strong>不加引号也能工作</strong>。原因：</p>
+<ol>
+<li>Mac 的 shell 确实把参数拆成了 <strong>5 块</strong></li>
+<li>但 <code>adb</code> 会<strong>用空格把它们重新拼回一整条</strong>再发给手机 → 手机收到的还是 <code>su -c pkill -9 sleep</code></li>
+<li>MagiskSU 的用法是 <code>su [options] [-] [user [argument...]]</code> —— <strong><code>-c</code> 后面的剩余参数它也会一起拼成命令</strong><br>（实测 <code>adb shell su -c echo hello world</code> → 输出 <code>hello world</code>，两个词都进去了）</li>
+</ol>
+<p>⇒ <strong>“参数被拆散导致失败”这个担心，在纯字母数字的命令上不成立。</strong></p>
+<p><strong>🎯 那真正的危险在哪？</strong></p>
+<p>不在”拆散”，在于 ⭐ <strong>本机的 shell 会抢先把特殊字符解释掉，而且覆水难收</strong>。</p>
+<p>只要命令里有这些字符，<strong>Mac 的 shell 会在 adb 转发之前就动手</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字符</th>
+<th>Mac 会干的事</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$HOME</code> &#x2F; <code>$VAR</code></td>
+<td>换成 <strong>Mac 上</strong>那个变量的值</td>
+</tr>
+<tr>
+<td><code>$(命令)</code></td>
+<td>在 <strong>Mac 上</strong>执行，把结果填进去</td>
+</tr>
+<tr>
+<td><code>;</code></td>
+<td>把后半句当<strong>新命令</strong>，在 <strong>Mac 上</strong>跑</td>
+</tr>
+<tr>
+<td><code>|</code></td>
+<td>管道接到 <strong>Mac 的命令</strong>上</td>
+</tr>
+<tr>
+<td><code>*</code> <code>?</code></td>
+<td>在 <strong>Mac 的目录</strong>里展开成文件名</td>
+</tr>
+<tr>
+<td><code>&gt;</code> <code>&lt;</code></td>
+<td>读写的文件在 <strong>Mac 上</strong></td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td>后台跑的是 <strong>Mac 上</strong>那半句</td>
+</tr>
+</tbody></table>
+<p><strong>实测对照</strong>（Mac：HOME&#x3D;<code>/Users/ljm2007</code>、hostname&#x3D;<code>ljm2007deMacBook-Pro.local</code>；<br>手机：HOME&#x3D;<code>/</code>、hostname&#x3D;<code>localhost</code>）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ── 测试 1：变量由谁解释 ──</span></span><br><span class="line">$ adb shell su -c <span class="built_in">echo</span> <span class="variable">$HOME</span></span><br><span class="line">/Users/ljm2007            ← ❌ 输出的是 Mac 的 HOME（被 Mac 抢先换掉了）</span><br><span class="line"></span><br><span class="line">$ adb shell <span class="string">&quot;su -c &#x27;echo \$HOME&#x27;&quot;</span></span><br><span class="line">/                         ← ✅ 手机的 HOME</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 测试 2：分号由谁解释 ──</span></span><br><span class="line">$ adb shell su -c <span class="built_in">echo</span> A ; pidof lldb-server</span><br><span class="line">A</span><br><span class="line">pidof: <span class="built_in">command</span> not found  ← ❌ 后半句跑到 Mac 上执行了（Mac 没有 pidof）</span><br><span class="line"></span><br><span class="line">$ adb shell <span class="string">&quot;su -c &#x27;echo A; pidof lldb-server&#x27;&quot;</span></span><br><span class="line">A</span><br><span class="line">16457                     ← ✅ 后半句在手机上执行（返回真实 PID）</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 测试 3：命令替换由谁执行 ──</span></span><br><span class="line">$ adb shell su -c <span class="built_in">echo</span> $(hostname)</span><br><span class="line">ljm2007deMacBook-Pro.local ← ❌ Mac 的 hostname</span><br><span class="line"></span><br><span class="line">$ adb shell <span class="string">&quot;su -c &#x27;echo \$(hostname)&#x27;&quot;</span></span><br><span class="line">localhost                  ← ✅ 手机的 hostname</span><br></pre></td></tr></table></figure>
+
+<p><strong>⇒ 引号的真正使命（这是准确版）：</strong></p>
+<blockquote>
+<p>**不是”把参数包成一块”**（adb 自己会拼回去，拆散无损），<br><strong>而是”让本机的 shell 跳过里面的内容，一个字符都别动”。</strong></p>
+</blockquote>
+<p><strong>什么时候必须加引号 —— 一句话判断：</strong></p>
+<blockquote>
+<p>命令里出现 <code>$ ; | &amp; &gt; &lt; * ? ~ 引号</code> 这些字符 → <strong>必须加</strong>。<br>纯字母数字（如 <code>pkill -9 sleep</code>）→ 不加也能跑。</p>
+</blockquote>
+<p>⭐ <strong>实用建议：一律按”加法”写（宁可多加引号）。</strong></p>
+<p>因为”不加也偶尔能跑”这种<strong>时灵时不灵</strong>的写法最要命：</p>
+<ul>
+<li>今天 <code>pkill -9 sleep</code> 对了 → 你以为不用加引号</li>
+<li>明天写 <code>grep TracerPid /proc/$(pidof zygote64)/status</code> → <strong><code>$(...)</code> 悄悄在 Mac 上执行了</strong>，<br>报一个跟手机毫无关系的错，你能查半天</li>
+</ul>
+<p><strong>别赌，一律加引号。</strong></p>
+<blockquote>
+<p>💡 <strong>顺带一提</strong>：那对引号仍然值得打个比方 —— 它是<strong>快递箱</strong>，<br>作用是”告诉本机 shell：这箱货别拆，原样送到对面”。<br>只是它防的是”被拆开检查&#x2F;改写”，不是”零件散落”。</p>
+</blockquote>
+<h3 id="1-3-单引号-vs-双引号（关键区别）"><a href="#1-3-单引号-vs-双引号（关键区别）" class="headerlink" title="1.3 单引号 vs 双引号（关键区别）"></a>1.3 单引号 vs 双引号（关键区别）</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>双引号 <code>&quot;...&quot;</code></th>
+<th>单引号 <code>&#39;...&#39;</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>里面的 <code>$变量</code></td>
+<td><strong>会</strong>展开</td>
+<td><strong>不</strong>展开，原样</td>
+</tr>
+<tr>
+<td>里面的 <code>$(命令)</code></td>
+<td><strong>会</strong>执行</td>
+<td><strong>不</strong>执行，原样</td>
+</tr>
+<tr>
+<td>里面的 <code>\</code></td>
+<td>对 <code>$</code>、<code>&quot;</code>、<code>\</code> 等<strong>特定字符</strong>有转义作用</td>
+<td>一律按普通字符处理（不做转义）</td>
+</tr>
+<tr>
+<td>里面再放引号</td>
+<td>可以放 <code>&#39;</code></td>
+<td>不能放 <code>&#39;</code></td>
+</tr>
+</tbody></table>
+<p><strong>记住一句（准确版）</strong>：</p>
+<blockquote>
+<p><strong>在当前这一层 shell 里，单引号会让里面的内容按字面处理</strong> ——<br><code>$</code>、<code>$(...)</code>、<code>*</code>、<code>;</code> 等都不会被<strong>这一层</strong>展开或解释。</p>
+</blockquote>
+<p>⚠️ <strong>别理解成”包上单引号就永远安全”。</strong> 单引号只管<strong>当前这一层</strong>；<br>如果引号在往下传的过程中被剥掉了，<strong>下一层 shell 仍可能继续解释</strong>它看到的内容。</p>
+<p>统一口径见文末《引号速记卡》：</p>
+<blockquote>
+<p><strong>哪一层 shell 需要解释特殊字符，就在哪一层控制引用和转义。</strong></p>
+</blockquote>
+<h3 id="1-4-⭐-转义-——-调试命令里最常见的翻车点"><a href="#1-4-⭐-转义-——-调试命令里最常见的翻车点" class="headerlink" title="1.4 ⭐ \$ 转义 —— 调试命令里最常见的翻车点"></a>1.4 ⭐ <code>\$</code> 转义 —— 调试命令里最常见的翻车点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ❌ 错的</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/<span class="subst">$(pidof zygote64)</span>/status&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ✅ 对的</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么？</strong></p>
+<p><code>$(...)</code> 是<strong>命令替换</strong>——shell 看到它，就会<strong>先执行里面的命令，再把结果填进去</strong>。</p>
+<p>上面那条错的命令，<strong>Mac 的 shell 会抢先在 Mac 上执行 <code>pidof zygote64</code><strong>。Mac 上当然没有 zygote64 → 算出</strong>空字符串</strong> → 命令变成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/proc//status     ← 路径里少了一层</span><br></pre></td></tr></table></figure>
+
+<p>手机上执行就报 <code>No such file or directory</code>。<strong>你以为是路径写错了，其实是”谁先展开”的问题。</strong></p>
+<p>加上 <code>\</code> 之后，<code>$</code> 被”钉住”，不再被 Mac 的 shell 处理，而是原样传给手机，由<strong>手机</strong>去算 <code>pidof zygote64</code> —— 这才是我们想要的。</p>
+<blockquote>
+<p><strong>口诀</strong>：**<code>$</code> 要由哪台机器算，就得在哪一层转义。要手机算 → Mac 这层加 <code>\</code>。**</p>
+</blockquote>
+<h3 id="1-5-管道-——-把上一条的输出喂给下一条"><a href="#1-5-管道-——-把上一条的输出喂给下一条" class="headerlink" title="1.5 管道 | —— 把上一条的输出喂给下一条"></a>1.5 管道 <code>|</code> —— 把上一条的输出喂给下一条</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -A | grep Inject</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>ps -A</code> 输出一堆进程</li>
+<li><code>|</code> 把这一堆<strong>当成下一条命令的输入</strong>塞过去</li>
+<li><code>grep Inject</code> 从里面筛出含 <code>Inject</code> 的行</li>
+</ul>
+<blockquote>
+<p><strong>打比方</strong>：<code>|</code> 就是流水线上的传送带。左边产出，右边加工。</p>
+</blockquote>
+<p>可以连着接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span> | <span class="built_in">tr</span> -d <span class="string">&#x27;\r&#x27;</span> | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>去回车</code> → <code>取第 2 列</code>，两道理序。</p>
+<h3 id="1-6-重定向-gt-gt-gt-2-gt-amp-1"><a href="#1-6-重定向-gt-gt-gt-2-gt-amp-1" class="headerlink" title="1.6 重定向 &gt; &gt;&gt; 2&gt;&amp;1"></a>1.6 重定向 <code>&gt;</code> <code>&gt;&gt;</code> <code>2&gt;&amp;1</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setsid ./Inject.dbg &gt; /data/local/tmp/x.log 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&gt;</code></td>
+<td>把输出<strong>写进</strong>文件（<strong>覆盖</strong>，原内容没了）</td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code></td>
+<td>追加到文件末尾（<strong>不覆盖</strong>）</td>
+</tr>
+<tr>
+<td><code>2&gt;&amp;1</code></td>
+<td>把”报错信息”也一起送到上面那个文件</td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td>丢到后台跑，不占着当前终端</td>
+</tr>
+</tbody></table>
+<p><strong>为什么需要 <code>2&gt;&amp;1</code>？</strong></p>
+<p>程序有两条输出通道（专业叫”文件描述符”）：</p>
+<ul>
+<li><strong>1</strong> &#x3D; 正常输出（stdout）</li>
+<li><strong>2</strong> &#x3D; 报错信息（stderr）</li>
+</ul>
+<p><code>&gt; x.log</code> <strong>只管 1</strong>，报错还是直接喷在屏幕上。<code>2&gt;&amp;1</code> &#x3D; “把 2 也送到 1 现在去的那个地方”。</p>
+<blockquote>
+<p>⚠️ <strong>顺序不能反</strong>：必须 <code>&gt; file 2&gt;&amp;1</code>。写成 <code>2&gt;&amp;1 &gt; file</code> 是”先让 2 跟着屏幕，再把 1 改到文件”，报错还是没进文件。</p>
+</blockquote>
+<h3 id="1-7-后台-amp-和它的坑"><a href="#1-7-后台-amp-和它的坑" class="headerlink" title="1.7 后台 &amp; 和它的坑"></a>1.7 后台 <code>&amp;</code> 和它的坑</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./long_task &amp;</span><br></pre></td></tr></table></figure>
+
+<p><code>&amp;</code> &#x3D; 让这个程序在后台跑，终端立刻还给你。</p>
+<p><strong>但是</strong>：如果在 <code>adb shell</code> 里用 <code>&amp;</code>，<strong>有可能</strong>遇到一个很阴险的问题 ——<br><strong><code>adb shell</code> 长时间不返回</strong>（本项目实测卡过 560 秒）。</p>
+<p>原因：<code>adb shell</code> <strong>会等自己那条管道被关掉</strong>才收工；而 <code>&amp;</code> 起的子进程<br><strong>继承了它的 stdout&#x2F;stderr 管道</strong>，子进程活着 → 管道不关 →<br><strong>adb 就在等一个（在子进程存活期间）不会关闭的管道</strong>。</p>
+<blockquote>
+<p>📌 <strong>说”永远不返回”太绝对</strong>：这是”<strong>某些情况下会发生</strong>“，取决于子进程有没有继承管道、<br>用的哪个 adb 客户端。但风险足够大，<strong>一律按最坏情况处理</strong>。</p>
+</blockquote>
+<p><strong>解决要三件套一起上</strong>（第 5 章细讲）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su -c <span class="string">&#x27;exec 0&lt;/dev/null; cd /data/local/tmp &amp;&amp; setsid ./Inject.dbg &gt; x.log 2&gt;&amp;1 &amp;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-8-命令替换"><a href="#1-8-命令替换" class="headerlink" title="1.8 命令替换 $(...)"></a>1.8 命令替换 <code>$(...)</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ZT=$(adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span> | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>$(...)</code> &#x3D; <strong>把里面命令的输出结果，当成一个值存起来</strong>。左边 <code>ZT=</code> 是这个值的名字。</p>
+<p>之后就能用 <code>$ZT</code> 引用它：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">kill</span> -9 <span class="variable">$ZT</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ 引用变量时，如果<strong>后面紧跟中文或全角符号</strong>，要写成 <code>$&#123;ZT&#125;</code>，否则 shell 会把中文当成变量名的一部分，报 <code>unbound variable</code>。<br>例：<code>echo &quot;就绪（:$PORT）&quot;</code> ❌ → <code>echo &quot;就绪（:$&#123;PORT&#125;）&quot;</code> ✅</p>
+</blockquote>
+<h3 id="1-9-一行里串联多个命令"><a href="#1-9-一行里串联多个命令" class="headerlink" title="1.9 一行里串联多个命令"></a>1.9 一行里串联多个命令</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>a; b</code></td>
+<td>a 干完干 b（不管 a 成不成功）</td>
+</tr>
+<tr>
+<td><code>a &amp;&amp; b</code></td>
+<td>a <strong>成功</strong>才干 b</td>
+</tr>
+<tr>
+<td><code>a || b</code></td>
+<td>a <strong>失败</strong>才干 b</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push x /data/local/tmp/ &amp;&amp; adb shell <span class="built_in">chmod</span> 755 /data/local/tmp/x</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-adb-篇"><a href="#2-adb-篇" class="headerlink" title="2. adb 篇"></a>2. adb 篇</h2><h3 id="2-1-adb-是什么"><a href="#2-1-adb-是什么" class="headerlink" title="2.1 adb 是什么"></a>2.1 adb 是什么</h3><p><strong>adb &#x3D; Android Debug Bridge</strong>，”安卓调试桥”。</p>
+<p><strong>打比方</strong>：手机是台远程机器，<code>adb</code> 就是你手上唯一的<strong>遥控手柄</strong>。后面所有命令都通过它转发到手机。</p>
+<p>数据线（或 USB&#x2F;WiFi 调试）就是那根”电线”。</p>
+<h3 id="2-2-adb-devices-——-看设备在不在"><a href="#2-2-adb-devices-——-看设备在不在" class="headerlink" title="2.2 adb devices —— 看设备在不在"></a>2.2 <code>adb devices</code> —— 看设备在不在</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List of devices attached</span><br><span class="line">94NY19J44	device</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>94NY19J44</code> &#x3D; 设备序列号（<code>device</code> 是<strong>状态</strong>，不是名字）</li>
+<li>常见状态：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>意思</th>
+<th>怎么办</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>device</code></td>
+<td>正常 ✅</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>unauthorized</code></td>
+<td>手机上有”允许 USB 调试”弹窗没点</td>
+<td>手机上点允许</td>
+</tr>
+<tr>
+<td><code>offline</code></td>
+<td>掉线了</td>
+<td>拔插数据线 &#x2F; <code>adb kill-server</code> 重启</td>
+</tr>
+<tr>
+<td><strong>列表为空</strong></td>
+<td>根本没连上</td>
+<td>检查线、检查手机上 USB 调试开关</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>为什么这步永远排第一</strong>：<code>adb</code> 是唯一通道。设备不认，后面全部白搭。</p>
+</blockquote>
+<h3 id="2-3-adb-shell-——-在手机上执行命令"><a href="#2-3-adb-shell-——-在手机上执行命令" class="headerlink" title="2.3 adb shell —— 在手机上执行命令"></a>2.3 <code>adb shell</code> —— 在手机上执行命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="built_in">ls</span> /data/local/tmp</span><br></pre></td></tr></table></figure>
+
+<p>相当于”让手机的 shell 跑一条命令，结果传回来”。</p>
+<p><strong>不带命令</strong>单独执行 <code>adb shell</code>，会给你一个<strong>手机上的交互终端</strong>（像登录到手机里），敲 <code>exit</code> 退出。</p>
+<blockquote>
+<p>注意：手机上的 Linux 是<strong>精简版</strong>（busybox &#x2F; toybox），不少命令和 Mac 不完全一样，参数支持有差异。</p>
+</blockquote>
+<h3 id="2-4-adb-push-x2F-adb-pull-——-传文件"><a href="#2-4-adb-push-x2F-adb-pull-——-传文件" class="headerlink" title="2.4 adb push &#x2F; adb pull —— 传文件"></a>2.4 <code>adb push</code> &#x2F; <code>adb pull</code> —— 传文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb push  本地文件  手机路径      <span class="comment"># 电脑 → 手机</span></span><br><span class="line">adb pull  手机文件  本地路径      <span class="comment"># 手机 → 电脑</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push ./Inject /data/local/tmp/Inject.dbg</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong>不要假定 <code>adb push</code> 之后的文件具有你需要的执行权限。</strong><br>它受 umask &#x2F; 目标目录 &#x2F; 已有文件等多种因素影响，<strong>别依赖 push 出来的默认状态</strong>，<br>运行前显式给一次：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="built_in">chmod</span> 755 /data/local/tmp/Inject.dbg</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="2-5-⭐-adb-forward-——-拉”电话线”"><a href="#2-5-⭐-adb-forward-——-拉”电话线”" class="headerlink" title="2.5 ⭐ adb forward —— 拉”电话线”"></a>2.5 ⭐ <code>adb forward</code> —— 拉”电话线”</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:6040 tcp:6040</span><br></pre></td></tr></table></figure>
+
+<p>意思是：<strong>把电脑的 6040 端口，接到手机的 6040 端口上</strong>。</p>
+<p><strong>为什么必需？</strong></p>
+<p>手机上的调试服务器（<code>lldb-server</code>）只会监听<strong>手机自己</strong>的 6040（专业说法：监听 localhost，不对外网开放）。电脑直接连是连不上的。<code>adb forward</code> 给你搭了一座<strong>隧道</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Mac 的调试器 → 127.0.0.1:6040  ---[隧道]---&gt;  手机的 6040 → lldb-server</span><br></pre></td></tr></table></figure>
+
+<p><strong>常用变体：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb forward --list          <span class="comment"># 看现在有哪些隧道</span></span><br><span class="line">adb forward --remove tcp:6040    <span class="comment"># 拆掉这一条</span></span><br><span class="line">adb forward --remove-all    <span class="comment"># 全拆掉</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong><code>adb forward</code> 的生命周期属于 adb server，不属于你当前这个终端。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb forward → 注册到 adb server → 不是当前 shell 的临时进程</span><br><span class="line">            → 但 adb server 退出/重启后，这些 forward 通常就没了</span><br></pre></td></tr></table></figure>
+
+<p>所以两边都别搞错：</p>
+<ul>
+<li>它<strong>不会</strong>因为你关掉终端窗口而消失（比”当前终端”持久）</li>
+<li>但它<strong>也不是永久保存</strong>的（<code>adb kill-server</code> &#x2F; 重启电脑 &#x2F; adb server 崩溃后就没了）</li>
+<li>旧隧道残留时，可能连到”上一轮留下的僵尸端口”</li>
+</ul>
+<p><strong>收工必做</strong>：<code>adb forward --remove-all</code>；开工时用 <code>adb forward --list</code> 确认现状。</p>
+</blockquote>
+<h3 id="2-6-启动-x2F-杀掉-App"><a href="#2-6-启动-x2F-杀掉-App" class="headerlink" title="2.6 启动 &#x2F; 杀掉 App"></a>2.6 启动 &#x2F; 杀掉 App</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动某个 App（monkey 本来是压力测试工具，这里借它发一个&quot;启动&quot;事件）</span></span><br><span class="line">adb shell monkey -p com.ss.android.ugc.aweme -c android.intent.category.LAUNCHER 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强制停掉某个 App</span></span><br><span class="line">adb shell am force-stop com.ss.android.ugc.aweme</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-p &lt;包名&gt;</code> &#x3D; 指定目标 App</li>
+<li><code>-c android.intent.category.LAUNCHER</code> &#x3D; 走”点桌面图标启动”那条路</li>
+<li>结尾的 <code>1</code> &#x3D; 只发 1 个事件</li>
+</ul>
+<hr>
+<h2 id="3-手机里的-Linux-篇"><a href="#3-手机里的-Linux-篇" class="headerlink" title="3. 手机里的 Linux 篇"></a>3. 手机里的 Linux 篇</h2><h3 id="3-1-su-c-——-为什么每条命令都要它"><a href="#3-1-su-c-——-为什么每条命令都要它" class="headerlink" title="3.1 su -c —— 为什么每条命令都要它"></a>3.1 <code>su -c</code> —— 为什么每条命令都要它</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su -c <span class="string">&#x27;pkill -9 lldb-server&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>su</code> &#x3D; switch user，”切换用户”</li>
+<li><code>-c</code> &#x3D; command，”执行这条命令”</li>
+</ul>
+<p>不给用户名时默认切到 <strong>root</strong>（最高权限）。</p>
+<blockquote>
+<p>⚠️ <strong>注意：Android 上的 <code>su</code> 不是标准 Unix <code>su</code>。</strong> 本项目设备上是 <strong>MagiskSU</strong><br>（实测 <code>adb shell su --help</code> 输出 <code>MagiskSU</code> + <code>Usage: su [options] [-] [user [argument...]]</code>）。<br>不同实现（MagiskSU &#x2F; KernelSU &#x2F; 厂商自带 su）在<strong>参数解析细节上会有差异</strong> ——<br>例如 <code>-c</code> 后面剩余的参数怎么处理，各家就不一样<br>（实测 MagiskSU 会把它们<strong>一起拼成命令</strong>，详见 1.2 节）。<br><strong>遇到 su 相关的怪异行为，先 <code>su --help</code> 看这个版本的官方 usage。</strong></p>
+</blockquote>
+<p><strong>为什么调试命令几乎都要 root？</strong></p>
+<table>
+<thead>
+<tr>
+<th>要干的事</th>
+<th>需要 root 的原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>跟踪别的进程（ptrace）</td>
+<td>普通 App 之间互相隔离，不许越界</td>
+</tr>
+<tr>
+<td>看&#x2F;杀别的进程</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>访问 <code>/data/local/tmp</code> 之外的东西</td>
+<td>权限限制</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>打比方</strong>：手机里的 Linux 权限像小区门禁。普通 App 只能进自己家；<code>su</code> 就是拿<strong>万能钥匙</strong>去开所有门。</p>
+</blockquote>
+<h3 id="3-2-proc-——-内核给每个进程开的”体检报告”"><a href="#3-2-proc-——-内核给每个进程开的”体检报告”" class="headerlink" title="3.2 /proc —— 内核给每个进程开的”体检报告”"></a>3.2 <code>/proc</code> —— 内核给每个进程开的”体检报告”</h3><p><code>/proc</code> 是<strong>内存里的假目录</strong>（不占硬盘），每个运行中的进程都有一个以 PID 命名的文件夹：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/proc/1234/          ← 进程 1234 的信息</span><br><span class="line">├── status           ← 体检报告（状态、内存、谁在跟踪它…）</span><br><span class="line">├── cmdline          ← 启动时的完整命令行</span><br><span class="line">├── maps             ← 内存里都加载了哪些 so / 库</span><br><span class="line">└── ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>例子：看 zygote64 的 PID</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;pidof zygote64&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line">&gt; ⚠️ **本文假设 `pidof zygote64` 返回单个 PID。**</span><br><span class="line">&gt; 如果设备上返回了**多个 PID**（理论上可能），`/proc/$(pidof zygote64)/status`</span><br><span class="line">&gt; 会展开成 `/proc/1234 5678/status` —— **这个路径不成立**。</span><br><span class="line">&gt; 那种情况下要逐个检查：`/proc/&lt;每个PID&gt;/status`。</span><br></pre></td></tr></table></figure>
+
+<p><strong>读它的状态报告：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TracerPid:	0</span><br></pre></td></tr></table></figure>
+
+<p>⭐ <strong><code>TracerPid</code> 是什么？</strong></p>
+<blockquote>
+<p>“<strong>正在用 ptrace 跟踪我的那个进程的 PID</strong>“。没有就是 <code>0</code>。</p>
+</blockquote>
+<p><strong>它只能说明这一件事（别扩大解释）：</strong></p>
+<ul>
+<li><code>TracerPid: 0</code> → <strong>当前这个进程没有被任何 ptrace tracer 跟踪</strong></li>
+<li><code>TracerPid: 1234</code> → <strong>PID 1234 正在 ptrace 跟踪它</strong></li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>不要把它读成”环境干净”。</strong> 它证明不了下面这些（这些压根不在它的表达能力范围内）：<br>没有 Frida、没有其他 Hook 框架、没有 Magisk 模块、没有别的监控、<br>没有 SELinux 策略干预、没有其它调试机制。<br><strong>它只是某个进程的一个”有没有人跟踪我”字段，就这么多。</strong></p>
+</blockquote>
+<p><strong>那为什么它对调试这么关键？</strong></p>
+<p>因为 ptrace 有一条<strong>通用规则</strong>（Linux 内核层面就是这样，<strong>不是 Android 为 zygote 特设的</strong>）：</p>
+<blockquote>
+<p><strong>一个进程，同一时刻只能有一个 ptrace tracer。</strong></p>
+</blockquote>
+<p>所以：<strong>只要已经有 tracer 占着 <code>zygote64</code>，新的 <code>PTRACE_SEIZE</code> 就会失败</strong> ——<br>本项目遇到的就是下面这个（EPERM）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PTRACE_SEIZE ... Operation not permitted</span><br></pre></td></tr></table></figure>
+
+<p><strong>⇒ 排查口径（本文档的用法）：</strong></p>
+<ul>
+<li><code>TracerPid</code> <strong>非 0</strong> → <strong>确定有个东西占着它，必须清掉</strong>（这是唯一能下的确定结论）</li>
+<li><code>TracerPid</code> 是 <strong>0</strong> → 至少说明<strong>没有 tracer 占着</strong>，可以试注入；<br>但<strong>不代表</strong>没有 Frida &#x2F; Hook &#x2F; 监控在别的地方等着你</li>
+</ul>
+<p><strong>把它当”这个进程有没有被占”的快速探针，不要当”环境安全&#x2F;干净”的体检结论。</strong></p>
+<h3 id="3-3-看进程：ps-x2F-pidof-x2F-pgrep"><a href="#3-3-看进程：ps-x2F-pidof-x2F-pgrep" class="headerlink" title="3.3 看进程：ps &#x2F; pidof &#x2F; pgrep"></a>3.3 看进程：<code>ps</code> &#x2F; <code>pidof</code> &#x2F; <code>pgrep</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;ps -A&#x27;&quot;</span>                       <span class="comment"># 列出所有进程</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;ps -A | grep Inject&#x27;&quot;</span>         <span class="comment"># 筛出含 Inject 的行</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;pidof lldb-server&#x27;&quot;</span>           <span class="comment"># 只要 PID（可能返回多个，空格分隔）</span></span><br></pre></td></tr></table></figure>
+
+<p><strong><code>ps -A -o PID,USER,NAME</code></strong> —— 自己挑要显示哪几列：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;ps -A -o PID,USER,NAME | grep -i inject&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">29944 u0_a232   com.example.testptrace     ← 真 App</span><br><span class="line">22341 root      com.example.testptrace     ← 伪装过的我们的程序（靠 USER 区分！）</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>-o</code> &#x3D; 指定输出哪些列</li>
+<li>⚠️ <strong>改名伪装过的进程，<code>pidof</code> &#x2F; <code>pkill</code> 按原名全都找不到</strong> → 只能靠”属主是 root”来认</li>
+</ul>
+<h3 id="3-4-杀进程：kill-x2F-pkill-x2F-killall"><a href="#3-4-杀进程：kill-x2F-pkill-x2F-killall" class="headerlink" title="3.4 杀进程：kill &#x2F; pkill &#x2F; killall"></a>3.4 杀进程：<code>kill</code> &#x2F; <code>pkill</code> &#x2F; <code>killall</code></h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>用法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>kill</code></td>
+<td><code>kill -9 &lt;PID&gt;</code></td>
+<td>按 <strong>PID</strong> 杀 —— <strong>最精确，推荐</strong></td>
+</tr>
+<tr>
+<td><code>pkill</code></td>
+<td><code>pkill -9 &lt;模式&gt;</code></td>
+<td>按<strong>进程名匹配模式</strong>后发送 SIGKILL</td>
+</tr>
+<tr>
+<td><code>killall</code></td>
+<td><code>killall &lt;名字&gt;</code></td>
+<td>按进程名处理（匹配语义随实现不同）</td>
+</tr>
+</tbody></table>
+<p><strong>信号号是最关键的知识点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>名字</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-15</code></td>
+<td>SIGTERM</td>
+<td>“<strong>好好说</strong>“——进程<strong>可以捕获</strong>它，在 handler 里做清理，<strong>甚至可以选择不退出</strong>（默认动作才是终止）</td>
+</tr>
+<tr>
+<td><code>-9</code></td>
+<td>SIGKILL</td>
+<td>“<strong>直接断电</strong>“——内核强杀。<strong>不可忽略、不可捕获</strong>，进程没有说”不”的机会</td>
+</tr>
+<tr>
+<td><code>-CONT</code></td>
+<td>SIGCONT</td>
+<td>“<strong>继续跑</strong>“——把暂停（STOP）的进程唤醒</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pkill -9 lldb-server      <span class="comment"># 斩掉调试服务器</span></span><br><span class="line">pkill -9 Inject.dbg       <span class="comment"># 斩掉它拉起的病人（可能已是孤儿进程）</span></span><br><span class="line"><span class="built_in">kill</span> -CONT <span class="variable">$ZT</span>; <span class="built_in">kill</span> -9 <span class="variable">$ZT</span>   <span class="comment"># 先唤醒，再斩（保险动作）</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong><code>pkill</code> 是按进程名 &#x2F; 模式匹配，不是按 ELF 文件路径精确匹配。</strong><br>清理时若担心误杀，先确认会匹配到谁：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pgrep -l Inject.dbg</span><br></pre></td></tr></table></figure>
+<p>看清 PID 再 <code>kill -9 &lt;PID&gt;</code>。</p>
+</blockquote>
+<blockquote>
+<p>**为什么清理要用 <code>-9</code> 不用默认的 <code>-15</code>**：这些进程本来就卡在异常状态（可能正 STOP 着），跟它”好好说”它听不见。直接 <code>-9</code> 最省事。</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>macOS 的一个坑</strong>：<code>xargs -r</code> 是 GNU 的扩展，**BSD&#x2F;macOS 版本的 <code>xargs</code> 不认 <code>-r</code>**，会直接报错。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ❌ 在 Mac 上会报错</span></span><br><span class="line">pidof lldb-server | xargs -r <span class="built_in">kill</span> -9</span><br><span class="line"></span><br><span class="line"><span class="comment"># ✅ 通用写法</span></span><br><span class="line"><span class="keyword">for</span> p <span class="keyword">in</span> $(pidof lldb-server); <span class="keyword">do</span> <span class="built_in">kill</span> -9 <span class="variable">$p</span>; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<p>⚠️ <strong><code>pkill</code> 的匹配语义</strong>：它是<strong>按模式匹配进程名</strong>，<br>不要理解成”名字里含这个字符串就一定杀”。不同 Android &#x2F; toybox &#x2F; procps 实现<br>的匹配行为和选项支持<strong>可能有差异</strong>。<br><strong>稳妥做法</strong>：先 <code>pgrep -l &lt;模式&gt;</code> 看会匹配到哪些进程，确认无误再 <code>pkill</code>；<br>要百分之百精确就用 <code>kill -9 &lt;PID&gt;</code>。</p>
+</blockquote>
+<h3 id="3-5-权限：chmod-755"><a href="#3-5-权限：chmod-755" class="headerlink" title="3.5 权限：chmod 755"></a>3.5 权限：<code>chmod 755</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 755 /data/local/tmp/Inject.dbg</span><br></pre></td></tr></table></figure>
+
+<p><code>chmod</code> &#x3D; change mode，改文件权限。</p>
+<p><strong>三位数字的读法</strong>（每位对应”一类人能干什么”）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">7        5        5</span><br><span class="line">│        │        └─ 其他人 other</span><br><span class="line">│        └────────── 同组的人 group</span><br><span class="line">└─────────────────── 属主 owner</span><br></pre></td></tr></table></figure>
+
+<p>每一位 &#x3D; <strong>r(4) + w(2) + x(1) 相加</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>数字</th>
+<th>含义</th>
+<th>组合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7</td>
+<td>读+写+执行</td>
+<td>4+2+1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>读+执行</td>
+<td>4+1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>读+写</td>
+<td>4+2</td>
+</tr>
+</tbody></table>
+<p>所以 <code>755</code> &#x3D; 属主全权，其他人能读能跑。</p>
+<blockquote>
+<p><strong>推上去的可执行文件必须 755</strong>（至少要带那个”1&#x2F;x”）。否则报 <code>Permission denied</code> —— 这个错看着像”没权限访问”，其实只是”这个文件不许执行”。</p>
+</blockquote>
+<h3 id="3-6-找最新产物：ls-t-head-1"><a href="#3-6-找最新产物：ls-t-head-1" class="headerlink" title="3.6 找最新产物：ls -t | head -1"></a>3.6 找最新产物：<code>ls -t | head -1</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> -t app/build/intermediates/cxx/Debug/*/obj/arm64-v8a/Inject | <span class="built_in">head</span> -1</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>ls -t</code> &#x3D; 列出文件，<strong>按修改时间排序（新的在前）</strong></li>
+<li><code>| head -1</code> &#x3D; 只取<strong>第一行</strong>，也就是最新的那个</li>
+</ul>
+<p><strong>为什么需要它</strong>：编译产物的路径里有<strong>每次都会变的随机目录名</strong>（<code>Debug/5n4z6p38/…</code> → 下次变成 <code>3e554l13</code>）。<br><strong>写死路径必失效</strong>，所以要”动态找最新的”。</p>
+<blockquote>
+<p>⚠️ <strong>别用通配符</strong>（<code>*</code>）在 IDE 的符号路径设置里 —— 大多数 IDE <strong>不展开通配符</strong>。</p>
+</blockquote>
+<h3 id="3-7-确认文件对不对：file"><a href="#3-7-确认文件对不对：file" class="headerlink" title="3.7 确认文件对不对：file"></a>3.7 确认文件对不对：<code>file</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file Inject.dbg</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Inject.dbg: ELF 64-bit LSB pie executable, ARM aarch64,</span><br><span class="line">            dynamically linked, interpreter /system/bin/linker64,</span><br><span class="line">            with debug_info, not stripped</span><br></pre></td></tr></table></figure>
+
+<p><strong>先分清三个不同的东西</strong>（新手最容易把 “debug_info” 和 “符号” 混成一个概念）：</p>
+<table>
+<thead>
+<tr>
+<th>东西</th>
+<th>里面装什么</th>
+<th>干什么用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DWARF 调试信息</strong>（<code>.debug_info</code> &#x2F; <code>.debug_line</code> &#x2F; <code>.debug_str</code> …）</td>
+<td><strong>源码文件名、行号、局部变量、类型</strong></td>
+<td>⭐ <strong>源码级调试全靠它</strong></td>
+</tr>
+<tr>
+<td>**<code>.symtab</code>**（完整符号表）</td>
+<td>函数名 &#x2F; 全局变量名等符号</td>
+<td>按名字下断点、看函数名</td>
+</tr>
+<tr>
+<td>**<code>.dynsym</code>**（动态符号表）</td>
+<td>动态链接<strong>必需</strong>的那部分符号</td>
+<td>让程序自己能跑起来（loader 靠它找符号）</td>
+</tr>
+</tbody></table>
+<p><strong><code>file</code> 给的那两个词，分别是什么意思：</strong></p>
+<ul>
+<li><code>with debug_info</code> → 里面有 <strong>DWARF 调试信息</strong> → <strong>有做源码级调试的可能</strong></li>
+<li><code>not stripped</code> → <strong><code>.symtab</code> 这类符号表还在</strong>，没被 <code>strip</code> 工具削掉</li>
+</ul>
+<p><strong>⇒ 关键纠正：<code>not stripped</code> 不等于”有源码调试信息”。</strong></p>
+<ul>
+<li><code>strip</code> 削掉的通常是 <code>.symtab</code> 这类<strong>非必需</strong>符号</li>
+<li><code>.debug_*</code> 段是否保留，与”stripped 与否”<strong>不是同一件事</strong>：<br>可以 <code>stripped</code> 却保留 debug info，也可能<strong>没 strip 但编译时压根没生成 DWARF</strong>（例如 <code>-g0</code>）</li>
+</ul>
+<p><strong>所以”能不能源码级断点”取决于两件事：</strong></p>
+<ol>
+<li>ELF 里<strong>是否真的保留了 DWARF</strong>（<code>with debug_info</code> 是必要线索）</li>
+<li><strong>LLDB 能不能找到并匹配上</strong>那份调试信息 —— 文件要对得上（名字 + UUID）、目录要找得到<br>（找目录可以靠 <code>settings set target.debug-file-search-paths</code>，实测存在）</li>
+</ol>
+<p><strong>实操判据：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file Inject.dbg     <span class="comment"># 第一步：看有没有 with debug_info</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) image list Inject                  # 第二步：看符号有没有被加载</span><br><span class="line">(lldb) breakpoint set -n init_inject      # 第三步：看能不能解析出&quot;文件:行号&quot;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint 1: where = Inject`init_inject + ..., address = ...</span><br><span class="line">                                  ↑ 出现 文件名:行号 = 源码级 OK</span><br><span class="line">                                  ↑ 只给地址 / locations = 0 = 没对上</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>✅ <code>with debug_info, not stripped</code> 是<strong>理想的调试状态</strong>（本项目 Debug 产物就是）。<br>❌ 但别把 <code>stripped</code> 直接翻译成”一定不能源码断点” —— 那两件事<strong>不等价</strong>。<br><strong>最终以 <code>breakpoint set</code> 能不能给出「文件:行号」为准。</strong></p>
+</blockquote>
+<h3 id="3-8-看程序自己的打印：tail-f"><a href="#3-8-看程序自己的打印：tail-f" class="headerlink" title="3.8 看程序自己的打印：tail -f"></a>3.8 看程序自己的打印：<code>tail -f</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;tail -f /data/local/tmp/x.log&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>tail</code> &#x3D; 看文件末尾</li>
+<li><code>-f</code> &#x3D; follow，”跟着”——文件<strong>新增内容会自动刷出来</strong>（像看直播），<code>Ctrl+C</code> 退出</li>
+</ul>
+<p>⭐ <strong>一个必知的坑</strong>：远程调试时，<strong>被调试程序的 <code>printf</code> 不会出现在你的 IDE 里</strong>！</p>
+<p>因为程序是<strong>手机端的 lldb-server 拉起来的</strong>，它的输出落在<strong>手机上的文件</strong>里，IDE 的”调试控制台”只显示调试器自己的消息。<br>→ 想知道程序打印了什么，必须另开一个终端 <code>tail -f</code> 那个日志文件。</p>
+<h3 id="3-9-看端口占用：ss-x2F-netstat"><a href="#3-9-看端口占用：ss-x2F-netstat" class="headerlink" title="3.9 看端口占用：ss &#x2F; netstat"></a>3.9 看端口占用：<code>ss</code> &#x2F; <code>netstat</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;ss -tlnp | grep 6040&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-t</code></td>
+<td>只看 TCP</td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td>只看”在监听”的（LISTEN）</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>不做域名解析，直接显示数字端口</td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>显示是哪个进程占着</td>
+</tr>
+</tbody></table>
+<p>用于：确认调试服务器<strong>真的起来了</strong>、端口对不对。</p>
+<hr>
+<h2 id="4-文本处理三件套"><a href="#4-文本处理三件套" class="headerlink" title="4. 文本处理三件套"></a>4. 文本处理三件套</h2><p>调试脚本里满屏 <code>grep</code> &#x2F; <code>awk</code> &#x2F; <code>tr</code>，其实只干三件事：<strong>筛、切、换</strong>。</p>
+<h3 id="4-1-grep-——-筛出想要的行"><a href="#4-1-grep-——-筛出想要的行" class="headerlink" title="4.1 grep —— 筛出想要的行"></a>4.1 <code>grep</code> —— 筛出想要的行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep TracerPid /proc/1234/status     <span class="comment"># 只要含 TracerPid 的那行</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-i</code></td>
+<td>忽略大小写</td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>反着来：<strong>不</strong>含这个的才留下</td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td>递归搜整个目录</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>只输出<strong>匹配到几行</strong>（例：<code>grep -c &quot;error:&quot; build.log</code>）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 调试常用技巧：<code>ps -A | grep [l]ldb-server</code> —— 方括号里的 <code>l</code> 让 grep <strong>自己不被匹配到</strong>（否则 grep 自己那条命令也会出现在结果里）。</p>
+</blockquote>
+<h3 id="4-2-awk-——-按列切"><a href="#4-2-awk-——-按列切" class="headerlink" title="4.2 awk —— 按列切"></a>4.2 <code>awk</code> —— 按列切</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>默认<strong>按空白（空格&#x2F;制表符）分列</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TracerPid:	1234</span><br><span class="line">   $1       $2</span><br></pre></td></tr></table></figure>
+
+<p>所以 <code>awk &#39;&#123;print $2&#125;&#39;</code> &#x3D; <strong>取出第二列</strong> &#x3D; <code>1234</code>。</p>
+<blockquote>
+<p><strong>打比方</strong>：<code>grep</code> 是筛行（横着切），<code>awk</code> 是取列（竖着切）。</p>
+</blockquote>
+<h3 id="4-3-tr-——-换-x2F-删字符"><a href="#4-3-tr-——-换-x2F-删字符" class="headerlink" title="4.3 tr —— 换&#x2F;删字符"></a>4.3 <code>tr</code> —— 换&#x2F;删字符</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tr</span> -d <span class="string">&#x27;\r&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>tr</code> &#x3D; translate（字符替换&#x2F;删除）</li>
+<li><code>-d</code> &#x3D; delete，删掉指定的字符</li>
+<li><code>\r</code> &#x3D; 回车符（CR）</li>
+</ul>
+<p><strong>为什么</strong>有时<strong>要删它</strong>：<strong>某些</strong> adb shell 输出链路会带上 <code>\r</code>（CR）。<br>（⚠️ 不要理解成”Android 一定返回 CRLF” —— <strong>是否带 <code>\r</code> 随链路 &#x2F; 设备 &#x2F; 实现而变，以实际输出为准</strong>。）</p>
+<p>如果不去掉、又把它读进变量，就可能出现：<br>不删掉，变量里就**多藏一个看不见的 <code>\r</code>**：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 看着是 0，实际值是 &quot;0\r&quot;，判断不等于 &quot;0&quot; → 逻辑全错</span></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$ZT</span>&quot;</span> != <span class="string">&quot;0&quot;</span> ]; <span class="keyword">then</span> ...</span><br></pre></td></tr></table></figure>
+
+<p>这个坑非常阴——<strong>肉眼看输出完全正常</strong>，但判断就是不生效。</p>
+<hr>
+<h2 id="5-后台进程三件套（最邪门的一节）"><a href="#5-后台进程三件套（最邪门的一节）" class="headerlink" title="5. 后台进程三件套（最邪门的一节）"></a>5. 后台进程三件套（最邪门的一节）</h2><p>目标：让程序在手机上<strong>脱离 adb 一直跑</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su -c <span class="string">&#x27;exec 0&lt;/dev/null; cd /data/local/tmp &amp;&amp; setsid ./Inject.dbg &gt; x.log 2&gt;&amp;1 &amp;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>只用 <code>&amp;</code> 为什么</strong>可能<strong>出问题？</strong></p>
+<p><code>adb shell</code> <strong>会等自己那条管道被关掉</strong>才收工。而 <code>&amp;</code> 起的子进程<strong>继承了 <code>adb shell</code> 的<br>stdout&#x2F;stderr 管道</strong> —— 只要它还活着，管道就不关 → <strong>adb 客户端就可能一直等下去</strong>。</p>
+<blockquote>
+<p>📌 <strong>说”永远不返回”太绝对。</strong> 这是”<strong>某些情况下会发生</strong>“：<br>取决于子进程有没有继承管道、用的是哪个 adb 客户端、平台实现细节。<br><strong>本项目实测记录</strong>：曾出现 adb shell 长时间不返回（卡 560 秒）。<br>风险足够大 ⇒ <strong>一律按最坏情况处理。</strong></p>
+</blockquote>
+<p>而且这个坑会<strong>伪装成”脚本正常”<strong>：如果调用方带了超时（比如代码里 <code>subprocess.run(timeout=60)</code>），超时后代码继续往下走，</strong>设备上的进程其实活着</strong>——你直到某天用纯 shell 跑才发现卡死。</p>
+<p><strong>三个零件各修一个毛病：</strong></p>
+<table>
+<thead>
+<tr>
+<th>零件</th>
+<th>干什么</th>
+<th>为什么这样能解决问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>exec 0&lt;/dev/null</code></td>
+<td>把 <strong>stdin（文件描述符 0）</strong> 接到”空设备”</td>
+<td>子进程不再持有输入管道；读它立即得到 EOF</td>
+</tr>
+<tr>
+<td><code>setsid</code></td>
+<td><strong>创建一个新 session</strong>（顺带创建新 process group，调用进程成为 session leader）</td>
+<td>让进程<strong>脱离原来的控制终端 &#x2F; 会话</strong> —— 减少”终端&#x2F;会话生命周期”对后台进程的影响</td>
+</tr>
+<tr>
+<td><code>&gt; x.log 2&gt;&amp;1 &amp;</code></td>
+<td>输出重定向到文件 + 丢后台</td>
+<td>子进程不再持有 <code>adb shell</code> 的输出管道 → adb 能正常收工</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong><code>setsid</code> 的正确定位</strong>（别把它当成”防 SIGHUP 工具”）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setsid() → 创建新 session → 创建新 process group → 调用进程成为 session leader</span><br></pre></td></tr></table></figure>
+<p>“父进程退出时不会被 SIGHUP 带走”是<strong>常见的结果&#x2F;好处</strong>，<strong>不是 setsid 的定义</strong>。<br>我们用它的目的是：<strong>让 adb shell &#x2F; su 这层退出之后，设备端的调试进程还能继续活着。</strong></p>
+</blockquote>
+<p><strong>宿主侧还要配合一招</strong>（防 adb 客户端僵住）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">launch_detached</span></span>()&#123;</span><br><span class="line">  adb shell <span class="string">&quot;<span class="variable">$1</span>&quot;</span> &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">  <span class="built_in">local</span> p=$! i</span><br><span class="line">  <span class="built_in">disown</span> <span class="string">&quot;<span class="variable">$p</span>&quot;</span> 2&gt;/dev/null        <span class="comment"># 否则 kill 时会打印 &quot;Killed: 9&quot; 噪音</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> $(<span class="built_in">seq</span> 1 25); <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">kill</span> -0 <span class="string">&quot;<span class="variable">$p</span>&quot;</span> 2&gt;/dev/null || &#123; <span class="built_in">wait</span> <span class="string">&quot;<span class="variable">$p</span>&quot;</span> 2&gt;/dev/null; <span class="built_in">return</span> 0; &#125;</span><br><span class="line">    <span class="built_in">sleep</span> 0.2</span><br><span class="line">  <span class="keyword">done</span></span><br><span class="line">  <span class="built_in">kill</span> -9 <span class="string">&quot;<span class="variable">$p</span>&quot;</span> 2&gt;/dev/null; <span class="built_in">return</span> 0   <span class="comment"># 5 秒还不返回就杀掉客户端；设备端已 setsid，不受影响</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>kill -0 &lt;pid&gt;</code> &#x3D; **不发信号，只检查”这个进程还活着吗”**。活着返回 0，死了返回非 0。（很常用的探活技巧）</p>
+<p><strong>验证脱离成功</strong>：看 PPID 是不是 <strong>1</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;ps -A -o PID,PPID,ARGS | grep [l]ldb-server&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>PPID &#x3D; 1 表示它的”爹”已经变成内核了（原来的爹走了）→ 成功脱钩。</p>
+<hr>
+<h2 id="6-拼回去：远程调试完整流水线"><a href="#6-拼回去：远程调试完整流水线" class="headerlink" title="6. 拼回去：远程调试完整流水线"></a>6. 拼回去：远程调试完整流水线</h2><p>三样东西（回顾）：</p>
+<table>
+<thead>
+<tr>
+<th>东西</th>
+<th>是谁</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>图纸</strong>（本地带符号 ELF）</td>
+<td>Mac 上的 <code>Inject.latest</code></td>
+</tr>
+<tr>
+<td><strong>机械臂</strong>（设备端 server）</td>
+<td>手机上的 <code>lldb-server</code></td>
+</tr>
+<tr>
+<td><strong>电话线</strong></td>
+<td><code>adb forward</code></td>
+</tr>
+</tbody></table>
+<h3 id="第-1-步：认设备"><a href="#第-1-步：认设备" class="headerlink" title="第 1 步：认设备"></a>第 1 步：认设备</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br></pre></td></tr></table></figure>
+
+<h3 id="第-2-步：备料（推文件-给执行权）"><a href="#第-2-步：备料（推文件-给执行权）" class="headerlink" title="第 2 步：备料（推文件 + 给执行权）"></a>第 2 步：备料（推文件 + 给执行权）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ELF=$(<span class="built_in">ls</span> -t ~/Documents/androidsrc/AndroidInject-master/app/build/intermediates/cxx/Debug/*/obj/arm64-v8a/Inject | <span class="built_in">head</span> -1)</span><br><span class="line">file <span class="string">&quot;<span class="variable">$ELF</span>&quot;</span>                                  <span class="comment"># 确认 with debug_info, not stripped</span></span><br><span class="line">adb push <span class="string">&quot;<span class="variable">$ELF</span>&quot;</span> /data/local/tmp/Inject.dbg</span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;chmod 755 /data/local/tmp/Inject.dbg&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>同时<strong>本地留一份与设备端对应的 ELF</strong>当”图纸”，让 LLDB 能加载到正确的模块和调试信息。</p>
+<blockquote>
+<p>⚠️ <strong>关键不是”文件名相同”，而是”和手机上实际跑的那一份对应”。</strong><br>LLDB 会依据模块身份信息、以及能否找到匹配的调试信息来关联 ——<br><strong>别把”名字相同 + UUID 相同”当成整套匹配机制</strong>。<br>最稳妥：本地这份就是<strong>从同一个产物复制</strong>出来的。</p>
+</blockquote>
+<h3 id="第-3-步：清残留（每次开工前都要做）"><a href="#第-3-步：清残留（每次开工前都要做）" class="headerlink" title="第 3 步：清残留（每次开工前都要做）"></a>第 3 步：清残留（<strong>每次开工前都要做</strong>）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;pkill -9 lldb-server; pkill -9 Inject.dbg&#x27;&quot;</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span>   <span class="comment"># 应看到 0（= 没有 tracer 占着它）</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>为什么要先清：<strong>Linux 里一个进程同一时刻只能有一个 ptrace tracer</strong>（内核通用规则，<br>不是 Android 给 zygote 定的特殊规矩）。<code>zygote64</code> 已被上一轮的残留占着 → 再 <code>PTRACE_SEIZE</code> 直接失败（EPERM）。</p>
+</blockquote>
+<h3 id="第-4-步：接机械臂（起设备端-server）"><a href="#第-4-步：接机械臂（起设备端-server）" class="headerlink" title="第 4 步：接机械臂（起设备端 server）"></a>第 4 步：接机械臂（起设备端 server）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;exec 0&lt;/dev/null; cd /data/local/tmp &amp;&amp; setsid ./lldb-server gdbserver :6040 -- ./Inject.dbg -w -f -n com.ss.android.ugc.aweme -so /data/local/tmp/libinlinehook.so &gt; /data/local/tmp/gsrv.log 2&gt;&amp;1 &amp;&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>先看手机端 <code>lldb-server</code> 的官方 usage（实测原文）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Usage:</span><br><span class="line">  /data/local/tmp/lldb-server v[ersion]</span><br><span class="line">  /data/local/tmp/lldb-server g[dbserver] [options]</span><br><span class="line">  /data/local/tmp/lldb-server p[latform] [options]</span><br><span class="line">Invoke subcommand for additional help</span><br></pre></td></tr></table></figure>
+
+<p>⇒ <strong><code>g</code> 就是 <code>gdbserver</code> 的简写</strong>（usage 里方括号 <code>[]</code> 的含义 &#x3D; “可省略”）。<br>写 <code>g :6040</code> 和 <code>gdbserver :6040</code> <strong>完全等价</strong>（实测：两者漏写端口时，报错一字不差）。</p>
+<blockquote>
+<p>⚠️ <strong>别把 <code>g</code> 理解成”g &#x3D; GDB remote 协议”</strong> —— <code>g</code> 是 <strong>lldb-server 的一个子命令名</strong>，<br>意思是”<strong>进 gdbserver 模式</strong>“。这个模式<strong>通信时</strong>用的才是 GDB remote 协议。<br>（本手册第一版就是这么写错的，已改。）</p>
+</blockquote>
+<p><strong>再看 <code>lldb-server gdbserver --help</code> 的官方 USAGE（实测原文）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">USAGE: lldb-server g[dbserver] [options] [[host]:port] [[--] program args...]</span><br><span class="line"></span><br><span class="line">GENERAL OPTIONS:</span><br><span class="line">  --log-file &lt;file&gt;          Destination file to log to. If empty, log to stderr.</span><br><span class="line">  --setsid                   Run lldb-server in a new session.</span><br><span class="line"></span><br><span class="line">TARGET SELECTION:</span><br><span class="line">  --attach &lt;pid-or-name&gt;     Attach to the process given by a (numeric) process id or a name.</span><br><span class="line">  -- program args            Launch program for debugging.</span><br></pre></td></tr></table></figure>
+
+<p><strong>逐块对照我们那条命令：</strong></p>
+<table>
+<thead>
+<tr>
+<th>片段</th>
+<th>含义（官方口径）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>gdbserver</code></td>
+<td>子命令 —— 进 gdbserver 模式（可简写 <code>g</code>）</td>
+</tr>
+<tr>
+<td><code>:6040</code></td>
+<td><code>[host]:port</code>，监听地址。<strong>host 省略时默认 <code>localhost</code></strong> → 所以<strong>必须靠 <code>adb forward</code> 才能从 Mac 连进来</strong></td>
+</tr>
+<tr>
+<td><code>--</code></td>
+<td>分隔符：后面是 <code>program args...</code>，即<strong>被调试的程序 + 它的参数</strong></td>
+</tr>
+<tr>
+<td><code>./Inject.dbg -w -f ...</code></td>
+<td>被调试程序（我们自己的注入器）及其参数</td>
+</tr>
+</tbody></table>
+<p><strong>顺带两个官方选项，知道有就行：</strong></p>
+<ul>
+<li><code>--setsid</code> —— lldb-server <strong>自带</strong>“在新 session 里跑”的选项（等价于外面套一层 <code>setsid</code>）</li>
+<li><code>--attach &lt;pid-or-name&gt;</code> —— 附加到已有进程，<strong>pid 或进程名都可以</strong><br>（⚠️ 若那个值是空的，端口会被当成它的值 → 报 <code>error: no connection arguments</code>）</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>本项目实测表现</strong>：在这套 <code>lldb-server gdbserver</code> 调试流程中，<br><strong>客户端断开后 server 会退出</strong>，所以下一次调试前需要重新启动它。<br>—— 这就是”第一次好使、第二次连不上”的原因，也是所有一键脚本里要有”前置脚本”的原因。</p>
+<p>📌 <strong>别把它当成 gdbserver 模式的定义。</strong> “客户端断开后一定退出”<strong>不是</strong>普遍规律：<br>具体生命周期行为还取决于 lldb-server 版本、启动方式、调试目标状态等因素。</p>
+</blockquote>
+<h3 id="第-5-步：拉电话线"><a href="#第-5-步：拉电话线" class="headerlink" title="第 5 步：拉电话线"></a>第 5 步：拉电话线</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb forward tcp:6040 tcp:6040</span><br><span class="line">adb forward --list          <span class="comment"># 确认隧道在</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="第-6-步：上手术台（客户端连接）⭐"><a href="#第-6-步：上手术台（客户端连接）⭐" class="headerlink" title="第 6 步：上手术台（客户端连接）⭐"></a>第 6 步：上手术台（客户端连接）⭐</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/lldb \</span><br><span class="line">  -o <span class="string">&quot;target create /Users/&lt;你&gt;/tools/inject-debug/Inject.latest&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;settings set target.debug-file-search-paths /Users/&lt;你&gt;/tools/inject-debug&quot;</span> \</span><br><span class="line">  -o <span class="string">&quot;gdb-remote 127.0.0.1:6040&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>一、<code>help gdb-remote</code> 官方原文（实测）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Connect to a process via remote GDB server.</span><br><span class="line">If no host is specifed, localhost is assumed.</span><br><span class="line">gdb-remote is an abbreviation for &#x27;process connect --plugin gdb-remote</span><br><span class="line">connect://&lt;hostname&gt;:&lt;port&gt;&#x27;</span><br><span class="line">Syntax: gdb-remote [&lt;hostname&gt;:]&lt;portnum&gt;</span><br></pre></td></tr></table></figure>
+
+<p>⭐ <strong>重要</strong>：<code>gdb-remote host:port</code> <strong>只是缩写</strong>，完整形式是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">process connect --plugin gdb-remote connect://127.0.0.1:6040</span><br></pre></td></tr></table></figure>
+
+<p>⇒ 这就解释了很多工具（如 CLion 的远程调试配置）为什么要求写 <code>connect://host:port</code>。<br><strong>两种写法等价</strong>，<code>gdb-remote</code> 更省事。</p>
+<p><strong>二、<code>help target create</code> 官方原文（实测）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Create a target using the argument as the main executable.</span><br><span class="line">Syntax: target create &lt;cmd-options&gt; &lt;filename&gt;</span><br><span class="line"></span><br><span class="line">  -s &lt;filename&gt; ( --symfile )      单独指定调试符号文件</span><br><span class="line">  -r &lt;filename&gt; ( --remote-file )  远端那个文件的完整路径（远程调试用）</span><br><span class="line">  -a &lt;arch&gt;     ( --arch )         指定架构</span><br><span class="line">  -p &lt;name&gt;     ( --platform )     指定 platform</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>两个实用选项</strong>：</p>
+<ul>
+<li><code>-r / --remote-file</code>：本地这份是符号副本、手机上跑的是<strong>另一个路径</strong>时，用它告诉 LLDB “远端文件在哪”</li>
+<li><code>-s / --symfile</code>：调试信息和可执行文件<strong>分开存放</strong>时（符号单独一个文件），指过去</li>
+</ul>
+</blockquote>
+<p><strong>三、<code>settings set target.debug-file-search-paths</code>（实测确认存在）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">target.debug-file-search-paths -- List of directories to be searched when</span><br><span class="line">                                 locating debug symbol files.</span><br></pre></td></tr></table></figure>
+
+<p>⇒ 就是”<strong>当调试信息不在可执行文件里时，去哪些目录找</strong>“。</p>
+<blockquote>
+<p>🚨 <strong>本文这套流程建议的顺序：先 <code>target create</code>，再 <code>gdb-remote</code>。</strong></p>
+<p>这样 LLDB 会<strong>先建立本地 target 并加载本地符号</strong>，然后才去连设备端 gdbserver。<br><strong>本文的配置按这个顺序写，已在本项目实测跑通。</strong></p>
+<p>反过来（先 <code>gdb-remote</code>）在本项目环境里出现过<strong>卡死 + 报一个跟真实原因无关的错</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: no modules found that match &#x27;Inject&#x27;</span><br></pre></td></tr></table></figure>
+<p><strong>实测范围</strong>：Apple lldb-1400（<code>/usr/bin/lldb</code>）与 CodeLLDB 的 lldb 22，两个客户端都出现过。</p>
+<p>⚠️ <strong>但这不构成”LLDB 的普遍铁律”</strong> —— 不同版本 &#x2F; 不同连接方式下行为可能有差异。</p>
+<p><strong>机理（供理解）</strong>：先挂图纸（建立 target、加载符号），再通电话（连远端进程）；<br>反过来就没有 target 可挂模块，对面报的模块名你一个都不认识。</p>
+</blockquote>
+<blockquote>
+<p>📌 <strong>关于 platform 模式</strong>：<code>lldb-server</code> 还有 <code>p[latform]</code> 子命令，客户端侧对应<br><code>platform select remote-android</code>。实测 Apple lldb-1400 <strong>支持</strong>这个 platform（能选中，返回 <code>Connected: no</code>）。<br>但<strong>本项目走的是 gdbserver 模式</strong>（<code>g</code>），因为那条路当时跑通了、链路更短更稳。<br><strong>本文档只保证 gdbserver 模式这条路。</strong></p>
+</blockquote>
+<h3 id="第-7-步：干活（lldb-交互命令）"><a href="#第-7-步：干活（lldb-交互命令）" class="headerlink" title="第 7 步：干活（lldb 交互命令）"></a>第 7 步：干活（lldb 交互命令）</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>c</code></td>
+<td>continue，继续跑</td>
+</tr>
+<tr>
+<td><code>n</code> &#x2F; <code>s</code> &#x2F; <code>fin</code></td>
+<td>步过 &#x2F; 步入 &#x2F; 步出</td>
+</tr>
+<tr>
+<td><code>b 函数名</code>（<code>breakpoint set -n xxx</code>）</td>
+<td>按函数名下断点</td>
+</tr>
+<tr>
+<td><code>b 文件:行号</code>（<code>b WatchInject.h:483</code>）</td>
+<td>按源码位置下断点</td>
+</tr>
+<tr>
+<td><code>breakpoint list</code></td>
+<td>看所有断点（<code>locations = 0</code> 表示没匹配上！）</td>
+</tr>
+<tr>
+<td><code>bt</code></td>
+<td>backtrace，看调用栈</td>
+</tr>
+<tr>
+<td><code>frame variable</code></td>
+<td>看当前函数<strong>所有</strong>局部变量</td>
+</tr>
+<tr>
+<td><code>p 表达式</code></td>
+<td>求值，例 <code>p argc</code>、<code>p argv[0]</code></td>
+</tr>
+<tr>
+<td><code>thread list</code></td>
+<td>看线程</td>
+</tr>
+<tr>
+<td><code>reg read pc lr x0</code></td>
+<td>读寄存器</td>
+</tr>
+<tr>
+<td><code>image list</code></td>
+<td>看已加载的模块（so&#x2F;可执行文件）</td>
+</tr>
+<tr>
+<td><code>quit</code></td>
+<td>退出</td>
+</tr>
+</tbody></table>
+<p><strong>断点命中不了？先自查这两条</strong>：</p>
+<ol>
+<li><strong>这个代码在不在这个进程里？</strong><br>调试器<strong>只看得到被调试进程真正加载的模块</strong>。<br>例：<code>install_hooks()</code> 在 <code>libinlinehook.so</code> 里，而那个 so 是被注入到<strong>目标 App</strong> 里的 → 在<strong>注入器</strong>的调试会话里<strong>永远断不到</strong>。那是<strong>另一个调试会话</strong>的事。</li>
+<li><strong>断点设晚了？</strong><br><code>so</code> 的 <code>constructor</code>（加载瞬间自动执行的代码）在你 attach 之前早就跑完了 → 必须在代码里手动插一个”停车窗口”（<code>raise(SIGSTOP)</code> 或 <code>sleep(20)</code>），才来得及下断点。</li>
+</ol>
+<h3 id="第-8-步：拆现场（千万别跳）"><a href="#第-8-步：拆现场（千万别跳）" class="headerlink" title="第 8 步：拆现场（千万别跳）"></a>第 8 步：拆现场（<strong>千万别跳</strong>）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="string">&quot;su -c &#x27;pkill -9 lldb-server; pkill -9 Inject.dbg&#x27;&quot;</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span>   <span class="comment"># 应看到 0（= 没有 tracer 占着它）</span></span><br><span class="line">adb forward --remove-all</span><br></pre></td></tr></table></figure>
+
+<p><strong>不做的后果</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>症状</th>
+<th>真因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>下轮注入报 <code>PTRACE_SEIZE ... Operation not permitted</code></td>
+<td>残留孤儿占着 zygote64</td>
+</tr>
+<tr>
+<td><strong>手机上启动任何 App 都卡住</strong></td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<p><strong>通用兜底（进程名被改过、<code>pkill</code> 找不到时）</strong> —— 不问名字，直接问 zygote”谁在跟踪你”：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ZT=$(adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span> | <span class="built_in">tr</span> -d <span class="string">&#x27;\r&#x27;</span> | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$ZT</span>&quot;</span> ] &amp;&amp; [ <span class="string">&quot;<span class="variable">$ZT</span>&quot;</span> != <span class="string">&quot;0&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  adb shell <span class="string">&quot;su -c &#x27;kill -CONT <span class="variable">$ZT</span>; kill -9 <span class="variable">$ZT</span>&#x27;&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-故障速查：症状-→-真因-→-命令"><a href="#7-故障速查：症状-→-真因-→-命令" class="headerlink" title="7. 故障速查：症状 → 真因 → 命令"></a>7. 故障速查：症状 → 真因 → 命令</h2><table>
+<thead>
+<tr>
+<th>你看到的</th>
+<th>别以为</th>
+<th>其实是</th>
+<th>怎么办</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PTRACE_SEIZE ... Operation not permitted</code></td>
+<td>手机不给 root</td>
+<td>已经有 tracer 占着这个进程（上一轮残留）—— 一个进程同时只能有一个 ptrace tracer</td>
+<td>第 3 步清理</td>
+</tr>
+<tr>
+<td><code>no modules found that match &#39;X&#39;</code> &#x2F; 连接卡死超时</td>
+<td>符号丢了 &#x2F; 网络问题</td>
+<td><code>target create</code> 和 <code>gdb-remote</code> <strong>顺序反了</strong></td>
+<td>换顺序</td>
+</tr>
+<tr>
+<td><code>error: no connection arguments</code></td>
+<td>参数没写对</td>
+<td><code>--attach</code> 后面那个值是<strong>空的</strong>，导致端口被当成了它的值</td>
+<td>确认进程存在（<code>--attach</code> 可接 <strong>pid 或进程名</strong>）</td>
+</tr>
+<tr>
+<td><code>Failed to connect port</code>（走 platform 模式时）</td>
+<td>端口 &#x2F; 防火墙</td>
+<td>platform 那条路在本项目没走通（注意：<code>platform select remote-android</code> 本身是<strong>可用</strong>的）</td>
+<td>改用 <code>gdbserver</code> 模式 + <code>gdb-remote</code></td>
+</tr>
+<tr>
+<td><code>Address already in use</code>（手机 gsrv.log 里）</td>
+<td>网络</td>
+<td>旧 lldb-server <strong>没杀干净</strong></td>
+<td>先 <code>pkill -9 lldb-server</code></td>
+</tr>
+<tr>
+<td>TCP 通了但<strong>收不到回应</strong></td>
+<td>协议不兼容</td>
+<td>连到<strong>僵尸 server</strong> 了</td>
+<td><code>adb forward --remove-all</code> 后重来</td>
+</tr>
+<tr>
+<td><code>unbound variable</code> + 变量名后面跟问号</td>
+<td>脚本坏了</td>
+<td><strong><code>$VAR</code> 后面紧跟了全角符号</strong></td>
+<td>改成 <code>$&#123;VAR&#125;</code></td>
+</tr>
+<tr>
+<td><code>No such file or directory</code>（路径看着没错）</td>
+<td>路径写错</td>
+<td><code>$(...)</code> 被<strong>本机 shell 先展开</strong>了</td>
+<td>加 <code>\</code> 转义</td>
+</tr>
+<tr>
+<td><code>Permission denied</code>（文件明明在）</td>
+<td>没权限访问</td>
+<td>文件<strong>没有执行权限</strong></td>
+<td><code>chmod 755</code></td>
+</tr>
+<tr>
+<td>断点是 <code>0 locations</code></td>
+<td>断点下错地方</td>
+<td>本地图纸和手机上跑的不是<strong>同一份</strong></td>
+<td>重推产物 + 更新同名副本</td>
+</tr>
+<tr>
+<td>程序打印看不见</td>
+<td>程序没跑起来</td>
+<td>它的输出在<strong>手机上的文件</strong>里</td>
+<td><code>adb shell tail -f &lt;日志&gt;</code></td>
+</tr>
+<tr>
+<td>adb 命令卡好久不返回</td>
+<td>命令写错了</td>
+<td>后台子进程<strong>继承了 <code>adb shell</code> 的 stdout&#x2F;stderr 管道</strong>，adb 在等管道关闭</td>
+<td>三件套（第 5 章）</td>
+</tr>
+<tr>
+<td>lldb 里看不到源码，只有地址</td>
+<td>调试器不行</td>
+<td>缺 DWARF 调试信息，或符号没对上（<code>stripped</code> 只是可能原因之一）</td>
+<td><code>file</code> 看有没有 <code>debug_info</code>；<code>image list</code> 看符号加载；<code>breakpoint set</code> 看能不能出”文件:行号”</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-一页小抄（贴在屏幕边）"><a href="#8-一页小抄（贴在屏幕边）" class="headerlink" title="8. 一页小抄（贴在屏幕边）"></a>8. 一页小抄（贴在屏幕边）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ── 认设备 ──────────────────────────────</span></span><br><span class="line">adb devices</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 传文件 + 给执行权 ────────────────────</span></span><br><span class="line">adb push &lt;本地&gt; &lt;手机路径&gt;</span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;chmod 755 &lt;手机路径&gt;&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 清理残留（开工前 + 收工后都要）──────</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;pkill -9 lldb-server; pkill -9 Inject.dbg&#x27;&quot;</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;grep TracerPid /proc/\$(pidof zygote64)/status&#x27;&quot;</span>    <span class="comment"># 应看到 0（= 没有 tracer 占着它）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 起设备端 server（脱离 adb）───────────</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;exec 0&lt;/dev/null; cd /data/local/tmp &amp;&amp; setsid ./lldb-server gdbserver :6040 -- ./Inject.dbg &lt;参数&gt; &gt; /data/local/tmp/gsrv.log 2&gt;&amp;1 &amp;&#x27;&quot;</span>     <span class="comment"># gdbserver 可简写 g</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 拉隧道 ──────────────────────────────</span></span><br><span class="line">adb forward tcp:6040 tcp:6040</span><br><span class="line">adb forward --list</span><br><span class="line">adb forward --remove-all</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 连接（顺序不能反！）──────────────────</span></span><br><span class="line">/usr/bin/lldb -o <span class="string">&quot;target create &lt;本地带符号ELF&gt;&quot;</span> -o <span class="string">&quot;gdb-remote 127.0.0.1:6040&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 看日志 / 看进程 ─────────────────────</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;tail -f /data/local/tmp/gsrv.log&#x27;&quot;</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;ps -A -o PID,USER,NAME | grep -i inject&#x27;&quot;</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;ss -tlnp | grep 6040&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ── 启动 App / 强杀 App ─────────────────</span></span><br><span class="line">adb shell monkey -p &lt;包名&gt; -c android.intent.category.LAUNCHER 1</span><br><span class="line">adb shell am force-stop &lt;包名&gt;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="附：引号速记卡"><a href="#附：引号速记卡" class="headerlink" title="附：引号速记卡"></a>附：引号速记卡</h2><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>谁处理</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&#39;...&#39;</code></td>
+<td><strong>不过本机 shell</strong>，原样传递</td>
+<td>要原封不动交给里层</td>
+</tr>
+<tr>
+<td><code>&quot;...&quot;</code></td>
+<td>本机 shell <strong>会</strong>展开 <code>$</code> 和 <code>$(...)</code></td>
+<td>需要本机先算的时候</td>
+</tr>
+<tr>
+<td><code>&quot;…\$…&quot;</code></td>
+<td><code>\$</code> 挡住本机展开</td>
+<td>要让<strong>手机</strong>去算这个 <code>$</code></td>
+</tr>
+<tr>
+<td><code>&quot;…&#39;…&#39;…&quot;</code></td>
+<td>外层给本机，内层给手机</td>
+<td>最常见的双层结构</td>
+</tr>
+<tr>
+<td><code>&quot;$&#123;VAR&#125;中文&quot;</code></td>
+<td>用花括号隔离</td>
+<td>防止变量名把中文吃进去</td>
+</tr>
+</tbody></table>
+<p><strong>更准确的说法</strong>（原来写的”引号层数 &#x3D; 穿几道壳”<strong>不严格</strong>）：</p>
+<blockquote>
+<p><strong>哪一层 shell 需要解释特殊字符，就在哪一层控制引用和转义。</strong></p>
+</blockquote>
+<p>因为决定引号写法的**不是”壳的数量”**，而是”<strong>这个 <code>$</code> &#x2F; <code>;</code> &#x2F; <code>|</code> 你想让谁去解释</strong>“：</p>
+<ul>
+<li>想让<strong>手机</strong>解释 → 在本机这层用 <code>\</code> 或单引号挡住（大多数情况）</li>
+<li>想让<strong>本机</strong>先算（少见，例如拼本地路径）→ 就用双引号让它展开</li>
+<li><code>adb shell &quot;su -c &#39;...&#39;&quot;</code> 只是<strong>最常见的一种组合</strong>，不是”层数的必然结果”</li>
+</ul>
+<p>（<code>&quot;</code> 和 <code>&#39;</code> 在这个双层结构里各管一层：外层管本机、内层管手机。）</p>
+<hr>
+<h2 id="附二：本文命令的核对状态（2026-09-20）"><a href="#附二：本文命令的核对状态（2026-09-20）" class="headerlink" title="附二：本文命令的核对状态（2026-09-20）"></a>附二：本文命令的核对状态（2026-09-20）</h2><blockquote>
+<p>这是”<strong>可执行版本</strong>“的诚实标注：哪些语法来自<strong>官方 usage 原文</strong>、哪些<strong>本项目真跑通过</strong>、<br>哪些<strong>只是语法正确但没实测</strong>。别把没实测的当”已验证”。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>命令 &#x2F; 章节</th>
+<th>语法来源</th>
+<th>本项目跑通</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>adb devices</code> &#x2F; <code>push</code> &#x2F; <code>pull</code> &#x2F; <code>shell</code></td>
+<td>adb 标准</td>
+<td>✅ 日常在用</td>
+</tr>
+<tr>
+<td><code>adb forward tcp:A tcp:B</code> &#x2F; <code>--list</code> &#x2F; <code>--remove-all</code></td>
+<td>adb 标准</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>su -c &#39;...&#39;</code></td>
+<td>MagiskSU 实测 <code>su --help</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>pkill -9 &lt;模式&gt;</code> &#x2F; <code>kill -9 &lt;pid&gt;</code> &#x2F; <code>kill -CONT</code></td>
+<td>toybox &#x2F; procps</td>
+<td>✅ 实测</td>
+</tr>
+<tr>
+<td><code>grep TracerPid /proc/&lt;pid&gt;/status</code></td>
+<td>Linux procfs 标准</td>
+<td>✅ 实测</td>
+</tr>
+<tr>
+<td><code>chmod 755</code> &#x2F; <code>ls -t | head -1</code> &#x2F; <code>tr</code> &#x2F; <code>awk</code></td>
+<td>POSIX &#x2F; BSD</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>file &lt;elf&gt;</code></td>
+<td>BSD <code>file</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>setsid</code> &#x2F; <code>exec 0&lt;/dev/null</code> &#x2F; <code>&gt; f 2&gt;&amp;1 &amp;</code></td>
+<td>POSIX shell</td>
+<td>✅ 实测（脱钩成功）</td>
+</tr>
+<tr>
+<td><strong><code>lldb-server g[dbserver] :PORT -- prog args...</code></strong></td>
+<td>✅ 官方 usage 原文</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>lldb-server --attach &lt;pid-or-name&gt;</code></td>
+<td>✅ 官方 usage 原文</td>
+<td>⚠️ <strong>未单独实测</strong></td>
+</tr>
+<tr>
+<td><code>lldb-server --setsid</code></td>
+<td>✅ 官方 usage 原文</td>
+<td>⚠️ <strong>未实测</strong>（我们用外层 setsid）</td>
+</tr>
+<tr>
+<td><code>target create &lt;elf&gt;</code></td>
+<td>✅ 官方 <code>help</code> 原文</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>gdb-remote &lt;host&gt;:&lt;port&gt;</code></td>
+<td>✅ 官方 <code>help</code> 原文</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>process connect --plugin gdb-remote connect://h:p</code></td>
+<td>✅ 官方 <code>help</code> 原文</td>
+<td>⚠️ <strong>未单独实测</strong>（与上一行等价）</td>
+</tr>
+<tr>
+<td><code>settings set target.debug-file-search-paths</code></td>
+<td>✅ 实测 <code>settings list</code> 存在</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>platform select remote-android</code></td>
+<td>✅ 实测可选中</td>
+<td>⚠️ <strong>完整流程未跑通</strong>（本项目走 gdbserver）</td>
+</tr>
+<tr>
+<td><code>monkey -p &lt;pkg&gt; -c android.intent.category.LAUNCHER 1</code></td>
+<td>Android 标准</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>am force-stop &lt;pkg&gt;</code></td>
+<td>Android 标准</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>ss -tlnp</code></td>
+<td>iproute2</td>
+<td>⚠️ <strong>未在本项目实测</strong>（Android 上可能是 <code>netstat</code>）</td>
+</tr>
+</tbody></table>
+<p><strong>图例</strong>：✅ &#x3D; 官方原文 &#x2F; 实测跑通 ｜ ⚠️ &#x3D; 语法来自官方，但<strong>本项目还没单独验过</strong></p>
+<blockquote>
+<p>🔍 <strong>用法</strong>：以后照这份手册敲命令，遇到 ⚠️ 那几行<strong>先小步验证再用</strong>。<br>遇到 ✅ 那几行基本可以放心。</p>
+</blockquote>
+<hr>
+<p><em>文档位置：<code>/volume3/hermes/data/reports/安卓调试命令拆解手册.md</code></em></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">清风醉博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/">http://ljm2007.github.io/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">清风醉博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android-adb-%E8%B0%83%E8%AF%95/">Android, adb, 调试</a></div><div class="post_share"><div class="social-share" data-image="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/03/20/%E5%8F%88%E7%8E%A9%E4%BA%86%E4%B8%80%E9%81%8Dapply/"><img class="next-cover" src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">又玩一遍Apply</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">清风醉博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">18</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">18</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BA%B2"><span class="toc-number">1.</span> <span class="toc-text">0. 一句话总纲</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%AF%AD%E6%B3%95%E9%9B%B6%E4%BB%B6%EF%BC%88%E6%9C%80%E9%87%8D%E8%A6%81%E7%9A%84%E4%B8%80%E7%AB%A0%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">1. 语法零件（最重要的一章）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%91%BD%E4%BB%A4%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%BD%A2%E7%8A%B6"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 命令的基本形状</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E2%AD%90-%E5%BC%95%E5%8F%B7%EF%BC%9A%E8%BF%99%E6%98%AF%E6%89%80%E6%9C%89%E5%9B%B0%E6%83%91%E7%9A%84%E6%BA%90%E5%A4%B4"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 ⭐ 引号：这是所有困惑的源头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%8D%95%E5%BC%95%E5%8F%B7-vs-%E5%8F%8C%E5%BC%95%E5%8F%B7%EF%BC%88%E5%85%B3%E9%94%AE%E5%8C%BA%E5%88%AB%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 单引号 vs 双引号（关键区别）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E2%AD%90-%E8%BD%AC%E4%B9%89-%E2%80%94%E2%80%94-%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E9%87%8C%E6%9C%80%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BF%BB%E8%BD%A6%E7%82%B9"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 ⭐ \$ 转义 —— 调试命令里最常见的翻车点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E7%AE%A1%E9%81%93-%E2%80%94%E2%80%94-%E6%8A%8A%E4%B8%8A%E4%B8%80%E6%9D%A1%E7%9A%84%E8%BE%93%E5%87%BA%E5%96%82%E7%BB%99%E4%B8%8B%E4%B8%80%E6%9D%A1"><span class="toc-number">2.5.</span> <span class="toc-text">1.5 管道 | —— 把上一条的输出喂给下一条</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-%E9%87%8D%E5%AE%9A%E5%90%91-gt-gt-gt-2-gt-amp-1"><span class="toc-number">2.6.</span> <span class="toc-text">1.6 重定向 &gt; &gt;&gt; 2&gt;&amp;1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7-%E5%90%8E%E5%8F%B0-amp-%E5%92%8C%E5%AE%83%E7%9A%84%E5%9D%91"><span class="toc-number">2.7.</span> <span class="toc-text">1.7 后台 &amp; 和它的坑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-8-%E5%91%BD%E4%BB%A4%E6%9B%BF%E6%8D%A2"><span class="toc-number">2.8.</span> <span class="toc-text">1.8 命令替换 $(...)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-9-%E4%B8%80%E8%A1%8C%E9%87%8C%E4%B8%B2%E8%81%94%E5%A4%9A%E4%B8%AA%E5%91%BD%E4%BB%A4"><span class="toc-number">2.9.</span> <span class="toc-text">1.9 一行里串联多个命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-adb-%E7%AF%87"><span class="toc-number">3.</span> <span class="toc-text">2. adb 篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-adb-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 adb 是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-adb-devices-%E2%80%94%E2%80%94-%E7%9C%8B%E8%AE%BE%E5%A4%87%E5%9C%A8%E4%B8%8D%E5%9C%A8"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 adb devices —— 看设备在不在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-adb-shell-%E2%80%94%E2%80%94-%E5%9C%A8%E6%89%8B%E6%9C%BA%E4%B8%8A%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 adb shell —— 在手机上执行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-adb-push-x2F-adb-pull-%E2%80%94%E2%80%94-%E4%BC%A0%E6%96%87%E4%BB%B6"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 adb push &#x2F; adb pull —— 传文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E2%AD%90-adb-forward-%E2%80%94%E2%80%94-%E6%8B%89%E2%80%9D%E7%94%B5%E8%AF%9D%E7%BA%BF%E2%80%9D"><span class="toc-number">3.5.</span> <span class="toc-text">2.5 ⭐ adb forward —— 拉”电话线”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%90%AF%E5%8A%A8-x2F-%E6%9D%80%E6%8E%89-App"><span class="toc-number">3.6.</span> <span class="toc-text">2.6 启动 &#x2F; 杀掉 App</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%89%8B%E6%9C%BA%E9%87%8C%E7%9A%84-Linux-%E7%AF%87"><span class="toc-number">4.</span> <span class="toc-text">3. 手机里的 Linux 篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-su-c-%E2%80%94%E2%80%94-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%AF%8F%E6%9D%A1%E5%91%BD%E4%BB%A4%E9%83%BD%E8%A6%81%E5%AE%83"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 su -c —— 为什么每条命令都要它</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-proc-%E2%80%94%E2%80%94-%E5%86%85%E6%A0%B8%E7%BB%99%E6%AF%8F%E4%B8%AA%E8%BF%9B%E7%A8%8B%E5%BC%80%E7%9A%84%E2%80%9D%E4%BD%93%E6%A3%80%E6%8A%A5%E5%91%8A%E2%80%9D"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 &#x2F;proc —— 内核给每个进程开的”体检报告”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%9C%8B%E8%BF%9B%E7%A8%8B%EF%BC%9Aps-x2F-pidof-x2F-pgrep"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 看进程：ps &#x2F; pidof &#x2F; pgrep</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%9D%80%E8%BF%9B%E7%A8%8B%EF%BC%9Akill-x2F-pkill-x2F-killall"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 杀进程：kill &#x2F; pkill &#x2F; killall</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%9D%83%E9%99%90%EF%BC%9Achmod-755"><span class="toc-number">4.5.</span> <span class="toc-text">3.5 权限：chmod 755</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E6%89%BE%E6%9C%80%E6%96%B0%E4%BA%A7%E7%89%A9%EF%BC%9Als-t-head-1"><span class="toc-number">4.6.</span> <span class="toc-text">3.6 找最新产物：ls -t | head -1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-%E7%A1%AE%E8%AE%A4%E6%96%87%E4%BB%B6%E5%AF%B9%E4%B8%8D%E5%AF%B9%EF%BC%9Afile"><span class="toc-number">4.7.</span> <span class="toc-text">3.7 确认文件对不对：file</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E7%9C%8B%E7%A8%8B%E5%BA%8F%E8%87%AA%E5%B7%B1%E7%9A%84%E6%89%93%E5%8D%B0%EF%BC%9Atail-f"><span class="toc-number">4.8.</span> <span class="toc-text">3.8 看程序自己的打印：tail -f</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-%E7%9C%8B%E7%AB%AF%E5%8F%A3%E5%8D%A0%E7%94%A8%EF%BC%9Ass-x2F-netstat"><span class="toc-number">4.9.</span> <span class="toc-text">3.9 看端口占用：ss &#x2F; netstat</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86%E4%B8%89%E4%BB%B6%E5%A5%97"><span class="toc-number">5.</span> <span class="toc-text">4. 文本处理三件套</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-grep-%E2%80%94%E2%80%94-%E7%AD%9B%E5%87%BA%E6%83%B3%E8%A6%81%E7%9A%84%E8%A1%8C"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 grep —— 筛出想要的行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-awk-%E2%80%94%E2%80%94-%E6%8C%89%E5%88%97%E5%88%87"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 awk —— 按列切</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-tr-%E2%80%94%E2%80%94-%E6%8D%A2-x2F-%E5%88%A0%E5%AD%97%E7%AC%A6"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 tr —— 换&#x2F;删字符</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%90%8E%E5%8F%B0%E8%BF%9B%E7%A8%8B%E4%B8%89%E4%BB%B6%E5%A5%97%EF%BC%88%E6%9C%80%E9%82%AA%E9%97%A8%E7%9A%84%E4%B8%80%E8%8A%82%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">5. 后台进程三件套（最邪门的一节）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%8B%BC%E5%9B%9E%E5%8E%BB%EF%BC%9A%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95%E5%AE%8C%E6%95%B4%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="toc-number">7.</span> <span class="toc-text">6. 拼回去：远程调试完整流水线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-1-%E6%AD%A5%EF%BC%9A%E8%AE%A4%E8%AE%BE%E5%A4%87"><span class="toc-number">7.1.</span> <span class="toc-text">第 1 步：认设备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-2-%E6%AD%A5%EF%BC%9A%E5%A4%87%E6%96%99%EF%BC%88%E6%8E%A8%E6%96%87%E4%BB%B6-%E7%BB%99%E6%89%A7%E8%A1%8C%E6%9D%83%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">第 2 步：备料（推文件 + 给执行权）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-3-%E6%AD%A5%EF%BC%9A%E6%B8%85%E6%AE%8B%E7%95%99%EF%BC%88%E6%AF%8F%E6%AC%A1%E5%BC%80%E5%B7%A5%E5%89%8D%E9%83%BD%E8%A6%81%E5%81%9A%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">第 3 步：清残留（每次开工前都要做）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-4-%E6%AD%A5%EF%BC%9A%E6%8E%A5%E6%9C%BA%E6%A2%B0%E8%87%82%EF%BC%88%E8%B5%B7%E8%AE%BE%E5%A4%87%E7%AB%AF-server%EF%BC%89"><span class="toc-number">7.4.</span> <span class="toc-text">第 4 步：接机械臂（起设备端 server）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-5-%E6%AD%A5%EF%BC%9A%E6%8B%89%E7%94%B5%E8%AF%9D%E7%BA%BF"><span class="toc-number">7.5.</span> <span class="toc-text">第 5 步：拉电话线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-6-%E6%AD%A5%EF%BC%9A%E4%B8%8A%E6%89%8B%E6%9C%AF%E5%8F%B0%EF%BC%88%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5%EF%BC%89%E2%AD%90"><span class="toc-number">7.6.</span> <span class="toc-text">第 6 步：上手术台（客户端连接）⭐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-7-%E6%AD%A5%EF%BC%9A%E5%B9%B2%E6%B4%BB%EF%BC%88lldb-%E4%BA%A4%E4%BA%92%E5%91%BD%E4%BB%A4%EF%BC%89"><span class="toc-number">7.7.</span> <span class="toc-text">第 7 步：干活（lldb 交互命令）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC-8-%E6%AD%A5%EF%BC%9A%E6%8B%86%E7%8E%B0%E5%9C%BA%EF%BC%88%E5%8D%83%E4%B8%87%E5%88%AB%E8%B7%B3%EF%BC%89"><span class="toc-number">7.8.</span> <span class="toc-text">第 8 步：拆现场（千万别跳）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%95%85%E9%9A%9C%E9%80%9F%E6%9F%A5%EF%BC%9A%E7%97%87%E7%8A%B6-%E2%86%92-%E7%9C%9F%E5%9B%A0-%E2%86%92-%E5%91%BD%E4%BB%A4"><span class="toc-number">8.</span> <span class="toc-text">7. 故障速查：症状 → 真因 → 命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E4%B8%80%E9%A1%B5%E5%B0%8F%E6%8A%84%EF%BC%88%E8%B4%B4%E5%9C%A8%E5%B1%8F%E5%B9%95%E8%BE%B9%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">8. 一页小抄（贴在屏幕边）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%EF%BC%9A%E5%BC%95%E5%8F%B7%E9%80%9F%E8%AE%B0%E5%8D%A1"><span class="toc-number">10.</span> <span class="toc-text">附：引号速记卡</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E4%BA%8C%EF%BC%9A%E6%9C%AC%E6%96%87%E5%91%BD%E4%BB%A4%E7%9A%84%E6%A0%B8%E5%AF%B9%E7%8A%B6%E6%80%81%EF%BC%882026-09-20%EF%BC%89"><span class="toc-number">11.</span> <span class="toc-text">附二：本文命令的核对状态（2026-09-20）</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/" title="安卓调试命令拆解手册（Linux / adb 篇）"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="安卓调试命令拆解手册（Linux / adb 篇）"/></a><div class="content"><a class="title" href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C%EF%BC%88Linux%20-%20adb%20%E7%AF%87%EF%BC%89/" title="安卓调试命令拆解手册（Linux / adb 篇）">安卓调试命令拆解手册（Linux / adb 篇）</a><time datetime="2026-09-20T02:07:14.000Z" title="发表于 2026-09-20 10:07:14">2026-09-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/20/%E5%8F%88%E7%8E%A9%E4%BA%86%E4%B8%80%E9%81%8Dapply/" title="又玩一遍Apply"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="又玩一遍Apply"/></a><div class="content"><a class="title" href="/2024/03/20/%E5%8F%88%E7%8E%A9%E4%BA%86%E4%B8%80%E9%81%8Dapply/" title="又玩一遍Apply">又玩一遍Apply</a><time datetime="2024-03-20T06:04:43.000Z" title="发表于 2024-03-20 14:04:43">2024-03-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/07/Kotlin%E5%8D%8F%E7%A8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95%EF%BC%88GlobalScope%E3%80%81lifecycleScope%E3%80%81viewModelScope%EF%BC%89/" title="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）"/></a><div class="content"><a class="title" href="/2024/03/07/Kotlin%E5%8D%8F%E7%A8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95%EF%BC%88GlobalScope%E3%80%81lifecycleScope%E3%80%81viewModelScope%EF%BC%89/" title="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）">Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）</a><time datetime="2024-03-07T15:41:40.000Z" title="发表于 2024-03-07 23:41:40">2024-03-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/26/Compose%20Desktop%E5%B0%8F%E7%99%BD%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" title="ComposeDesktop小白入门教程从零到打包"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ComposeDesktop小白入门教程从零到打包"/></a><div class="content"><a class="title" href="/2024/02/26/Compose%20Desktop%E5%B0%8F%E7%99%BD%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" title="ComposeDesktop小白入门教程从零到打包">ComposeDesktop小白入门教程从零到打包</a><time datetime="2024-02-26T08:50:56.000Z" title="发表于 2024-02-26 16:50:56">2024-02-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字"><img src="https://pics7.baidu.com/feed/8b13632762d0f703b96e0ae1370f4d362797c52b.jpeg@f_auto?token=2b197450f910f4da5b9335a491c16fe7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin 中 by 关键字"/></a><div class="content"><a class="title" href="/2024/02/18/Kotlin%20-by%20%E8%AF%A6%E8%A7%A3/" title="Kotlin 中 by 关键字">Kotlin 中 by 关键字</a><time datetime="2024-02-18T15:43:06.000Z" title="发表于 2024-02-18 23:43:06">2024-02-18</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By 清风醉博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
