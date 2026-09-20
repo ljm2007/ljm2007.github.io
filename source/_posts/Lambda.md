@@ -1,5 +1,7 @@
 ---
 title: Kotlin中的lambda
+top_img: https://s2.loli.net/2023/08/18/qGUY8y2d4CQXnxS.png
+cover: https://s2.loli.net/2023/08/18/qGUY8y2d4CQXnxS.png
 date: 2024-02-16 10:18:40
 tags: lambda
 categories: lambda

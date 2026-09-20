@@ -1,5 +1,7 @@
 ---
 title: ComposeDesktop小白入门教程从零到打包
+top_img: https://s2.loli.net/2024/02/26/yrfz2hPsEZKI9l3.png
+cover: https://s2.loli.net/2024/02/26/yrfz2hPsEZKI9l3.png
 date: 2024-02-26 16:50:56
 tags: Kotlin
 categories: Kotlin

@@ -1,5 +1,7 @@
 ---
 title: Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）
+top_img: https://s2.loli.net/2024/03/07/DNjiK3n4k7Q86mZ.png
+cover: https://s2.loli.net/2024/03/07/DNjiK3n4k7Q86mZ.png
 date: 2024-03-07 23:41:40
 tags: Kotlin
 permalink: 2024/03/07/Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）/

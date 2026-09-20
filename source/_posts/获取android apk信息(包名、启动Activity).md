@@ -1,5 +1,7 @@
 ---
 title: 获取android apk信息
+top_img: https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png
+cover: https://img2020.cnblogs.com/blog/1380949/202004/1380949-20200409161654123-1599913937.png
 date: 2024-02-15 09:55:37
 tags: android
 categories: android

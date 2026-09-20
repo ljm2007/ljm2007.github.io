@@ -1,5 +1,7 @@
 ---
 title: 又玩一遍Apply
+top_img: https://s2.loli.net/2024/03/20/YqThUrp4GBbARHl.png
+cover: https://s2.loli.net/2024/03/20/YqThUrp4GBbARHl.png
 date: 2024-03-20 14:04:43
 tags: Kotlin
 categories: Kotlin

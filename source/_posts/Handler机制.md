@@ -1,5 +1,7 @@
 ---
 title: Android Handler：图文解析 Handler通信机制 的工作原理
+top_img: https://s2.loli.net/2024/02/24/qYeL3VQMEbXmwJd.webp
+cover: https://s2.loli.net/2024/02/24/qYeL3VQMEbXmwJd.webp
 date: 2024-02-17 10:18:40
 tags: android
 categories: android

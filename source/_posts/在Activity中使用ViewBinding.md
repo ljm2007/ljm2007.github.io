@@ -1,5 +1,7 @@
 ---
 title: 在Activity中使用ViewBinding
+top_img: https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp
+cover: https://s2.loli.net/2023/09/02/zEhOgs8dyqo6ZjM.webp
 date: 2024-02-16 14:04:43
 tags: android
 categories: android
