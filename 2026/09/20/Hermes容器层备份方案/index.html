@@ -1,0 +1,346 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Hermes 容器层备份方案 | IT李白白博客</title><meta name="keywords" content="Hermes,备份"><meta name="author" content="IT李白白博客"><meta name="copyright" content="IT李白白博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="日期：2026-09-20环境：UGREEN NAS（DXP4800PLUS-158）内 Docker 容器运行的 Hermes Agent   一、为什么要区分「持久层」和「容器层」Hermes 的数据实际分布在三个位置，容器的挂载情况实测如下：    位置 真实归属 容器删了重建 整机&#x2F;硬盘坏了    &#x2F;opt&#x2F;data NAS 存储卷 ug_..._pool3-volume1（独">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hermes 容器层备份方案">
+<meta property="og:url" content="http://ljm2007.github.io/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="IT李白白博客">
+<meta property="og:description" content="日期：2026-09-20环境：UGREEN NAS（DXP4800PLUS-158）内 Docker 容器运行的 Hermes Agent   一、为什么要区分「持久层」和「容器层」Hermes 的数据实际分布在三个位置，容器的挂载情况实测如下：    位置 真实归属 容器删了重建 整机&#x2F;硬盘坏了    &#x2F;opt&#x2F;data NAS 存储卷 ug_..._pool3-volume1（独">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://ljm2007.github.io/img/post-covers/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88.png">
+<meta property="article:published_time" content="2026-09-20T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-20T15:35:57.032Z">
+<meta property="article:author" content="IT李白白博客">
+<meta property="article:tag" content="Hermes">
+<meta property="article:tag" content="备份">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://ljm2007.github.io/img/post-covers/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hermes 容器层备份方案',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-20 23:35:57'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">22</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Hermes 容器层备份方案</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-20T12:00:00.000Z" title="发表于 2026-09-20 20:00:00">2026-09-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-20T15:35:57.032Z" title="更新于 2026-09-20 23:35:57">2026-09-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Hermes 容器层备份方案"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>日期：2026-09-20<br>环境：UGREEN NAS（DXP4800PLUS-158）内 Docker 容器运行的 Hermes Agent</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么要区分「持久层」和「容器层」"><a href="#一、为什么要区分「持久层」和「容器层」" class="headerlink" title="一、为什么要区分「持久层」和「容器层」"></a>一、为什么要区分「持久层」和「容器层」</h2><p>Hermes 的数据实际分布在三个位置，容器的挂载情况实测如下：</p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>真实归属</th>
+<th>容器删了重建</th>
+<th>整机&#x2F;硬盘坏了</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/opt/data</code></td>
+<td>NAS 存储卷 <code>ug_..._pool3-volume1</code>（独立挂载）</td>
+<td>✅ 还在</td>
+<td>❌ 没了</td>
+</tr>
+<tr>
+<td><code>/volume3/hermes/data</code></td>
+<td>同一存储卷，另一个挂载点</td>
+<td>✅ 还在</td>
+<td>❌ 没了</td>
+</tr>
+<tr>
+<td><code>/root</code>、<code>/usr/local/bin</code>、<code>/etc</code>、<code>/opt/hermes</code></td>
+<td>容器 overlay upper 层</td>
+<td>❌ <strong>一起没</strong></td>
+<td>❌ 没了</td>
+</tr>
+</tbody></table>
+<p><code>mount</code> 输出可确认前两者是独立挂载的设备：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/dev/mapper/ug_8F2769_1783484762_pool3-volume1 on /opt/data            type ext4</span><br><span class="line">/dev/mapper/ug_8F2769_1783484762_pool3-volume1 on /volume3/hermes/data type ext4</span><br></pre></td></tr></table></figure>
+
+<p><strong>结论</strong>：</p>
+<ul>
+<li>前两处 &#x3D; 持久层 → <strong>用户已用其他方式自行备份，本方案不覆盖</strong></li>
+<li>第三处 &#x3D; 容器层 → 只有本方案负责，这是「重装 Hermes 后懒得重做」的部分</li>
+</ul>
+<hr>
+<h2 id="二、容器层里到底有什么（实测）"><a href="#二、容器层里到底有什么（实测）" class="headerlink" title="二、容器层里到底有什么（实测）"></a>二、容器层里到底有什么（实测）</h2><table>
+<thead>
+<tr>
+<th>内容</th>
+<th>体积</th>
+<th>丢了要紧吗</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/opt/hermes</code> 程序源码（4534 个文件）</td>
+<td>压缩后 12M</td>
+<td>要紧：里面有本地改动（如 <code>run_agent.py</code>、<code>.bak</code> 原件）</td>
+</tr>
+<tr>
+<td><code>/root/.ssh</code>（known_hosts 等）、<code>.gitconfig</code>、<code>.npmrc</code>、<code>.profile</code>、<code>.bashrc</code></td>
+<td>几十 KB</td>
+<td>要紧，但可以手工补</td>
+</tr>
+<tr>
+<td><code>/usr/local/bin</code> 自定义脚本（<code>macssh</code>、<code>mihomo</code> 软链、<code>ensure-tailscale-userspace</code>…）</td>
+<td>24K</td>
+<td>要紧</td>
+</tr>
+<tr>
+<td><code>/etc</code> 关键文件（sshd_config、hosts、localtime、profile.d、apt 源）</td>
+<td>几十 KB</td>
+<td>要紧</td>
+</tr>
+<tr>
+<td><code>/usr/share/fonts</code>（DejaVu 等，做中文封面图要用）</td>
+<td>3.3M</td>
+<td>要重装，麻烦</td>
+</tr>
+<tr>
+<td>已装软件包清单（apt 841 个 &#x2F; pip 12 个 &#x2F; node、hexo 版本）</td>
+<td>68K</td>
+<td>靠清单重装</td>
+</tr>
+</tbody></table>
+<p><strong>刻意不备</strong>（重装会自动有，占大头）：</p>
+<table>
+<thead>
+<tr>
+<th>目录</th>
+<th>体积</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/opt/hermes/.venv</code></td>
+<td>732M</td>
+<td>安装程序自带</td>
+</tr>
+<tr>
+<td><code>/opt/hermes/.playwright</code></td>
+<td>262M</td>
+<td>浏览器二进制，可重下</td>
+</tr>
+<tr>
+<td><code>/opt/hermes/node_modules</code></td>
+<td>176M</td>
+<td><code>npm install</code> 即可</td>
+</tr>
+<tr>
+<td><code>/root/.cache</code>、<code>/root/.local/lib</code></td>
+<td>40M</td>
+<td>pip &#x2F; 构建缓存</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、脚本"><a href="#三、脚本" class="headerlink" title="三、脚本"></a>三、脚本</h2><p><strong>路径</strong>：<code>/opt/data/scripts/hermes_container_backup.sh</code>（权限 700）</p>
+<h3 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bash /opt/data/scripts/hermes_container_backup.sh                  <span class="comment"># 完整备份（含程序源码，14M）</span></span><br><span class="line">bash /opt/data/scripts/hermes_container_backup.sh --no-hermes-src  <span class="comment"># 精简（仅配置+字体+清单，1.8M）</span></span><br><span class="line">bash /opt/data/scripts/hermes_container_backup.sh --keep 14        <span class="comment"># 保留最近 14 份</span></span><br><span class="line">bash /opt/data/scripts/hermes_container_backup.sh --out /path      <span class="comment"># 换输出目录</span></span><br></pre></td></tr></table></figure>
+
+<p>默认输出：<code>/volume3/hermes/data/backups/container/hermes_container_&lt;时间戳&gt;.tar.gz</code>，自动保留最近 7 份，权限 600。</p>
+<h3 id="实测结果"><a href="#实测结果" class="headerlink" title="实测结果"></a>实测结果</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>体积</th>
+<th>耗时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>完整（含源码）</td>
+<td><strong>14 MB</strong></td>
+<td>3.6 秒</td>
+</tr>
+<tr>
+<td>精简（不含源码）</td>
+<td><strong>1.8 MB</strong></td>
+<td>约 3 秒</td>
+</tr>
+</tbody></table>
+<h3 id="包内结构"><a href="#包内结构" class="headerlink" title="包内结构"></a>包内结构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">hermes-container-layer/</span><br><span class="line">├── MANIFEST.txt              各部分体积、包数量、明确列出「不含什么」</span><br><span class="line">├── RESTORE.txt               分步恢复说明</span><br><span class="line">├── opt-hermes-src/</span><br><span class="line">│   ├── hermes-src.tar.gz     程序源码（排除 .venv / .playwright / node_modules）</span><br><span class="line">│   ├── hermes-src.md5        4534 个文件的校验和 → 升级后 diff 出「我改过哪些文件」</span><br><span class="line">│   └── local-patches/        带 .bak/.orig 后缀的原件（手改前的版本）</span><br><span class="line">├── container-config/</span><br><span class="line">│   ├── root-ssh/             /root/.ssh</span><br><span class="line">│   ├── root-local-bin/       /root/.local/bin（只留自己写的脚本，不含 pip 库）</span><br><span class="line">│   ├── usr-local-bin/        /usr/local/bin</span><br><span class="line">│   ├── etc/                  hosts、environment、localtime、resolv.conf</span><br><span class="line">│   ├── etc-profile.d/        /etc/profile.d</span><br><span class="line">│   ├── sshd_config           /etc/ssh/sshd_config</span><br><span class="line">│   ├── apt-sources.list.d/   apt 源</span><br><span class="line">│   ├── .gitconfig / .npmrc / .profile / .bashrc</span><br><span class="line">│   └── system-crontab.txt    系统级 crontab</span><br><span class="line">├── fonts/                    /usr/share/fonts + font-list.txt</span><br><span class="line">└── package-lists/</span><br><span class="line">    ├── apt-packages.txt      841 个包（名 + 版本）</span><br><span class="line">    ├── apt-selections.txt</span><br><span class="line">    ├── pip-freeze.txt        12 个</span><br><span class="line">    ├── npm-global.txt</span><br><span class="line">    └── runtime-versions.txt  node / npm / python / uv / hexo 版本</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、恢复流程"><a href="#四、恢复流程" class="headerlink" title="四、恢复流程"></a>四、恢复流程</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1) 先把两处 NAS 持久文件夹挂回容器（用用户自己的备份方式）</span></span><br><span class="line"><span class="comment"># 2) 解包</span></span><br><span class="line">tar xzf hermes_container_*.tar.gz -C /tmp</span><br><span class="line"><span class="built_in">cd</span> /tmp/hermes-container-layer</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3) 程序源码（可选，重装 Hermes 通常已带）</span></span><br><span class="line"><span class="comment">#    先看 diff，避免把新版程序盖回旧版：</span></span><br><span class="line">md5sum -c opt-hermes-src/hermes-src.md5 2&gt;/dev/null | grep -v OK</span><br><span class="line">tar xzf opt-hermes-src/hermes-src.tar.gz -C /opt/hermes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4) 配置拷回</span></span><br><span class="line"><span class="built_in">cp</span> -a container-config/root-ssh/.       /root/.ssh/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/root-local-bin/. /root/.local/bin/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/usr-local-bin/.  /usr/local/bin/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/.gitconfig       /root/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/.npmrc           /root/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/etc-profile.d/.  /etc/profile.d/</span><br><span class="line"><span class="built_in">cp</span> -a container-config/sshd_config      /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5) 字体</span></span><br><span class="line"><span class="built_in">cp</span> -a fonts/. /usr/share/fonts/ &amp;&amp; fc-cache -fv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6) 软件包</span></span><br><span class="line">awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> package-lists/apt-packages.txt | xargs apt-get install -y --no-install-recommends</span><br><span class="line">pip install -r package-lists/pip-freeze.txt</span><br></pre></td></tr></table></figure>
+
+<p><strong>恢复后检查</strong>：git 凭据可用（<code>.gitconfig</code> 指向 <code>/opt/data/secrets/git-credentials</code>）、中文封面图能渲染（字体）、<code>macssh</code>&#x2F;<code>mihomo</code> 等脚本能跑。</p>
+<hr>
+<h2 id="五、关键设计点"><a href="#五、关键设计点" class="headerlink" title="五、关键设计点"></a>五、关键设计点</h2><ol>
+<li>**只备”增量”**：程序本体、虚拟环境、node_modules 全部排除，体积从 1.3G 降到 14M</li>
+<li><strong><code>md5</code> 清单</strong>：没有原始 git 仓库可比对，用校验和记录”当前状态”，以后升级 Hermes 后能一条命令找出本地改动过哪些文件</li>
+<li><strong>保留本地补丁原件</strong>：把 <code>.bak</code> &#x2F; <code>.orig</code> 后缀的文件单独收集，明确标记”这是手改前的版本”</li>
+<li><strong><code>--no-hermes-src</code> 降级模式</strong>：只想留配置和包清单时体积压到 1.8M，适合高频跑</li>
+<li><strong>恢复说明写在包里</strong>：不在容器外的文档里，避免备份和文档走散</li>
+<li>**包内明确声明”不含什么”**：<code>MANIFEST.txt</code> 直写「<code>/opt/data</code>、<code>/volume3/hermes/data</code> 请用你自己的备份」，防止以后误以为全都在里面</li>
+</ol>
+<hr>
+<h2 id="六、自动执行（已配置）"><a href="#六、自动执行（已配置）" class="headerlink" title="六、自动执行（已配置）"></a>六、自动执行（已配置）</h2><p><strong>关键认知</strong>：乙包<strong>不是自动更新的</strong> —— 它是被脚本「生成」出来的。NAS 上的同步任务只负责<strong>搬运</strong>，必须有人先<strong>生产</strong>。</p>
+<h3 id="Hermes-定时任务"><a href="#Hermes-定时任务" class="headerlink" title="Hermes 定时任务"></a>Hermes 定时任务</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>任务名</td>
+<td><code>hermes-container-backup-weekly</code></td>
+</tr>
+<tr>
+<td>Job ID</td>
+<td><code>79c482b9d972</code></td>
+</tr>
+<tr>
+<td>时间</td>
+<td><code>0 3 * * 1</code> —— <strong>每周一凌晨 03:00</strong></td>
+</tr>
+<tr>
+<td>预运行脚本</td>
+<td><code>/opt/data/scripts/container_backup_cron.py</code></td>
+</tr>
+<tr>
+<td>投递</td>
+<td>回到当前飞书会话（一到两句话汇报）</td>
+</tr>
+<tr>
+<td>状态</td>
+<td>已启用，实测通过</td>
+</tr>
+</tbody></table>
+<p><code>container_backup_cron.py</code> 做三件事：</p>
+<ol>
+<li>调用 <code>hermes_container_backup.sh --keep 7</code></li>
+<li>校验新包完整性（<code>tar tzf | wc -l</code>，条目 &gt; 10 才算 OK），输出 <code>ACTION=OK / WARN / ERROR</code></li>
+<li>列出备份目录现状（份数、体积、时间），并提示”同步任务需排在本任务之后”</li>
+</ol>
+<h3 id="完整闭环"><a href="#完整闭环" class="headerlink" title="完整闭环"></a>完整闭环</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">每周一 03:00  Hermes 定时任务 → 生成新乙包（14M，留最近 7 份）</span><br><span class="line">        ↓</span><br><span class="line">之后任意时间  NAS 上的同步任务 → 把 backups/container/ 搬到异地</span><br></pre></td></tr></table></figure>
+
+<p>⚠️ <strong>顺序要求</strong>：NAS 同步任务必须在 03:00 <strong>之后</strong>跑，否则搬走的是上周的旧包。</p>
+<p>如果 NAS 同步任务也是周一凌晨跑，把它的时间往后挪（例如 04:00），或告诉我时间，我把本任务提到它前面。</p>
+<hr>
+<h2 id="七、遗留事项"><a href="#七、遗留事项" class="headerlink" title="七、遗留事项"></a>七、遗留事项</h2><ul>
+<li>旧的整机包 <code>backups/hermes/hermes_slim_*.tar.gz</code>（154M + 178M）已被本方案取代，<strong>已删除</strong>（腾出 332M）</li>
+<li>旧的 <code>hermes_backup.sh</code> &#x2F; <code>hermes_restore.sh</code> 已无用（它们备的是甲抽屉），可删可留</li>
+<li>⚠️ <strong>甲抽屉（NAS 持久文件夹）现在没有任何备份保护</strong>，用户声明自行负责，建议尽快在 NAS 上确认备份任务真的在跑</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/">http://ljm2007.github.io/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hermes/">Hermes</a><a class="post-meta__tags" href="/tags/%E5%A4%87%E4%BB%BD/">备份</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/"><img class="next-cover" src="/img/post-covers/android-adb-debug-manual.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安卓调试命令拆解手册（Linux / adb 篇）</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">42</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">22</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8C%BA%E5%88%86%E3%80%8C%E6%8C%81%E4%B9%85%E5%B1%82%E3%80%8D%E5%92%8C%E3%80%8C%E5%AE%B9%E5%99%A8%E5%B1%82%E3%80%8D"><span class="toc-number">1.</span> <span class="toc-text">一、为什么要区分「持久层」和「容器层」</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%B9%E5%99%A8%E5%B1%82%E9%87%8C%E5%88%B0%E5%BA%95%E6%9C%89%E4%BB%80%E4%B9%88%EF%BC%88%E5%AE%9E%E6%B5%8B%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">二、容器层里到底有什么（实测）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%84%9A%E6%9C%AC"><span class="toc-number">3.</span> <span class="toc-text">三、脚本</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%B3%95"><span class="toc-number">3.1.</span> <span class="toc-text">用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-number">3.2.</span> <span class="toc-text">实测结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%85%E5%86%85%E7%BB%93%E6%9E%84"><span class="toc-number">3.3.</span> <span class="toc-text">包内结构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%81%A2%E5%A4%8D%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">四、恢复流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9"><span class="toc-number">5.</span> <span class="toc-text">五、关键设计点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E5%8A%A8%E6%89%A7%E8%A1%8C%EF%BC%88%E5%B7%B2%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六、自动执行（已配置）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hermes-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">6.1.</span> <span class="toc-text">Hermes 定时任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E9%97%AD%E7%8E%AF"><span class="toc-number">6.2.</span> <span class="toc-text">完整闭环</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E9%81%97%E7%95%99%E4%BA%8B%E9%A1%B9"><span class="toc-number">7.</span> <span class="toc-text">七、遗留事项</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/" title="Hermes 容器层备份方案"><img src="/img/post-covers/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hermes 容器层备份方案"/></a><div class="content"><a class="title" href="/2026/09/20/Hermes%E5%AE%B9%E5%99%A8%E5%B1%82%E5%A4%87%E4%BB%BD%E6%96%B9%E6%A1%88/" title="Hermes 容器层备份方案">Hermes 容器层备份方案</a><time datetime="2026-09-20T12:00:00.000Z" title="发表于 2026-09-20 20:00:00">2026-09-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux / adb 篇）"><img src="/img/post-covers/android-adb-debug-manual.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="安卓调试命令拆解手册（Linux / adb 篇）"/></a><div class="content"><a class="title" href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux / adb 篇）">安卓调试命令拆解手册（Linux / adb 篇）</a><time datetime="2026-09-20T02:07:14.000Z" title="发表于 2026-09-20 10:07:14">2026-09-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/20/%E5%8F%88%E7%8E%A9%E4%BA%86%E4%B8%80%E9%81%8Dapply/" title="又玩一遍Apply"><img src="https://s2.loli.net/2024/03/20/YqThUrp4GBbARHl.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="又玩一遍Apply"/></a><div class="content"><a class="title" href="/2024/03/20/%E5%8F%88%E7%8E%A9%E4%BA%86%E4%B8%80%E9%81%8Dapply/" title="又玩一遍Apply">又玩一遍Apply</a><time datetime="2024-03-20T06:04:43.000Z" title="发表于 2024-03-20 14:04:43">2024-03-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/07/Kotlin%E5%8D%8F%E7%A8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95%EF%BC%88GlobalScope%E3%80%81lifecycleScope%E3%80%81viewModelScope%EF%BC%89/" title="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）"><img src="https://s2.loli.net/2024/03/07/DNjiK3n4k7Q86mZ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）"/></a><div class="content"><a class="title" href="/2024/03/07/Kotlin%E5%8D%8F%E7%A8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E7%94%A8%E6%B3%95%EF%BC%88GlobalScope%E3%80%81lifecycleScope%E3%80%81viewModelScope%EF%BC%89/" title="Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）">Kotlin协程的简单用法（GlobalScope、lifecycleScope、viewModelScope）</a><time datetime="2024-03-07T15:41:40.000Z" title="发表于 2024-03-07 23:41:40">2024-03-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/26/Compose%20Desktop%E5%B0%8F%E7%99%BD%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" title="ComposeDesktop小白入门教程从零到打包"><img src="https://s2.loli.net/2024/02/26/yrfz2hPsEZKI9l3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ComposeDesktop小白入门教程从零到打包"/></a><div class="content"><a class="title" href="/2024/02/26/Compose%20Desktop%E5%B0%8F%E7%99%BD%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" title="ComposeDesktop小白入门教程从零到打包">ComposeDesktop小白入门教程从零到打包</a><time datetime="2024-02-26T08:50:56.000Z" title="发表于 2024-02-26 16:50:56">2024-02-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
