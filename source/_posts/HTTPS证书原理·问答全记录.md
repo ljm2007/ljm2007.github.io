@@ -7,6 +7,8 @@ tags:
   - 证书
   - 网络安全
 categories: 安全研究
+top_img: /img/post-covers/HTTPS证书原理·问答全记录.png
+cover: /img/post-covers/HTTPS证书原理·问答全记录.png
 ---
 > 整理日期：2026-08-24
 > 背景：折腾抖音抓包时产生的一连串疑问，全部用大白话讲透。
