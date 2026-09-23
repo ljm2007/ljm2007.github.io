@@ -455,7 +455,251 @@ tail -20
 
 ---
 
-## 23. 优先记这 10 个（Android 逆向够用）
+---
+
+## 23. 实战：实时监控 Android 崩溃 + Inject 日志
+
+这条命令就是一个实时监控 Android 崩溃 + Inject 日志的过滤器：
+
+```bash
+adb logcat -v threadtime | grep -E "Inject|HERMES_HOOK|Fatal signal|SIGSEGV|SIGABRT|backtrace|F DEBUG"
+```
+
+拆开看：
+
+```text
+adb logcat
+↓
+实时读取 Logcat
+↓
+-v threadtime
+↓
+使用时间/线程格式
+↓
+|
+↓
+grep -E
+↓
+使用扩展正则
+↓
+只保留指定关键词
+```
+
+**① adb logcat**
+
+```bash
+adb logcat
+```
+
+实时读取日志。
+
+只要 Android 又产生新的日志，就会继续显示。
+
+**② -v threadtime**
+
+```bash
+-v threadtime
+```
+
+`-v` = 指定 Logcat 输出格式。
+
+threadtime 会显示类似：
+
+```text
+09-23 10:35:21.123 1234 5678 I HERMES_HOOK: attach success
+```
+
+大概是：
+
+```text
+日期 时间 PID TID 等级 TAG
+↓     ↓     ↓   ↓   ↓   ↓
+09-23 10:35:21.123 1234 5678 I HERMES_HOOK
+```
+
+其中：
+
+```text
+PID = 进程 ID
+TID = 线程 ID
+```
+
+对于你现在分析 ptrace / 多线程 / Inject，这个格式比较有用。
+
+**③ |**
+
+```text
+|
+```
+
+叫管道。
+
+意思：
+
+```text
+左边命令的输出
+↓
+交给
+↓
+右边命令
+```
+
+所以：
+
+```bash
+adb logcat | grep ...
+```
+
+就是：
+
+```text
+Logcat 大量日志
+↓
+grep
+↓
+只留下需要的
+```
+
+**④ grep -E**
+
+```bash
+grep -E
+```
+
+`-E` = 使用扩展正则表达式。
+
+这里最重要的是：
+
+```text
+A|B|C
+```
+
+表示：
+
+```text
+A 或 B 或 C
+```
+
+所以：
+
+```bash
+grep -E "Inject|HERMES_HOOK|SIGSEGV"
+```
+
+就是：
+
+```text
+包含 Inject
+或
+包含 HERMES_HOOK
+或
+包含 SIGSEGV
+```
+
+**⑤ 这些关键词分别干什么**
+
+```text
+Inject
+```
+
+找你的 Inject 相关日志。
+
+```text
+HERMES_HOOK
+```
+
+找你代码自己的 TAG。
+
+```text
+Fatal signal
+```
+
+Native 程序发生致命信号。
+
+```text
+SIGSEGV
+```
+
+常见的非法内存访问。
+
+```text
+SIGABRT
+```
+
+程序主动 abort()，或者某些运行时错误导致 abort。
+
+```text
+backtrace
+```
+
+崩溃调用栈。
+
+```text
+F DEBUG
+```
+
+Android debuggerd/tombstone 产生的崩溃信息。
+
+### 最终效果
+
+比如 Android 出现：
+
+```text
+09-23 10:40:01.100 ... I HERMES_HOOK: ptrace attach
+09-23 10:40:01.200 ... I HERMES_HOOK: waitpid
+09-23 10:40:01.300 ... F DEBUG: *** *** *** *** ***
+09-23 10:40:01.301 ... F DEBUG: signal 11 (SIGSEGV)
+09-23 10:40:01.302 ... F DEBUG: backtrace:
+09-23 10:40:01.303 ... F DEBUG: #00 pc 000000...
+```
+
+这些会被保留下来，而大量：
+
+```text
+SystemUI
+SurfaceFlinger
+Audio
+Wifi
+Bluetooth
+其他 App
+```
+
+之类的日志会被过滤掉。
+
+### 你现在调 Inject，我建议直接用
+
+```bash
+adb logcat -c
+adb logcat -v threadtime | grep -E "Inject|HERMES_HOOK|Fatal signal|SIGSEGV|SIGABRT|backtrace|F DEBUG"
+```
+
+然后另开一个终端启动 Inject。
+
+这样可以做到：
+
+```text
+清空旧日志
+↓
+启动实时监控
+↓
+启动 Inject
+↓
+Inject 正常日志 ──→ HERMES_HOOK
+↓
+如果崩溃
+↓
+SIGSEGV / SIGABRT
+↓
+backtrace
+↓
+F DEBUG
+```
+
+如果你下一步要分析 SIGSEGV + backtrace 中的 pc 000000... 怎么对应到你 Inject 源码具体哪一行，那就是 llvm-addr2line / ndk-stack 的用法。
+
+---
+
+## 24. 优先记这 10 个（Android 逆向够用）
 
 ```bash
 grep "xxx"              # 基本搜索
