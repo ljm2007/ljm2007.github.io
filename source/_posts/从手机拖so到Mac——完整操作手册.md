@@ -1,5 +1,5 @@
 ---
-title: 从手机拖 so 到 Mac —— 完整操作手册（以抖音为例）
+title: 从手机拖 so 到 Mac —— 完整操作手册（以某音为例）
 date: 2026-09-23 11:26:18
 top_img: /img/post-covers/从手机拖so到Mac——完整操作手册.png
 cover: /img/post-covers/从手机拖so到Mac——完整操作手册.png
@@ -64,8 +64,8 @@ adb shell "su -c cat <步骤②得到的路径>/lib/arm64/<so文件名>" > /tmp/
 
 | App | 包名 | 常分析 so |
 |---|---|---|
-| 抖音正式版 | `com.ss.android.ugc.aweme` | libsscronet.so、libttboringssl.so、libttcrypto.so |
-| 抖音极速版 | `com.ss.android.ugc.aweme.lite` | 同上 |
+| 某音正式版 | `com.ss.android.ugc.aweme` | libsscronet.so、libttboringssl.so、libttcrypto.so |
+| 某音极速版 | `com.ss.android.ugc.aweme.lite` | 同上 |
 
 极速版实测路径（DHCP/升级后路径会变，**每次都要用步骤②现查**）：
 
