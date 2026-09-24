@@ -67,9 +67,9 @@ Fatal signal 5 (SIGTRAP), code 1 (TRAP_BRKPT)
 
 ```bash
 export PATH=/opt/data/bin:$PATH
-sshpass -p 1120 ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 \
+sshpass -p *** ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 \
   -o ProxyCommand="/opt/data/bin/socks5-nc --proxy 127.0.0.1:1055 --proxy-type socks5 %h %p" \
-  ljm2007@100.103.160.49 '<远程命令>'
+  ljm2007@*** '<远程命令>'
 ```
 
 > ⚠️ Mac 合盖会睡，睡后报 `general SOCKS server failure` / `No route to host`，唤醒后重试即可。

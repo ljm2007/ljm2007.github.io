@@ -23,7 +23,7 @@ cover: https://itimetraveler.github.io/gallery/android_common/Android3.png
 
 ## 加载入口
 
-首先我们知道在Android(Java)中加载一个动态链接库非常简单。就是我们日常调用的 `System.load(Sring filename)` 或者`System.loadLibrary(String libname)`开始。 看过[《理解JNI技术》](http://47.98.205.211/2017/05/17/jni/)的应该知道上述代码执行过程中会调用native层的`JNI_OnLoad()`方法，一般用于动态注册native方法。
+首先我们知道在Android(Java)中加载一个动态链接库非常简单。就是我们日常调用的 `System.load(Sring filename)` 或者`System.loadLibrary(String libname)`开始。 看过[《理解JNI技术》](http://***/2017/05/17/jni/)的应该知道上述代码执行过程中会调用native层的`JNI_OnLoad()`方法，一般用于动态注册native方法。
 
 ## # System.loadLibrary
 
