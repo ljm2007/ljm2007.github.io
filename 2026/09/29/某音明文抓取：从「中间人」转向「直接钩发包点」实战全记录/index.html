@@ -6,8 +6,8 @@
 <meta property="og:description" content="日期：2026-09-29设备：Pixel（94NY19J44，Android 12）USB 连 Mac；Mac 经 Tailscale 由 NAS 远程操作目标应用：某音 com.ss.android.ugc.aweme主题：不再依赖 MITM 代理与证书信任链，改为在 TLS 加密前&#x2F;解密后直接抄明文   0. 一句话结论SSL_write &#x2F; SSL_read 确实是某">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://ljm2007.github.io/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png">
-<meta property="article:published_time" content="2026-09-29T04:14:15.000Z">
-<meta property="article:modified_time" content="2026-09-29T04:17:01.869Z">
+<meta property="article:published_time" content="2026-09-29T04:43:50.000Z">
+<meta property="article:modified_time" content="2026-09-29T07:19:17.905Z">
 <meta property="article:author" content="IT李白白博客">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="抓包">
@@ -56,7 +56,7 @@
   isHome: false,
   isHighlightShrink: false,
   isToc: true,
-  postUpdate: '2026-09-29 12:17:01'
+  postUpdate: '2026-09-29 15:19:17'
 }</script><noscript><style type="text/css">
   #nav {
     opacity: 1
@@ -145,11 +145,13 @@
       }
     }
     detectApple()
-    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T04:14:15.000Z" title="发表于 2026-09-29 12:14:15">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-29T04:17:01.869Z" title="更新于 2026-09-29 12:17:01">2026-09-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T04:43:50.000Z" title="发表于 2026-09-29 12:43:50">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-29T07:19:17.905Z" title="更新于 2026-09-29 15:19:17">2026-09-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
 <p><strong>日期</strong>：2026-09-29<br><strong>设备</strong>：Pixel（<code>94NY19J44</code>，Android 12）USB 连 Mac；Mac 经 Tailscale 由 NAS 远程操作<br><strong>目标应用</strong>：某音 <code>com.ss.android.ugc.aweme</code><br><strong>主题</strong>：不再依赖 MITM 代理与证书信任链，改为在 TLS 加密前&#x2F;解密后直接抄明文</p>
 </blockquote>
 <hr>
 <h2 id="0-一句话结论"><a href="#0-一句话结论" class="headerlink" title="0. 一句话结论"></a>0. 一句话结论</h2><p><strong><code>SSL_write</code> &#x2F; <code>SSL_read</code> 确实是某音 TCP+TLS 通道上「明文最后一道门 &#x2F; 第一道门」，在这两个导出符号上挂钩，本项目实测已成功抓到明文请求（无需代理、无需证书）。但这个钩子只能覆盖 4 条出网通道中的 1 条（见 §6）。</strong></p>
+<p><strong>另附</strong>：实测发现某音的 TLS 1.2 连接里<strong>服务器证书明文可见</strong>，已完整抠出并整理成 <strong>附表 A《某音真证书指纹清单》</strong>（见文档末尾）。</p>
+<p><strong>⚠️ 本页速览</strong>：§3 符号验证 → §4 钩子写法（4 个关键设计点）→ §5 实测结果 → §6 四条通道 + 证书可见性 → §8 五个坑 → §10 证据层级表 → 附表 A 证书指纹</p>
 <hr>
 <h2 id="1-思路转变：为什么放弃中间人"><a href="#1-思路转变：为什么放弃中间人" class="headerlink" title="1. 思路转变：为什么放弃中间人"></a>1. 思路转变：为什么放弃中间人</h2><table>
 <thead>
@@ -358,6 +360,114 @@
 <li>❌ 但<strong>「看得见」不等于「能伪造」</strong>—— 要重放&#x2F;改造请求，必须自己能<strong>算出</strong>这些签名</li>
 <li><strong>结论</strong>：抓包只是入门；能改写请求才是下一个台阶</li>
 </ul>
+<h3 id="6-5-⭐-追加实测：某音连接的-TLS-版本与「服务器证书」可见性"><a href="#6-5-⭐-追加实测：某音连接的-TLS-版本与「服务器证书」可见性" class="headerlink" title="6.5 ⭐ 追加实测：某音连接的 TLS 版本与「服务器证书」可见性"></a>6.5 ⭐ 追加实测：某音连接的 TLS 版本与「服务器证书」可见性</h3><p><strong>背景</strong>：用户提问「抓包过程中有没有看到服务器向客户端发证书，同时客户端也向服务器发了证书？」<br>下面用<strong>自写 Python 解析器</strong>（NAS 上直接读那份 37MB 的 <code>findtitok.pcapng</code>）实测回答。</p>
+<p><strong>解析器</strong>：<code>cache/scratch/tls_cert_pairs.py</code>（TCP 流重组 → TLS record 逐一解析 → 握手消息归类）<br>辅助：<code>cert_fingerprints.py</code>（极简 ASN.1 解析，抠 X.509 字段并算指纹）</p>
+<h4 id="①-服务器-→-客户端发证书：有，而且完全明文可读-✅-实测"><a href="#①-服务器-→-客户端发证书：有，而且完全明文可读-✅-实测" class="headerlink" title="① 服务器 → 客户端发证书：有，而且完全明文可读 ✅ 实测"></a>① 服务器 → 客户端发证书：<strong>有，而且完全明文可读</strong> ✅ 实测</h4><p><strong>16 条连接</strong>的服务器证书在抓包里明文可见（含完整链条 3 张）。其中属于字节系的 <strong>13 条</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>SNI</th>
+<th>叶证书 Subject</th>
+<th>cipher</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>imapi3-normal-hl.zijieapi.com</code></td>
+<td><code>*.zijieapi.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>mssdk3-normal-lf.zijieapi.com</code> ×2</td>
+<td><code>*.zijieapi.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>abtest3-misc-hl.zijieapi.com</code> ×2</td>
+<td><code>*.zijieapi.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v26-awememusicpgc.amemv.com</code></td>
+<td><code>*.amemv.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v5-gzb-se-yz-coldy.douyinvod.com</code> ×2</td>
+<td><code>*.douyinvod.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v5-ali-northeast.douyinvod.com</code></td>
+<td><code>*.douyinvod.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v5-se-ws-cold.douyinvod.com</code></td>
+<td><code>*.douyinvod.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v95-hzyy-thr-daily-colda.douyinvod.com</code></td>
+<td><code>*.douyinvod.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>v11-cold1.douyinvod.com</code></td>
+<td><code>*.douyinvod.com</code></td>
+<td>0xc02f</td>
+</tr>
+<tr>
+<td><code>ib-hl.snssdk.com</code></td>
+<td>—</td>
+<td>0xc030</td>
+</tr>
+</tbody></table>
+<p>（另有 3 条非字节系：<code>cloud.tgpa.qq.com</code>、<code>sec.sginput.qq.com</code>（腾讯）、<code>ws-keyboard.shouji.sogou.com</code>（搜狗）—— 说明该 pcap 是<strong>整机抓包</strong>，不只某音流量。）</p>
+<p><strong>证书链结构</strong>（实测，以 <code>*.amemv.com</code> 为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">叶证书   CN=*.amemv.com</span><br><span class="line">  签发者 C=US, O=DigiCert Inc, OU=www.digicert.com, CN=RapidSSL TLS RSA CA G1</span><br><span class="line">  长度   1561 字节</span><br><span class="line">  SHA-256  2ADA6C418F8B76C00D0D8ACA77C7FBDE3E9321D4383B7F98035C5BA5003FFCFE</span><br><span class="line">  SHA-1    4D3A4C476BD74D09E17B605D1C375278BD7BDD1B</span><br><span class="line">中间 CA  CN=RapidSSL TLS RSA CA G1</span><br><span class="line">  签发者 CN=DigiCert Global Root G2</span><br><span class="line">  长度   1207 字节</span><br><span class="line">  SHA-256  4422E963EE53CD58CC9F85CD40BF5FFEC0095FDF1A154535661C1C06BCADC69B</span><br><span class="line">根 CA    CN=DigiCert Global Root G2（自签）</span><br><span class="line">  长度   914 字节</span><br><span class="line">  SHA-256  CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F</span><br></pre></td></tr></table></figure>
+
+<p><code>*.douyinvod.com</code> 的叶证书（同一条链）：<strong>SHA-256 &#x3D; <code>C404D5D50B79E381842732F72E70D474C0DC7BE4385FEAFEC4253D5C8345BDC2</code></strong></p>
+<p>签名算法全部为 <code>sha256WithRSA</code>。</p>
+<h4 id="②-客户端-→-服务器发证书：没有-✅-实测"><a href="#②-客户端-→-服务器发证书：没有-✅-实测" class="headerlink" title="② 客户端 → 服务器发证书：没有 ✅ 实测"></a>② 客户端 → 服务器发证书：<strong>没有</strong> ✅ 实测</h4><table>
+<thead>
+<tr>
+<th>判据</th>
+<th>实测值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CertificateRequest</code>（握手类型 13，服务器请求客户端证书）</td>
+<td><strong>0 次</strong></td>
+</tr>
+<tr>
+<td>客户端方向流里的 <code>Certificate</code>（握手类型 11）</td>
+<td><strong>0 条</strong></td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：<strong>某音不使用客户端证书认证（mTLS &#x2F; 双向认证）</strong>。服务器从未请求过客户端证书，客户端也从未发过。</p>
+<h4 id="③-为什么以前「看不到服务器证书」——-原来的理解不完整-⚠️-需修正"><a href="#③-为什么以前「看不到服务器证书」——-原来的理解不完整-⚠️-需修正" class="headerlink" title="③ 为什么以前「看不到服务器证书」—— 原来的理解不完整 ⚠️ 需修正"></a>③ 为什么以前「看不到服务器证书」—— 原来的理解不完整 ⚠️ 需修正</h4><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>服务器证书可见性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TLS 1.3</strong> 连接</td>
+<td>❌ <strong>看不到</strong> —— ServerHello 之后的所有握手消息（含 Certificate）都用握手密钥加密了</td>
+</tr>
+<tr>
+<td><strong>TLS 1.2</strong> 连接</td>
+<td>✅ <strong>明文可见</strong> —— Certificate &#x2F; ServerKeyExchange &#x2F; ServerHelloDone 都是明文</td>
+</tr>
+</tbody></table>
+<p>本次实测：72 条 TLS 连接里，<strong>一部分是 TLS 1.2</strong>（cipher <code>0xc02f</code> &#x3D; <code>ECDHE-RSA-AES128-GCM-SHA256</code>；<code>0xc030</code> &#x3D; <code>ECDHE-RSA-AES256-GCM-SHA384</code>），正是这些连接的证书被完整抓到了。</p>
+<p><strong>⚠️ 需要修正的旧说法</strong>：本项目此前记录过「某音实际协商 TLS 1.3、<code>tls.handshake.type == 16</code>（ClientKeyExchange）为 0 条」。本次自写解析器实测出 <strong>16 次 ClientKeyExchange</strong>，且每条 TLS 1.2 连接的 <code>ServerHello → Certificate → ServerKeyExchange → ServerHelloDone</code> 序列都齐全（缺一不可的自洽性）。<br><strong>两者矛盾的原因未查明</strong>（⚠️ 待核；可能是当时统计的是另一个 pcap，或 tshark 未对这些流做 record 层重组）。<br><strong>正确表述</strong>：<strong>某音的 TLS 版本不是清一色 1.3，而是 1.2 &#x2F; 1.3 混用</strong> —— 至少本份 pcap 如此。</p>
+<h4 id="④-这个发现对「绕过-pin」的价值-⭐"><a href="#④-这个发现对「绕过-pin」的价值-⭐" class="headerlink" title="④ 这个发现对「绕过 pin」的价值 ⭐"></a>④ 这个发现对「绕过 pin」的价值 ⭐</h4><ol>
+<li><strong>可以直接拿到真实服务器证书与指纹</strong> —— 不再只能靠 <code>X509_digest</code> 钩子运行时现算，或凭内置编号猜。抓到 <code>*.amemv.com</code> 的 SHA-256 &#x3D; <code>2ADA6C41…</code>，「喂真值」时就有了硬数据。</li>
+<li><strong>pin 清单可能不止一条</strong> —— TLS 1.2 与 TLS 1.3 连接用的是<strong>不同的叶证书</strong>（<code>*.amemv.com</code> &#x2F; <code>*.douyinvod.com</code> &#x2F; <code>*.zijieapi.com</code> …），如果 <code>X509_digest</code> 的比对是针对<strong>叶证书全文</strong>，那内置清单里应当有多条指纹。</li>
+<li><strong>验证方式</strong>：把本次抠出的真实 SHA-256 与钩子日志里 <code>X509_digest</code> 打出的原始指纹对照，即可判断 pin 到底比的是哪一张证书的什么值。</li>
+</ol>
 <hr>
 <h2 id="7-环境与文件清单"><a href="#7-环境与文件清单" class="headerlink" title="7. 环境与文件清单"></a>7. 环境与文件清单</h2><h3 id="7-1-关键路径"><a href="#7-1-关键路径" class="headerlink" title="7.1 关键路径"></a>7.1 关键路径</h3><table>
 <thead>
@@ -692,4 +802,345 @@
 </tbody></table>
 <hr>
 <p><em>文档路径：<code>data/reports/某音明文抓取-直接钩发包点实战记录.md</code></em></p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/">http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E6%8A%93%E5%8C%85/">抓包</a><a class="post-meta__tags" href="/tags/TLS/">TLS</a><a class="post-meta__tags" href="/tags/Hook/">Hook</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查"><img class="cover" src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-22</div><div class="title">2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查</div></div></a></div><div><a href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img class="cover" src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">grep 速查笔记（安卓逆向实战版）</div></div></a></div><div><a href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img class="cover" src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</div></div></a></div><div><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux &#x2F; adb 篇）"><img class="cover" src="/img/post-covers/android-adb-debug-manual.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">安卓调试命令拆解手册（Linux &#x2F; adb 篇）</div></div></a></div><div><a href="/2026/08/24/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95/" title="HTTPS 证书原理 · 问答全记录"><img class="cover" src="/img/post-covers/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="title">HTTPS 证书原理 · 问答全记录</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%BB%93%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">0. 一句话结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%80%9D%E8%B7%AF%E8%BD%AC%E5%8F%98%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%94%BE%E5%BC%83%E4%B8%AD%E9%97%B4%E4%BA%BA"><span class="toc-number">2.</span> <span class="toc-text">1. 思路转变：为什么放弃中间人</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8E%9F%E7%90%86%EF%BC%9A%E6%98%8E%E6%96%87%E5%88%B0%E5%BA%95%E5%9C%A8%E5%93%AA%E4%B8%A4%E4%B8%AA%E5%87%BD%E6%95%B0%E9%87%8C"><span class="toc-number">3.</span> <span class="toc-text">2. 原理：明文到底在哪两个函数里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E9%AA%8C%E8%AF%81%E7%AC%A6%E5%8F%B7%E7%9C%9F%E7%9A%84%E5%AD%98%E5%9C%A8%EF%BC%88%E4%B8%8D%E8%83%BD%E5%87%AD%E6%8E%A8%E7%90%86%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">3. 第一步：先验证符号真的存在（不能凭推理）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%93%8D%E4%BD%9C"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%9E%E6%B5%8B%E8%BE%93%E5%87%BA%EF%BC%88%E2%9C%85-%E8%AF%81%E6%8D%AE%EF%BC%9A%E5%91%BD%E4%BB%A4%E7%9C%9F%E5%AE%9E%E8%BE%93%E5%87%BA%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 实测输出（✅ 证据：命令真实输出）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D%EF%BC%88BoringSSL-%E5%85%AC%E5%85%B1-API%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 函数签名（BoringSSL 公共 API）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%A1%BA%E5%B8%A6%E6%89%AB%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E3%80%8C%E7%9C%8B%E8%B5%B7%E6%9D%A5%E8%83%BD%E7%94%A8%E3%80%81%E5%AE%9E%E9%99%85%E4%B8%8D%E8%83%BD%E7%94%A8%E3%80%8D%E7%9A%84%E7%AC%A6%E5%8F%B7"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 顺带扫到的一个「看起来能用、实际不能用」的符号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%92%A9%E5%AD%90%E6%80%8E%E4%B9%88%E5%86%99"><span class="toc-number">5.</span> <span class="toc-text">4. 第二步：钩子怎么写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 技术栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%B8%89%E6%AE%B5%E5%BC%8F%E7%BB%93%E6%9E%84"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 三段式结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A0%EF%BC%9ASSL-read-%E7%9A%84%E6%97%B6%E5%BA%8F"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 关键设计点①：SSL_read 的时序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A1%EF%BC%9A%E9%99%90%E6%B5%81%EF%BC%88%E9%98%B2%E5%88%B7%E7%88%86-logcat%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 关键设计点②：限流（防刷爆 logcat）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A2%EF%BC%9A%E5%8F%AA%E7%9C%8B%E4%B8%9A%E5%8A%A1-API%EF%BC%8C%E4%B8%8D%E7%9C%8B%E8%A7%86%E9%A2%91%E6%B5%81%EF%BC%88v2-x2F-v3-%E6%96%B9%E6%A1%88%EF%BC%89"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 关键设计点③：只看业务 API，不看视频流（v2&#x2F;v3 方案）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A3%EF%BC%9AHTTP-x2F-2-%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%B8%A7%EF%BC%88v3%EF%BC%89"><span class="toc-number">5.6.</span> <span class="toc-text">4.6 关键设计点④：HTTP&#x2F;2 的二进制帧（v3）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AE%9E%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-number">6.</span> <span class="toc-text">5. 实测结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%97%A0%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%88%90%E5%8A%9F%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 无白名单版（第一次成功）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88v2%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 白名单版（v2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8A%93%E5%8C%85%E6%97%A5%E5%BF%97%E7%9A%84%E6%A0%87%E5%BF%97%E7%BA%A6%E5%AE%9A"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 抓包日志的标志约定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%9F%90%E9%9F%B3%E7%9A%84-4-%E6%9D%A1%E5%87%BA%E7%BD%91%E9%80%9A%E9%81%93%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%9ASSL-write-%E5%8F%AA%E8%A6%86%E7%9B%96%E5%85%B6%E4%B8%AD-1-%E6%9D%A1%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">6. 某音的 4 条出网通道（重要：SSL_write 只覆盖其中 1 条）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%9E%E6%B5%8B%E8%AF%81%E6%8D%AE%EF%BC%88%E8%BF%90%E8%A1%8C%E6%97%B6-maps%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 实测证据（运行时 maps）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%9B%9B%E6%9D%A1%E9%80%9A%E9%81%93%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 四条通道对照表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%9B%9E%E7%AD%94%E3%80%8C%E7%99%BB%E5%BD%95%E5%8C%85%E4%B9%9F%E6%98%AF%E8%BF%99%E7%A7%8D%E5%90%97%EF%BC%9F%E3%80%8D"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 回答「登录包也是这种吗？」</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%AF%94%E7%99%BB%E5%BD%95%E6%9B%B4%E5%85%B3%E9%94%AE%E7%9A%84%E4%B8%80%E5%B1%82%EF%BC%9A%E8%AF%B7%E6%B1%82%E7%AD%BE%E5%90%8D"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 比登录更关键的一层：请求签名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E7%8E%AF%E5%A2%83%E4%B8%8E%E6%96%87%E4%BB%B6%E6%B8%85%E5%8D%95"><span class="toc-number">8.</span> <span class="toc-text">7. 环境与文件清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%85%B3%E9%94%AE%E8%B7%AF%E5%BE%84"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 关键路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-NAS-%E4%BE%A7%E7%9A%84-patch-%E8%84%9A%E6%9C%AC%EF%BC%88%E6%9C%AC%E6%AC%A1%E5%86%99%E5%85%A5%EF%BC%8C%E5%9D%87%E5%9C%A8-cache-scratch-%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 NAS 侧的 patch 脚本（本次写入，均在 cache&#x2F;scratch&#x2F;）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Mac-%E4%B8%8A%E7%9A%84%E4%BB%A3%E7%A0%81%E5%A4%87%E4%BB%BD%EF%BC%88%E5%85%B1-11-%E4%B8%AA%EF%BC%8C308KB%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 Mac 上的代码备份（共 11 个，308KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%BD%93%E5%89%8D%E6%8C%82%E8%BD%BD%E7%9A%84%E9%92%A9%E5%AD%90"><span class="toc-number">8.4.</span> <span class="toc-text">7.4 当前挂载的钩子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95%EF%BC%88%E6%AF%8F%E6%9D%A1%EF%BC%9A%E7%8E%B0%E8%B1%A1-%E2%86%92-%E8%AF%81%E6%8D%AE-%E2%86%92-%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">8. 踩坑记录（每条：现象 → 证据 → 结论）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-1-%E2%80%94-SSL-get-servername-%E5%AF%BC%E5%87%BA%E4%BA%86%EF%BC%8C%E4%BD%86%E7%9B%B4%E8%B0%83%E4%BC%9A%E5%B4%A9-%E2%9A%A0%EF%B8%8F"><span class="toc-number">9.1.</span> <span class="toc-text">坑 #1 — SSL_get_servername 导出了，但直调会崩 ⚠️</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-2-%E2%80%94-dlopen-quot-libttboringssl-so-quot-RTLD-NOLOAD-%E8%BF%94%E5%9B%9E-NULL"><span class="toc-number">9.2.</span> <span class="toc-text">坑 #2 — dlopen(&quot;libttboringssl.so&quot;, RTLD_NOLOAD) 返回 NULL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-3-%E2%80%94-C99-%E9%9A%90%E5%BC%8F%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E7%BC%96%E8%AF%91%E6%8A%A5%E9%94%99"><span class="toc-number">9.3.</span> <span class="toc-text">坑 #3 — C99 隐式函数声明编译报错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-4-%E2%80%94-%E3%80%8C%E6%9F%90%E9%9F%B3%E4%B8%80%E6%8B%89%E5%B0%B1%E9%80%80-x2F-%E5%8D%A1%E5%90%AF%E5%8A%A8%E9%A1%B5%E3%80%8D%EF%BC%9A%E5%85%88%E6%9F%A5%E7%8E%AF%E5%A2%83%EF%BC%8C%E5%88%AB%E6%80%AA%E9%92%A9%E5%AD%90-%E2%AD%90"><span class="toc-number">9.4.</span> <span class="toc-text">坑 #4 — 「某音一拉就退 &#x2F; 卡启动页」：先查环境，别怪钩子 ⭐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-5-%E2%80%94-%E5%8F%AA%E6%8A%93%E5%88%B0-1-%E6%9D%A1%E6%97%A5%E5%BF%97%EF%BC%88HTTP-x2F-2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%87%E6%BB%A4%EF%BC%89"><span class="toc-number">9.5.</span> <span class="toc-text">坑 #5 — 只抓到 1 条日志（HTTP&#x2F;2 二进制过滤）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E6%9C%AA%E5%AE%8C%E6%88%90%E4%BA%8B%E9%A1%B9-x2F-%E6%9C%AA%E9%AA%8C%E8%AF%81%E6%B8%85%E5%8D%95"><span class="toc-number">10.</span> <span class="toc-text">9. 未完成事项 &#x2F; 未验证清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%A0%B8%E5%AF%B9%E7%8A%B6%E6%80%81%E8%A1%A8"><span class="toc-number">11.</span> <span class="toc-text">10. 核对状态表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%9C%AF%E8%AF%AD%E5%B0%8F%E6%8A%84"><span class="toc-number">12.</span> <span class="toc-text">11. 术语小抄</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"/></a><div class="content"><a class="title" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</a><time datetime="2026-09-29T04:14:15.000Z" title="发表于 2026-09-29 12:14:15">2026-09-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"/></a><div class="content"><a class="title" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</a><time datetime="2026-09-24T12:00:00.000Z" title="发表于 2026-09-24 20:00:00">2026-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"/></a><div class="content"><a class="title" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</a><time datetime="2026-09-23T03:26:18.000Z" title="发表于 2026-09-23 11:26:18">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="grep 速查笔记（安卓逆向实战版）"/></a><div class="content"><a class="title" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）">grep 速查笔记（安卓逆向实战版）</a><time datetime="2026-09-23T02:54:22.000Z" title="发表于 2026-09-23 10:54:22">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"><img src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"/></a><div class="content"><a class="title" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查">2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查</a><time datetime="2026-09-22T12:00:00.000Z" title="发表于 2026-09-22 20:00:00">2026-09-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
+<hr>
+<h1 id="附表-A：某音真证书指纹清单"><a href="#附表-A：某音真证书指纹清单" class="headerlink" title="附表 A：某音真证书指纹清单"></a>附表 A：某音真证书指纹清单</h1><blockquote>
+<p><strong>数据来源</strong>：<code>findtitok.pcapng</code>（37,480,432 字节 &#x2F; 23,381 包 &#x2F; 144 条 TCP 流 &#x2F; 72 条 TLS 连接）<br><strong>提取方式</strong>：自写 Python 解析器（<code>cache/scratch/cert_table.py</code>），TCP 流重组 → TLS record 解析 → X.509 DER 解析 → 指纹计算<br><strong>提取时间</strong>：2026-09-29<br><strong>⚠️ 时效性</strong>：证书一年一续、CDN 节点证书各不相同。<strong>本表只代表该份抓包时刻的状态</strong>，续期后指纹会变，届时需重新提取。<br><strong>⚠️ 覆盖面</strong>：只覆盖该份抓包中<strong>出现过明文证书</strong>的域名（即走 TLS 1.2 的那部分连接）。TLS 1.3 连接的证书在抓包里加密，本表拿不到。</p>
+</blockquote>
+<h2 id="A-1-某音域名-×-叶证书明细"><a href="#A-1-某音域名-×-叶证书明细" class="headerlink" title="A.1 某音域名 × 叶证书明细"></a>A.1 某音域名 × 叶证书明细</h2><blockquote>
+<p>原始解析出 <strong>39 条证书记录</strong>（每条连接 3 张 × 13 条连接）。因中间 CA 与根 CA 在所有连接中<strong>完全相同</strong>，下表按域名列<strong>叶证书</strong>，中间&#x2F;根 CA 合并到表末两行。<br>共覆盖 <strong>10 个域名</strong>、<strong>7 张不同的叶证书</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>SNI</th>
+<th>层级</th>
+<th>Subject</th>
+<th>Issuer</th>
+<th>有效期(起→止)</th>
+<th>大小</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>imapi3-normal-hl.zijieapi.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>imapi3-normal-hl.zijieapi.com</code></td>
+<td>中间CA</td>
+<td><code>CN=RapidSSL TLS RSA CA G1</code></td>
+<td>DigiCert Global Root G2</td>
+<td>2017-11-02 → 2027-11-02</td>
+<td>1207 B</td>
+<td><code>4422E963EE53CD58CC9F85CD40BF5FFEC0095FDF1A154535661C1C06BCADC69B</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>imapi3-normal-hl.zijieapi.com</code></td>
+<td>根CA</td>
+<td><code>CN=DigiCert Global Root G2</code></td>
+<td>自签</td>
+<td>2013-08-01 → 2038-01-15</td>
+<td>914 B</td>
+<td><code>CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>mssdk3-normal-lf.zijieapi.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>mssdk3-normal-lf.zijieapi.com</code></td>
+<td>中间CA</td>
+<td><code>CN=RapidSSL TLS RSA CA G1</code></td>
+<td>DigiCert Global Root G2</td>
+<td>2017-11-02 → 2027-11-02</td>
+<td>1207 B</td>
+<td><code>4422E963EE53CD58CC9F85CD40BF5FFEC0095FDF1A154535661C1C06BCADC69B</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>mssdk3-normal-lf.zijieapi.com</code></td>
+<td>根CA</td>
+<td><code>CN=DigiCert Global Root G2</code></td>
+<td>自签</td>
+<td>2013-08-01 → 2038-01-15</td>
+<td>914 B</td>
+<td><code>CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>mssdk3-normal-lf.zijieapi.com</code>（第 2 条连接）</td>
+<td>叶证书</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>abtest3-misc-hl.zijieapi.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>abtest3-misc-hl.zijieapi.com</code>（第 2 条连接）</td>
+<td>叶证书</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>v5-gzb-se-yz-coldy.douyinvod.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1583 B</td>
+<td><code>C404D5D50B79E381842732F72E70D474C0DC7BE4385FEAFEC4253D5C8345BDC2</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>v5-gzb-se-yz-coldy.douyinvod.com</code>（第 2 条连接）</td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1583 B</td>
+<td><code>C404D5D50B79E381842732F72E70D474C0DC7BE4385FEAFEC4253D5C8345BDC2</code></td>
+</tr>
+<tr>
+<td>12</td>
+<td><code>v95-hzyy-thr-daily-colda.douyinvod.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1583 B</td>
+<td><code>C404D5D50B79E381842732F72E70D474C0DC7BE4385FEAFEC4253D5C8345BDC2</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td><code>v5-ali-northeast.douyinvod.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1576 B</td>
+<td><code>2D854CC02FA500409237339B5CC5A2479CBBCD44D1E31B73AD3E8CC05470D26B</code></td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>v5-se-ws-cold.douyinvod.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1583 B</td>
+<td><code>8D4B22D2FECE61D56AF7F31FC4721EF83E809869495BD0E07AEE110F92063771</code></td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>v11-cold1.douyinvod.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.douyinvod.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1575 B</td>
+<td><code>7495BC9044BB717876B83CD4170E63D2B75801FCDAB49E370E8593F8A3D07791</code></td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>v26-awememusicpgc.amemv.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.amemv.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1561 B</td>
+<td><code>2ADA6C418F8B76C00D0D8ACA77C7FBDE3E9321D4383B7F98035C5BA5003FFCFE</code></td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>ib-hl.snssdk.com</code></td>
+<td>叶证书</td>
+<td><code>CN=*.snssdk.com</code></td>
+<td>RapidSSL TLS RSA CA G1</td>
+<td>2026-01-19 → 2027-01-18</td>
+<td>1566 B</td>
+<td><code>507C7F0183C51BEDEE7684EA76E8500BD4AAF4CF02D0778A26588818B2C584CB</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td>上表 10 个域名共用</td>
+<td>中间CA</td>
+<td><code>CN=RapidSSL TLS RSA CA G1</code></td>
+<td>DigiCert Global Root G2</td>
+<td>2017-11-02 → 2027-11-02</td>
+<td>1207 B</td>
+<td><code>4422E963EE53CD58CC9F85CD40BF5FFEC0095FDF1A154535661C1C06BCADC69B</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td>上表 10 个域名共用</td>
+<td>根CA</td>
+<td><code>CN=DigiCert Global Root G2</code></td>
+<td>自签</td>
+<td>2013-08-01 → 2038-01-15</td>
+<td>914 B</td>
+<td><code>CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F</code></td>
+</tr>
+</tbody></table>
+<p>（说明：表中每条连接实际都带 3 张证书 —— 叶证书 + 中间 CA + 根 CA。中间 CA 与根 CA 在所有连接中<strong>完全相同</strong>，故合并到末两行，不重复列出。）</p>
+<h2 id="A-2-唯一证书速查表（去重后-9-张）"><a href="#A-2-唯一证书速查表（去重后-9-张）" class="headerlink" title="A.2 唯一证书速查表（去重后 9 张）"></a>A.2 唯一证书速查表（去重后 9 张）</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Subject</th>
+<th>大小</th>
+<th>SHA-256</th>
+<th>SHA-1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>CN=*.zijieapi.com</code></td>
+<td>1579 B</td>
+<td><code>5C4A59C5EDAE2ECBD585A86666137868B963B846593E6BAF7014CAF5A0B9DA02</code></td>
+<td><code>C20A7C3137E50524EB850E787E9ACE9CF61355B7</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>CN=*.douyinvod.com</code>（甲）</td>
+<td>1583 B</td>
+<td><code>C404D5D50B79E381842732F72E70D474C0DC7BE4385FEAFEC4253D5C8345BDC2</code></td>
+<td><code>9373EFF61B4C2B6EC3D902112885C976C5CB44B6</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>CN=*.douyinvod.com</code>（乙）</td>
+<td>1576 B</td>
+<td><code>2D854CC02FA500409237339B5CC5A2479CBBCD44D1E31B73AD3E8CC05470D26B</code></td>
+<td><code>B3A8A441F27F582B0FEBCD4D643E349C298C2D6A</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>CN=*.douyinvod.com</code>（丙）</td>
+<td>1583 B</td>
+<td><code>8D4B22D2FECE61D56AF7F31FC4721EF83E809869495BD0E07AEE110F92063771</code></td>
+<td><code>2F1418549A839398ECC6EF2C93A4438DC3817BE8</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>CN=*.douyinvod.com</code>（丁）</td>
+<td>1575 B</td>
+<td><code>7495BC9044BB717876B83CD4170E63D2B75801FCDAB49E370E8593F8A3D07791</code></td>
+<td><code>AD49145A848643A029CA524B7F763873F36CF2F3</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>CN=*.amemv.com</code></td>
+<td>1561 B</td>
+<td><code>2ADA6C418F8B76C00D0D8ACA77C7FBDE3E9321D4383B7F98035C5BA5003FFCFE</code></td>
+<td><code>4D3A4C476BD74D09E17B605D1C375278BD7BDD1B</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>CN=*.snssdk.com</code></td>
+<td>1566 B</td>
+<td><code>507C7F0183C51BEDEE7684EA76E8500BD4AAF4CF02D0778A26588818B2C584CB</code></td>
+<td><code>C6BB5C5040FF3B98A508FA2933F9D6A5B2CB5D35</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>CN=RapidSSL TLS RSA CA G1</code>（中间 CA）</td>
+<td>1207 B</td>
+<td><code>4422E963EE53CD58CC9F85CD40BF5FFEC0095FDF1A154535661C1C06BCADC69B</code></td>
+<td><code>CBFE9EB43B3B37FE0DFBC4C2EB2D4E07D08BD8E8</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>CN=DigiCert Global Root G2</code>（根 CA，自签）</td>
+<td>914 B</td>
+<td><code>CB3CCBB76031E5E0138F8DD39A23F9DE47FFC35E43C1144CEA27D46A5AB1CB5F</code></td>
+<td><code>DF3C24F9BFD666761B268073FE06D1CC8D4F82A4</code></td>
+</tr>
+</tbody></table>
+<h2 id="A-3-从这张表能看出的三件事"><a href="#A-3-从这张表能看出的三件事" class="headerlink" title="A.3 从这张表能看出的三件事"></a>A.3 从这张表能看出的三件事</h2><h3 id="①-同一个域名有多张不同的叶证书-——-CDN-多证书部署-⭐"><a href="#①-同一个域名有多张不同的叶证书-——-CDN-多证书部署-⭐" class="headerlink" title="① 同一个域名有多张不同的叶证书 —— CDN 多证书部署 ⭐"></a>① 同一个域名有<strong>多张不同的叶证书</strong> —— CDN 多证书部署 ⭐</h3><p><code>*.douyinvod.com</code> 一个域名，抓到 <strong>4 张完全不同的叶证书</strong>（大小 1583 &#x2F; 1576 &#x2F; 1583 &#x2F; 1575 字节，指纹全不同），分别来自 4 个不同的 CDN 节点 IP：</p>
+<table>
+<thead>
+<tr>
+<th>节点 SNI 前缀</th>
+<th>对应叶证书</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>v5-gzb-se-yz-coldy</code>（贵州）</td>
+<td>甲 <code>C404D5D5…</code></td>
+</tr>
+<tr>
+<td><code>v95-hzyy-thr-daily-colda</code></td>
+<td>甲 <code>C404D5D5…</code></td>
+</tr>
+<tr>
+<td><code>v5-ali-northeast</code>（阿里东北）</td>
+<td>乙 <code>2D854CC0…</code></td>
+</tr>
+<tr>
+<td><code>v5-se-ws-cold</code></td>
+<td>丙 <code>8D4B22D2…</code></td>
+</tr>
+<tr>
+<td><code>v11-cold1</code></td>
+<td>丁 <code>7495BC90…</code></td>
+</tr>
+</tbody></table>
+<p><strong>这对绕 pin 意味什么</strong>：如果 <code>X509_digest</code> 钩子里的内置 pin 清单是<strong>逐证书比对</strong>的，那么同一个域名的 4 张证书<strong>都可能出现在清单里</strong>。只喂一张证的指纹，命中不了另外三条连接。</p>
+<h3 id="②-中间-CA-与根-CA-全站同一张-——-层级高度集中"><a href="#②-中间-CA-与根-CA-全站同一张-——-层级高度集中" class="headerlink" title="② 中间 CA 与根 CA 全站同一张 —— 层级高度集中"></a>② 中间 CA 与根 CA 全站同一张 —— 层级高度集中</h3><p>10 个字节系域名的证书链，向下看是 7 张不同的叶证书，向上看<strong>收敛到同一张中间 CA</strong>（<code>RapidSSL TLS RSA CA G1</code>）和<strong>同一张根 CA</strong>（<code>DigiCert Global Root G2</code>，有效期到 2038 年）。</p>
+<p>→ <strong>含义</strong>：如果某音的 pin 比的是<strong>中间 CA 或根 CA</strong>，那只需一个指纹；如果是<strong>叶证书</strong>，则需要多个。<strong>这正好是可以用钩子日志验证的关键问题</strong>（见 §6.5 ④）。</p>
+<h3 id="③-全部证书的有效期完全一致：2026-01-19-→-2027-01-18"><a href="#③-全部证书的有效期完全一致：2026-01-19-→-2027-01-18" class="headerlink" title="③ 全部证书的有效期完全一致：2026-01-19 → 2027-01-18"></a>③ 全部证书的有效期完全一致：<code>2026-01-19 → 2027-01-18</code></h3><p>7 张叶证书的有效期<strong>同一天起、同一天止</strong> → 说明是<strong>同一批次签发</strong>（字节把整个域名族的证书一次性续完）。</p>
+<p>→ <strong>含义</strong>：这批指纹的「保质期」到 <strong>2027-01-18</strong>。到期后本表全部失效，需重新抓包提取。<strong>这也解释了为什么「喂真值」不能靠硬编码</strong> —— 续期即变（本项目在 X509_digest 钩子上已经踩过这个坑）。</p>
+<h2 id="A-4-怎么用这张表"><a href="#A-4-怎么用这张表" class="headerlink" title="A.4 怎么用这张表"></a>A.4 怎么用这张表</h2><table>
+<thead>
+<tr>
+<th>用途</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>验证 pin 比对对象</strong></td>
+<td>拿钩子日志里 <code>X509_digest</code> 打出的<strong>原始指纹</strong>，与 A.2 表逐条对照 —— 命中哪条，就知道 pin 比的是哪张证书</td>
+</tr>
+<tr>
+<td><strong>提供「真值」（喂真值方案）</strong></td>
+<td>若确认 pin 比的是叶证书，把 A.2 里全部 7 张叶证书指纹都加进白名单（不能只加一张）</td>
+</tr>
+<tr>
+<td><strong>重新提取（续期后）</strong></td>
+<td>重跑 <code>python3 cert_table.py &lt;新抓的.pcapng&gt;</code> 即可，约 30 秒出表</td>
+</tr>
+</tbody></table>
+<p><strong>⚠️ 局限</strong>：本表只覆盖该份抓包里<strong>走 TLS 1.2</strong> 的那部分连接。走 TLS 1.3 的连接（占多数）其证书在抓包里是密文，<strong>本表拿不到</strong>。<br>后续若要补全，两条路：① 在 <code>X509_digest</code> 钩子里把每张证书的原始 SHA-256 打进日志（运行时全量采集）；② 对 TLS 1.3 连接做密钥导出（某音不支持 <code>SSLKEYLOGFILE</code>，本项目实测走不通）。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/">http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E6%8A%93%E5%8C%85/">抓包</a><a class="post-meta__tags" href="/tags/TLS/">TLS</a><a class="post-meta__tags" href="/tags/Hook/">Hook</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查"><img class="cover" src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-22</div><div class="title">2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查</div></div></a></div><div><a href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img class="cover" src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">grep 速查笔记（安卓逆向实战版）</div></div></a></div><div><a href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img class="cover" src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</div></div></a></div><div><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux &#x2F; adb 篇）"><img class="cover" src="/img/post-covers/android-adb-debug-manual.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">安卓调试命令拆解手册（Linux &#x2F; adb 篇）</div></div></a></div><div><a href="/2026/08/24/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95/" title="HTTPS 证书原理 · 问答全记录"><img class="cover" src="/img/post-covers/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="title">HTTPS 证书原理 · 问答全记录</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%BB%93%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">0. 一句话结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%80%9D%E8%B7%AF%E8%BD%AC%E5%8F%98%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%94%BE%E5%BC%83%E4%B8%AD%E9%97%B4%E4%BA%BA"><span class="toc-number">2.</span> <span class="toc-text">1. 思路转变：为什么放弃中间人</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8E%9F%E7%90%86%EF%BC%9A%E6%98%8E%E6%96%87%E5%88%B0%E5%BA%95%E5%9C%A8%E5%93%AA%E4%B8%A4%E4%B8%AA%E5%87%BD%E6%95%B0%E9%87%8C"><span class="toc-number">3.</span> <span class="toc-text">2. 原理：明文到底在哪两个函数里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E9%AA%8C%E8%AF%81%E7%AC%A6%E5%8F%B7%E7%9C%9F%E7%9A%84%E5%AD%98%E5%9C%A8%EF%BC%88%E4%B8%8D%E8%83%BD%E5%87%AD%E6%8E%A8%E7%90%86%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">3. 第一步：先验证符号真的存在（不能凭推理）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%93%8D%E4%BD%9C"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%9E%E6%B5%8B%E8%BE%93%E5%87%BA%EF%BC%88%E2%9C%85-%E8%AF%81%E6%8D%AE%EF%BC%9A%E5%91%BD%E4%BB%A4%E7%9C%9F%E5%AE%9E%E8%BE%93%E5%87%BA%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 实测输出（✅ 证据：命令真实输出）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D%EF%BC%88BoringSSL-%E5%85%AC%E5%85%B1-API%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 函数签名（BoringSSL 公共 API）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%A1%BA%E5%B8%A6%E6%89%AB%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E3%80%8C%E7%9C%8B%E8%B5%B7%E6%9D%A5%E8%83%BD%E7%94%A8%E3%80%81%E5%AE%9E%E9%99%85%E4%B8%8D%E8%83%BD%E7%94%A8%E3%80%8D%E7%9A%84%E7%AC%A6%E5%8F%B7"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 顺带扫到的一个「看起来能用、实际不能用」的符号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%92%A9%E5%AD%90%E6%80%8E%E4%B9%88%E5%86%99"><span class="toc-number">5.</span> <span class="toc-text">4. 第二步：钩子怎么写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 技术栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%B8%89%E6%AE%B5%E5%BC%8F%E7%BB%93%E6%9E%84"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 三段式结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A0%EF%BC%9ASSL-read-%E7%9A%84%E6%97%B6%E5%BA%8F"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 关键设计点①：SSL_read 的时序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A1%EF%BC%9A%E9%99%90%E6%B5%81%EF%BC%88%E9%98%B2%E5%88%B7%E7%88%86-logcat%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 关键设计点②：限流（防刷爆 logcat）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A2%EF%BC%9A%E5%8F%AA%E7%9C%8B%E4%B8%9A%E5%8A%A1-API%EF%BC%8C%E4%B8%8D%E7%9C%8B%E8%A7%86%E9%A2%91%E6%B5%81%EF%BC%88v2-x2F-v3-%E6%96%B9%E6%A1%88%EF%BC%89"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 关键设计点③：只看业务 API，不看视频流（v2&#x2F;v3 方案）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A3%EF%BC%9AHTTP-x2F-2-%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%B8%A7%EF%BC%88v3%EF%BC%89"><span class="toc-number">5.6.</span> <span class="toc-text">4.6 关键设计点④：HTTP&#x2F;2 的二进制帧（v3）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AE%9E%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-number">6.</span> <span class="toc-text">5. 实测结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%97%A0%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%88%90%E5%8A%9F%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 无白名单版（第一次成功）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88v2%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 白名单版（v2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8A%93%E5%8C%85%E6%97%A5%E5%BF%97%E7%9A%84%E6%A0%87%E5%BF%97%E7%BA%A6%E5%AE%9A"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 抓包日志的标志约定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%9F%90%E9%9F%B3%E7%9A%84-4-%E6%9D%A1%E5%87%BA%E7%BD%91%E9%80%9A%E9%81%93%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%9ASSL-write-%E5%8F%AA%E8%A6%86%E7%9B%96%E5%85%B6%E4%B8%AD-1-%E6%9D%A1%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">6. 某音的 4 条出网通道（重要：SSL_write 只覆盖其中 1 条）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%9E%E6%B5%8B%E8%AF%81%E6%8D%AE%EF%BC%88%E8%BF%90%E8%A1%8C%E6%97%B6-maps%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 实测证据（运行时 maps）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%9B%9B%E6%9D%A1%E9%80%9A%E9%81%93%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 四条通道对照表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%9B%9E%E7%AD%94%E3%80%8C%E7%99%BB%E5%BD%95%E5%8C%85%E4%B9%9F%E6%98%AF%E8%BF%99%E7%A7%8D%E5%90%97%EF%BC%9F%E3%80%8D"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 回答「登录包也是这种吗？」</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%AF%94%E7%99%BB%E5%BD%95%E6%9B%B4%E5%85%B3%E9%94%AE%E7%9A%84%E4%B8%80%E5%B1%82%EF%BC%9A%E8%AF%B7%E6%B1%82%E7%AD%BE%E5%90%8D"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 比登录更关键的一层：请求签名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E2%AD%90-%E8%BF%BD%E5%8A%A0%E5%AE%9E%E6%B5%8B%EF%BC%9A%E6%9F%90%E9%9F%B3%E8%BF%9E%E6%8E%A5%E7%9A%84-TLS-%E7%89%88%E6%9C%AC%E4%B8%8E%E3%80%8C%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AF%81%E4%B9%A6%E3%80%8D%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="toc-number">7.5.</span> <span class="toc-text">6.5 ⭐ 追加实测：某音连接的 TLS 版本与「服务器证书」可见性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%91%A0-%E6%9C%8D%E5%8A%A1%E5%99%A8-%E2%86%92-%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E8%AF%81%E4%B9%A6%EF%BC%9A%E6%9C%89%EF%BC%8C%E8%80%8C%E4%B8%94%E5%AE%8C%E5%85%A8%E6%98%8E%E6%96%87%E5%8F%AF%E8%AF%BB-%E2%9C%85-%E5%AE%9E%E6%B5%8B"><span class="toc-number">7.5.1.</span> <span class="toc-text">① 服务器 → 客户端发证书：有，而且完全明文可读 ✅ 实测</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%91%A1-%E5%AE%A2%E6%88%B7%E7%AB%AF-%E2%86%92-%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%91%E8%AF%81%E4%B9%A6%EF%BC%9A%E6%B2%A1%E6%9C%89-%E2%9C%85-%E5%AE%9E%E6%B5%8B"><span class="toc-number">7.5.2.</span> <span class="toc-text">② 客户端 → 服务器发证书：没有 ✅ 实测</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%91%A2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BB%A5%E5%89%8D%E3%80%8C%E7%9C%8B%E4%B8%8D%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%AF%81%E4%B9%A6%E3%80%8D%E2%80%94%E2%80%94-%E5%8E%9F%E6%9D%A5%E7%9A%84%E7%90%86%E8%A7%A3%E4%B8%8D%E5%AE%8C%E6%95%B4-%E2%9A%A0%EF%B8%8F-%E9%9C%80%E4%BF%AE%E6%AD%A3"><span class="toc-number">7.5.3.</span> <span class="toc-text">③ 为什么以前「看不到服务器证书」—— 原来的理解不完整 ⚠️ 需修正</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E2%91%A3-%E8%BF%99%E4%B8%AA%E5%8F%91%E7%8E%B0%E5%AF%B9%E3%80%8C%E7%BB%95%E8%BF%87-pin%E3%80%8D%E7%9A%84%E4%BB%B7%E5%80%BC-%E2%AD%90"><span class="toc-number">7.5.4.</span> <span class="toc-text">④ 这个发现对「绕过 pin」的价值 ⭐</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E7%8E%AF%E5%A2%83%E4%B8%8E%E6%96%87%E4%BB%B6%E6%B8%85%E5%8D%95"><span class="toc-number">8.</span> <span class="toc-text">7. 环境与文件清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%85%B3%E9%94%AE%E8%B7%AF%E5%BE%84"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 关键路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-NAS-%E4%BE%A7%E7%9A%84-patch-%E8%84%9A%E6%9C%AC%EF%BC%88%E6%9C%AC%E6%AC%A1%E5%86%99%E5%85%A5%EF%BC%8C%E5%9D%87%E5%9C%A8-cache-scratch-%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 NAS 侧的 patch 脚本（本次写入，均在 cache&#x2F;scratch&#x2F;）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Mac-%E4%B8%8A%E7%9A%84%E4%BB%A3%E7%A0%81%E5%A4%87%E4%BB%BD%EF%BC%88%E5%85%B1-11-%E4%B8%AA%EF%BC%8C308KB%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 Mac 上的代码备份（共 11 个，308KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%BD%93%E5%89%8D%E6%8C%82%E8%BD%BD%E7%9A%84%E9%92%A9%E5%AD%90"><span class="toc-number">8.4.</span> <span class="toc-text">7.4 当前挂载的钩子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95%EF%BC%88%E6%AF%8F%E6%9D%A1%EF%BC%9A%E7%8E%B0%E8%B1%A1-%E2%86%92-%E8%AF%81%E6%8D%AE-%E2%86%92-%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">8. 踩坑记录（每条：现象 → 证据 → 结论）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-1-%E2%80%94-SSL-get-servername-%E5%AF%BC%E5%87%BA%E4%BA%86%EF%BC%8C%E4%BD%86%E7%9B%B4%E8%B0%83%E4%BC%9A%E5%B4%A9-%E2%9A%A0%EF%B8%8F"><span class="toc-number">9.1.</span> <span class="toc-text">坑 #1 — SSL_get_servername 导出了，但直调会崩 ⚠️</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-2-%E2%80%94-dlopen-quot-libttboringssl-so-quot-RTLD-NOLOAD-%E8%BF%94%E5%9B%9E-NULL"><span class="toc-number">9.2.</span> <span class="toc-text">坑 #2 — dlopen(&quot;libttboringssl.so&quot;, RTLD_NOLOAD) 返回 NULL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-3-%E2%80%94-C99-%E9%9A%90%E5%BC%8F%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E7%BC%96%E8%AF%91%E6%8A%A5%E9%94%99"><span class="toc-number">9.3.</span> <span class="toc-text">坑 #3 — C99 隐式函数声明编译报错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-4-%E2%80%94-%E3%80%8C%E6%9F%90%E9%9F%B3%E4%B8%80%E6%8B%89%E5%B0%B1%E9%80%80-x2F-%E5%8D%A1%E5%90%AF%E5%8A%A8%E9%A1%B5%E3%80%8D%EF%BC%9A%E5%85%88%E6%9F%A5%E7%8E%AF%E5%A2%83%EF%BC%8C%E5%88%AB%E6%80%AA%E9%92%A9%E5%AD%90-%E2%AD%90"><span class="toc-number">9.4.</span> <span class="toc-text">坑 #4 — 「某音一拉就退 &#x2F; 卡启动页」：先查环境，别怪钩子 ⭐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-5-%E2%80%94-%E5%8F%AA%E6%8A%93%E5%88%B0-1-%E6%9D%A1%E6%97%A5%E5%BF%97%EF%BC%88HTTP-x2F-2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%87%E6%BB%A4%EF%BC%89"><span class="toc-number">9.5.</span> <span class="toc-text">坑 #5 — 只抓到 1 条日志（HTTP&#x2F;2 二进制过滤）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E6%9C%AA%E5%AE%8C%E6%88%90%E4%BA%8B%E9%A1%B9-x2F-%E6%9C%AA%E9%AA%8C%E8%AF%81%E6%B8%85%E5%8D%95"><span class="toc-number">10.</span> <span class="toc-text">9. 未完成事项 &#x2F; 未验证清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%A0%B8%E5%AF%B9%E7%8A%B6%E6%80%81%E8%A1%A8"><span class="toc-number">11.</span> <span class="toc-text">10. 核对状态表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%9C%AF%E8%AF%AD%E5%B0%8F%E6%8A%84"><span class="toc-number">12.</span> <span class="toc-text">11. 术语小抄</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84%E8%A1%A8-A%EF%BC%9A%E6%9F%90%E9%9F%B3%E7%9C%9F%E8%AF%81%E4%B9%A6%E6%8C%87%E7%BA%B9%E6%B8%85%E5%8D%95"><span class="toc-number"></span> <span class="toc-text">附表 A：某音真证书指纹清单</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#A-1-%E6%9F%90%E9%9F%B3%E5%9F%9F%E5%90%8D-%C3%97-%E5%8F%B6%E8%AF%81%E4%B9%A6%E6%98%8E%E7%BB%86"><span class="toc-number">1.</span> <span class="toc-text">A.1 某音域名 × 叶证书明细</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#A-2-%E5%94%AF%E4%B8%80%E8%AF%81%E4%B9%A6%E9%80%9F%E6%9F%A5%E8%A1%A8%EF%BC%88%E5%8E%BB%E9%87%8D%E5%90%8E-9-%E5%BC%A0%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">A.2 唯一证书速查表（去重后 9 张）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#A-3-%E4%BB%8E%E8%BF%99%E5%BC%A0%E8%A1%A8%E8%83%BD%E7%9C%8B%E5%87%BA%E7%9A%84%E4%B8%89%E4%BB%B6%E4%BA%8B"><span class="toc-number">3.</span> <span class="toc-text">A.3 从这张表能看出的三件事</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A0-%E5%90%8C%E4%B8%80%E4%B8%AA%E5%9F%9F%E5%90%8D%E6%9C%89%E5%A4%9A%E5%BC%A0%E4%B8%8D%E5%90%8C%E7%9A%84%E5%8F%B6%E8%AF%81%E4%B9%A6-%E2%80%94%E2%80%94-CDN-%E5%A4%9A%E8%AF%81%E4%B9%A6%E9%83%A8%E7%BD%B2-%E2%AD%90"><span class="toc-number">3.1.</span> <span class="toc-text">① 同一个域名有多张不同的叶证书 —— CDN 多证书部署 ⭐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A1-%E4%B8%AD%E9%97%B4-CA-%E4%B8%8E%E6%A0%B9-CA-%E5%85%A8%E7%AB%99%E5%90%8C%E4%B8%80%E5%BC%A0-%E2%80%94%E2%80%94-%E5%B1%82%E7%BA%A7%E9%AB%98%E5%BA%A6%E9%9B%86%E4%B8%AD"><span class="toc-number">3.2.</span> <span class="toc-text">② 中间 CA 与根 CA 全站同一张 —— 层级高度集中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A2-%E5%85%A8%E9%83%A8%E8%AF%81%E4%B9%A6%E7%9A%84%E6%9C%89%E6%95%88%E6%9C%9F%E5%AE%8C%E5%85%A8%E4%B8%80%E8%87%B4%EF%BC%9A2026-01-19-%E2%86%92-2027-01-18"><span class="toc-number">3.3.</span> <span class="toc-text">③ 全部证书的有效期完全一致：2026-01-19 → 2027-01-18</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#A-4-%E6%80%8E%E4%B9%88%E7%94%A8%E8%BF%99%E5%BC%A0%E8%A1%A8"><span class="toc-number">4.</span> <span class="toc-text">A.4 怎么用这张表</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"/></a><div class="content"><a class="title" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</a><time datetime="2026-09-29T04:43:50.000Z" title="发表于 2026-09-29 12:43:50">2026-09-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"/></a><div class="content"><a class="title" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</a><time datetime="2026-09-24T12:00:00.000Z" title="发表于 2026-09-24 20:00:00">2026-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"/></a><div class="content"><a class="title" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</a><time datetime="2026-09-23T03:26:18.000Z" title="发表于 2026-09-23 11:26:18">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="grep 速查笔记（安卓逆向实战版）"/></a><div class="content"><a class="title" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）">grep 速查笔记（安卓逆向实战版）</a><time datetime="2026-09-23T02:54:22.000Z" title="发表于 2026-09-23 10:54:22">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"><img src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"/></a><div class="content"><a class="title" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查">2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查</a><time datetime="2026-09-22T12:00:00.000Z" title="发表于 2026-09-22 20:00:00">2026-09-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
