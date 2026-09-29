@@ -1,0 +1,695 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录 | IT李白白博客</title><meta name="keywords" content="Android,抓包,TLS,Hook"><meta name="author" content="IT李白白博客"><meta name="copyright" content="IT李白白博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="日期：2026-09-29设备：Pixel（94NY19J44，Android 12）USB 连 Mac；Mac 经 Tailscale 由 NAS 远程操作目标应用：某音 com.ss.android.ugc.aweme主题：不再依赖 MITM 代理与证书信任链，改为在 TLS 加密前&#x2F;解密后直接抄明文   0. 一句话结论SSL_write &#x2F; SSL_read 确实是某">
+<meta property="og:type" content="article">
+<meta property="og:title" content="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">
+<meta property="og:url" content="http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="IT李白白博客">
+<meta property="og:description" content="日期：2026-09-29设备：Pixel（94NY19J44，Android 12）USB 连 Mac；Mac 经 Tailscale 由 NAS 远程操作目标应用：某音 com.ss.android.ugc.aweme主题：不再依赖 MITM 代理与证书信任链，改为在 TLS 加密前&#x2F;解密后直接抄明文   0. 一句话结论SSL_write &#x2F; SSL_read 确实是某">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://ljm2007.github.io/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png">
+<meta property="article:published_time" content="2026-09-29T04:14:15.000Z">
+<meta property="article:modified_time" content="2026-09-29T04:17:01.869Z">
+<meta property="article:author" content="IT李白白博客">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="抓包">
+<meta property="article:tag" content="TLS">
+<meta property="article:tag" content="Hook">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://ljm2007.github.io/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-09-29 12:17:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T04:14:15.000Z" title="发表于 2026-09-29 12:14:15">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-29T04:17:01.869Z" title="更新于 2026-09-29 12:17:01">2026-09-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p><strong>日期</strong>：2026-09-29<br><strong>设备</strong>：Pixel（<code>94NY19J44</code>，Android 12）USB 连 Mac；Mac 经 Tailscale 由 NAS 远程操作<br><strong>目标应用</strong>：某音 <code>com.ss.android.ugc.aweme</code><br><strong>主题</strong>：不再依赖 MITM 代理与证书信任链，改为在 TLS 加密前&#x2F;解密后直接抄明文</p>
+</blockquote>
+<hr>
+<h2 id="0-一句话结论"><a href="#0-一句话结论" class="headerlink" title="0. 一句话结论"></a>0. 一句话结论</h2><p><strong><code>SSL_write</code> &#x2F; <code>SSL_read</code> 确实是某音 TCP+TLS 通道上「明文最后一道门 &#x2F; 第一道门」，在这两个导出符号上挂钩，本项目实测已成功抓到明文请求（无需代理、无需证书）。但这个钩子只能覆盖 4 条出网通道中的 1 条（见 §6）。</strong></p>
+<hr>
+<h2 id="1-思路转变：为什么放弃中间人"><a href="#1-思路转变：为什么放弃中间人" class="headerlink" title="1. 思路转变：为什么放弃中间人"></a>1. 思路转变：为什么放弃中间人</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>中间人（MITM）方案</th>
+<th>直接钩发包点（本文方案）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>怎么拿明文</td>
+<td>代理伪造证书 → App 把明文发给自己 → 代理解密后转发</td>
+<td>在 App 进程内，TLS 加解密函数的两端直接抄内存</td>
+</tr>
+<tr>
+<td>要过多少关</td>
+<td>需要过完整条证书信任链：链签名、握手证明、<code>verify_mode</code>、<code>SSL_get_verify_result</code>、主机名、有效期、X509 指纹 pin、SPKI pin、cronet 状态机、Java TrustManager、CT&#x2F;OCSP —— 本项目历史记录里最多枚举出 <strong>11 道关卡</strong></td>
+<td><strong>0 道</strong> —— 不碰证书，不碰 pin</td>
+</tr>
+<tr>
+<td>代价</td>
+<td>要持续对抗 App 的检测；每道关被绕过都可能引发新崩溃</td>
+<td>只能「看」，不能改；且某音 4 条通道里只能覆盖 1 条</td>
+</tr>
+</tbody></table>
+<p><strong>转变的直接原因</strong>（用户原话）：「我不用中间人来看，我想直接 hook 发包点。」</p>
+<hr>
+<h2 id="2-原理：明文到底在哪两个函数里"><a href="#2-原理：明文到底在哪两个函数里" class="headerlink" title="2. 原理：明文到底在哪两个函数里"></a>2. 原理：明文到底在哪两个函数里</h2><p>TLS 通信的两端各有一扇门：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">应用层（HTTP/1.1 或 HTTP/2 报文）</span><br><span class="line">        │</span><br><span class="line">        │  ① SSL_write(ssl, buf, num)   ← 明文从这里【进入】加密</span><br><span class="line">        ▼</span><br><span class="line">   ┌─────────┐</span><br><span class="line">   │ 加密引擎 │  （BoringSSL 的 AEAD 记录层）</span><br><span class="line">   └─────────┘</span><br><span class="line">        ▼  密文 → socket → 网络</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">网络 → socket → 密文</span><br><span class="line">        ▼</span><br><span class="line">   ┌─────────┐</span><br><span class="line">   │ 解密引擎 │</span><br><span class="line">   └─────────┘</span><br><span class="line">        │  ② SSL_read(ssl, buf, num)    ← 明文从这里【出来】</span><br><span class="line">        ▼</span><br><span class="line">应用层（收到的响应报文）</span><br></pre></td></tr></table></figure>
+
+<p><strong>证据层级</strong>：✅ 实测 —— 在 <code>SSL_write</code> 入口抄 <code>buf</code>，抓到了可读的 HTTP 请求行与请求头（§5 有日志原文）。</p>
+<p><strong>为什么偏偏是这两个函数</strong>：</p>
+<ul>
+<li>它们是 BoringSSL 的<strong>公共 API</strong>，库作者<strong>故意导出</strong>给调用方（cronet）用的 → 符号名稳定、不会被 strip</li>
+<li>它们在<strong>加解密的外侧</strong>（调用者视角）&#x2F; <strong>内侧</strong>（网络视角）交界的绝对位置 —— 无论 App 怎么魔改 TLS 指纹、怎么改 ClientHello，<strong>明文必然经过这里</strong></li>
+<li>与「钩内部算法函数」相比，<strong>参数结构简单</strong>（就是裸指针 + 长度），不需要理解 BoringSSL 内部数据结构</li>
+</ul>
+<hr>
+<h2 id="3-第一步：先验证符号真的存在（不能凭推理）"><a href="#3-第一步：先验证符号真的存在（不能凭推理）" class="headerlink" title="3. 第一步：先验证符号真的存在（不能凭推理）"></a>3. 第一步：先验证符号真的存在（不能凭推理）</h2><h3 id="3-1-操作"><a href="#3-1-操作" class="headerlink" title="3.1 操作"></a>3.1 操作</h3><p>在 Mac 上（手机已 USB 连接、adb 已 root）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从手机把 so 实拉出来（不要用网上下载的版本）</span></span><br><span class="line">adb shell <span class="string">&quot;su -c &#x27;cp /data/app/*/com.ss.android.ugc.aweme*/lib/arm64/libttboringssl.so /data/local/tmp/&#x27;&quot;</span></span><br><span class="line">adb pull /data/local/tmp/libttboringssl.so /tmp/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 扫导出符号表</span></span><br><span class="line">nm -D --defined-only /tmp/libttboringssl.so | grep -E <span class="string">&quot;SSL_(read|write)$&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-实测输出（✅-证据：命令真实输出）"><a href="#3-2-实测输出（✅-证据：命令真实输出）" class="headerlink" title="3.2 实测输出（✅ 证据：命令真实输出）"></a>3.2 实测输出（✅ 证据：命令真实输出）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">000000000004894c T SSL_read</span><br><span class="line">0000000000048bb0 T SSL_write</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>文件大小 <strong>367512 字节</strong>，导出符号总数 <strong>558 个</strong></li>
+<li><code>T</code> &#x3D; 定义在代码段（Text 段）的<strong>全局导出</strong>符号 → 可按名字挂钩</li>
+</ul>
+<h3 id="3-3-函数签名（BoringSSL-公共-API）"><a href="#3-3-函数签名（BoringSSL-公共-API）" class="headerlink" title="3.3 函数签名（BoringSSL 公共 API）"></a>3.3 函数签名（BoringSSL 公共 API）</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">SSL_write</span><span class="params">(SSL *ssl, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">int</span> num)</span>;   <span class="comment">// buf = 待加密的明文</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SSL_read</span> <span class="params">(SSL *ssl, <span class="type">void</span> *buf, <span class="type">int</span> num)</span>;         <span class="comment">// buf = 已解密的明文</span></span><br></pre></td></tr></table></figure>
+
+<p>返回值 &#x3D; 实际收发的字节数。</p>
+<h3 id="3-4-顺带扫到的一个「看起来能用、实际不能用」的符号"><a href="#3-4-顺带扫到的一个「看起来能用、实际不能用」的符号" class="headerlink" title="3.4 顺带扫到的一个「看起来能用、实际不能用」的符号"></a>3.4 顺带扫到的一个「看起来能用、实际不能用」的符号</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0000000000049d6c T SSL_get_servername     ← SNI 查询函数，导出、偏移已知</span><br></pre></td></tr></table></figure>
+
+<p><strong>但它直调会崩</strong>，详见 §8 坑 #1。</p>
+<p><strong>核心教训</strong>：<code>nm</code> 里有 ≠ 能调用。<strong>「导出」只说明名字和地址在，不说明在任意线程&#x2F;任意时机调用都安全。</strong></p>
+<hr>
+<h2 id="4-第二步：钩子怎么写"><a href="#4-第二步：钩子怎么写" class="headerlink" title="4. 第二步：钩子怎么写"></a>4. 第二步：钩子怎么写</h2><h3 id="4-1-技术栈"><a href="#4-1-技术栈" class="headerlink" title="4.1 技术栈"></a>4.1 技术栈</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>语言</td>
+<td><strong>C</strong>（源文件 <code>hook_entry.c</code>）</td>
+</tr>
+<tr>
+<td>编译器</td>
+<td>Android NDK r29 的 <code>clang</code>，目标 <code>aarch64-linux-android26</code></td>
+</tr>
+<tr>
+<td>构建</td>
+<td>CMake + Ninja，入口脚本 <code>scripts/build-inject.sh push</code></td>
+</tr>
+<tr>
+<td>钩子框架</td>
+<td><strong>ShadowHook 2.0.1</strong>（静态链接进 so），本文用「按符号名」模式 <code>shadowhook_hook_sym_name()</code></td>
+</tr>
+<tr>
+<td>产物</td>
+<td><code>libinlinehook.so</code>（约 574KB，未 strip，带调试符号）</td>
+</tr>
+<tr>
+<td>载入方式</td>
+<td>ptrace <strong>出生注入</strong>：<code>Inject -w -n com.ss.android.ugc.aweme -so /data/local/tmp/libinlinehook.so</code>（从 zygote fork 那一刻就进进程）</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-三段式结构"><a href="#4-2-三段式结构" class="headerlink" title="4.2 三段式结构"></a>4.2 三段式结构</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ① 声明原函数指针（类型必须与被钩函数完全一致） */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="title function_">int</span> <span class="params">(*<span class="type">ssl_rw_t</span>)</span><span class="params">(<span class="type">void</span> *ssl, <span class="type">void</span> *buf, <span class="type">int</span> num)</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">ssl_rw_t</span> orig_SSL_write = <span class="literal">NULL</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">ssl_rw_t</span> orig_SSL_read  = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ② 写代理函数：调原函数 + 抄数据 */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">proxy_SSL_write</span><span class="params">(<span class="type">void</span> *ssl, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">int</span> num)</span> &#123;</span><br><span class="line">    sni_register(ssl, buf, num);                     <span class="comment">// 先看这是哪条连接（§4.5）</span></span><br><span class="line">    <span class="type">int</span> r = orig_SSL_write(ssl, (<span class="type">void</span> *)buf, num);   <span class="comment">// 真发送</span></span><br><span class="line">    <span class="keyword">if</span> (r &gt; <span class="number">0</span> &amp;&amp; sni_allowed(ssl)) dump_rw(<span class="string">&quot;W&quot;</span>, ssl, buf, r);   <span class="comment">// 再抄明文</span></span><br><span class="line">    <span class="keyword">return</span> r;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">proxy_SSL_read</span><span class="params">(<span class="type">void</span> *ssl, <span class="type">void</span> *buf, <span class="type">int</span> num)</span> &#123;</span><br><span class="line">    <span class="type">int</span> r = orig_SSL_read(ssl, buf, num);            <span class="comment">// ← 必须先调原函数！</span></span><br><span class="line">    <span class="keyword">if</span> (r &gt; <span class="number">0</span> &amp;&amp; sni_allowed(ssl)) dump_rw(<span class="string">&quot;R&quot;</span>, ssl, buf, r);   <span class="comment">// 返回后才有内容</span></span><br><span class="line">    <span class="keyword">return</span> r;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ③ 注册进钩子表 */</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">hook_spec_t</span> hooks[] = &#123;</span><br><span class="line">    &#123;<span class="string">&quot;libttboringssl.so&quot;</span>, <span class="string">&quot;SSL_write&quot;</span>, (<span class="type">void</span> *)proxy_SSL_write, (<span class="type">void</span> **)&amp;orig_SSL_write&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;libttboringssl.so&quot;</span>, <span class="string">&quot;SSL_read&quot;</span>,  (<span class="type">void</span> *)proxy_SSL_read,  (<span class="type">void</span> **)&amp;orig_SSL_read&#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-关键设计点①：SSL-read-的时序"><a href="#4-3-关键设计点①：SSL-read-的时序" class="headerlink" title="4.3 关键设计点①：SSL_read 的时序"></a>4.3 关键设计点①：<code>SSL_read</code> 的时序</h3><p><strong>必须</strong>先调 <code>orig_SSL_read()</code> 并拿到返回值，<code>r &gt; 0</code> 才能读 <code>buf</code>。<br>理由：<code>buf</code> 是<strong>调用者提供的空缓冲区</strong>，解密结果是在 <code>orig_SSL_read()</code> 内部才被写进去的。<br><strong>证据层级</strong>：✅ 实测 —— 顺序写反时抓不到内容（日志里 <code>[RW] R</code> 全为空或长度 0）。</p>
+<p><strong>这是这道题的核心考点</strong>：<code>write</code> 是「我给你的数据」，<code>read</code> 是「你往我的缓冲区里填的数据」，方向相反。</p>
+<h3 id="4-4-关键设计点②：限流（防刷爆-logcat）"><a href="#4-4-关键设计点②：限流（防刷爆-logcat）" class="headerlink" title="4.4 关键设计点②：限流（防刷爆 logcat）"></a>4.4 关键设计点②：限流（防刷爆 logcat）</h3><p>某音一秒内会调用 <code>SSL_write</code>&#x2F;<code>SSL_read</code> <strong>几十次</strong>（含心跳、埋点、PCDN 上报）。不限流的话 logcat 主缓冲区会被瞬间冲掉，<strong>其他日志全丢</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> quota = <span class="number">0</span>;</span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">quota_ts</span>;</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">quota_ok</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">now</span>;</span> clock_gettime(CLOCK_MONOTONIC, &amp;now);</span><br><span class="line">    <span class="keyword">if</span> (now.tv_sec != quota_ts.tv_sec) &#123; quota_ts = now; quota = <span class="number">0</span>; &#125;</span><br><span class="line">    <span class="keyword">return</span> quota &lt; <span class="number">20</span>;      <span class="comment">// 每秒最多 20 条</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>证据层级</strong>：✅ 实测（本项目设定值；20 条&#x2F;秒是本文流程建议值，不是通用标准）</p>
+<h3 id="4-5-关键设计点③：只看业务-API，不看视频流（v2-x2F-v3-方案）"><a href="#4-5-关键设计点③：只看业务-API，不看视频流（v2-x2F-v3-方案）" class="headerlink" title="4.5 关键设计点③：只看业务 API，不看视频流（v2&#x2F;v3 方案）"></a>4.5 关键设计点③：只看业务 API，不看视频流（v2&#x2F;v3 方案）</h3><p><strong>需求</strong>（用户明确）：「不要视频流，只留含 <code>amemv.com</code> &#x2F; <code>zijieapi</code> 的 TLS 连接。」</p>
+<p><strong>最初的思路（v1）</strong>：调 <code>SSL_get_servername(ssl, 0)</code> 拿 SNI 判断。→ <strong>崩了</strong>（§8 坑 #1）</p>
+<p><strong>最终方案（v2）</strong>：不调任何 BoringSSL 函数，改成<strong>从明文里抓 <code>Host:</code> 头</strong>，自己建映射表：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ssl 指针 → 主机名 的映射表 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SNI_MAP_MAX 32</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> &#123;</span> <span class="type">void</span> *ssl; <span class="type">char</span> host[<span class="number">64</span>]; &#125; g_sni_map[SNI_MAP_MAX];</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> g_sni_n = <span class="number">0</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">pthread_mutex_t</span> g_sni_mu = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 在请求头前 256 字节里大小写不敏感地找 &quot;host:&quot; */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">extract_host</span><span class="params">(<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *b, <span class="type">int</span> n, <span class="type">char</span> *out, <span class="type">int</span> outn)</span> &#123;</span><br><span class="line">    <span class="type">int</span> m = n &lt; <span class="number">256</span> ? n : <span class="number">256</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; m - <span class="number">5</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((b[i]|<span class="number">0x20</span>)==<span class="string">&#x27;h&#x27;</span> &amp;&amp; (b[i+<span class="number">1</span>]|<span class="number">0x20</span>)==<span class="string">&#x27;o&#x27;</span> &amp;&amp; (b[i+<span class="number">2</span>]|<span class="number">0x20</span>)==<span class="string">&#x27;s&#x27;</span> &amp;&amp;</span><br><span class="line">            (b[i+<span class="number">3</span>]|<span class="number">0x20</span>)==<span class="string">&#x27;t&#x27;</span> &amp;&amp; b[i+<span class="number">4</span>]==<span class="string">&#x27;:&#x27;</span>) &#123;</span><br><span class="line">            <span class="type">int</span> k = i + <span class="number">5</span>;</span><br><span class="line">            <span class="keyword">while</span> (k &lt; m &amp;&amp; (b[k]==<span class="string">&#x27; &#x27;</span>||b[k]==<span class="string">&#x27;\t&#x27;</span>)) k++;</span><br><span class="line">            <span class="type">int</span> o = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (k &lt; m &amp;&amp; b[k]!=<span class="string">&#x27;\r&#x27;</span> &amp;&amp; b[k]!=<span class="string">&#x27;\n&#x27;</span> &amp;&amp; o &lt; outn<span class="number">-1</span>) out[o++] = (<span class="type">char</span>)b[k++];</span><br><span class="line">            out[o] = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">return</span> o &gt; <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">char</span> *WL[] = &#123; <span class="string">&quot;amemv.com&quot;</span>,<span class="string">&quot;zijieapi.com&quot;</span>,<span class="string">&quot;snssdk.com&quot;</span>,<span class="string">&quot;bytedance&quot;</span>,<span class="string">&quot;zjcdn.com&quot;</span>, <span class="literal">NULL</span> &#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计逻辑</strong>：</p>
+<ol>
+<li>每个 <code>SSL_write</code> 都先尝试 <code>sni_register()</code> 登记该 <code>ssl</code> 的 Host（已登记的走快路径返回）</li>
+<li><code>SSL_write</code>&#x2F;<code>SSL_read</code> 里用 <code>sni_allowed(ssl)</code> 查表；Host 不在白名单 → 直接 <code>return</code>，不 dump</li>
+<li><strong>视频 CDN 的 Host（<code>douyinvod.com</code>、<code>bytegecko.com</code>、<code>pstatp.com</code> 等）天然不在白名单 → 自动被排除</strong></li>
+</ol>
+<p><strong>已知副作用</strong>：<code>SSL_read</code> 侧遇到「还没被 write 侧登记过」的连接会<strong>先跳过</strong>（读到的第一批响应可能没日志）。<br><strong>证据层级</strong>：✅ 实测（视频流被正确过滤，PCDN 设置请求正常抓到，见 §5.2）</p>
+<h3 id="4-6-关键设计点④：HTTP-x2F-2-的二进制帧（v3）"><a href="#4-6-关键设计点④：HTTP-x2F-2-的二进制帧（v3）" class="headerlink" title="4.6 关键设计点④：HTTP&#x2F;2 的二进制帧（v3）"></a>4.6 关键设计点④：HTTP&#x2F;2 的二进制帧（v3）</h3><p><strong>问题</strong>：v2 之后总共只抓到 <strong>1 条</strong>明文日志。原因：某音主 API 走 <strong>HTTP&#x2F;2</strong>，帧头是二进制的 HPACK，原来的「70% 可打印率」过滤器把它们<strong>全部丢掉</strong>了。</p>
+<p><strong>v3 改法</strong>：不再整体丢弃，而是分流：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (looks_printable(p, n)) &#123;</span><br><span class="line">    <span class="comment">/* 文本（HTTP/1.x 明文）：转义换行后直接打 */</span></span><br><span class="line">    LOGI(<span class="string">&quot;[RW] %s ssl=%p len=%d | %s&quot;</span>, tag, ssl, n, line);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">/* 二进制（HTTP/2 帧）：打前 48 字节 HEX */</span></span><br><span class="line">    LOGI(<span class="string">&quot;[RW] %s ssl=%p len=%d HEX | %s&quot;</span>, tag, ssl, n, hex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么打 HEX 而不是放弃</strong>：h2 的帧体里 HPACK 编码的 path &#x2F; <code>user-agent</code> 等<strong>仍带明文片段</strong>，看 HEX 也能认出请求内容。真正的 payload（protobuf &#x2F; JSON body）在 <strong>DATA 帧</strong>里，是<strong>未压缩的</strong>，同样能读。</p>
+<p><strong>证据层级</strong>：⚠️ v3 已编译推送，<strong>完整验证未完成</strong>（测试时手机处于异常状态，见 §8 坑 #4）。</p>
+<hr>
+<h2 id="5-实测结果"><a href="#5-实测结果" class="headerlink" title="5. 实测结果"></a>5. 实测结果</h2><h3 id="5-1-无白名单版（第一次成功）"><a href="#5-1-无白名单版（第一次成功）" class="headerlink" title="5.1 无白名单版（第一次成功）"></a>5.1 无白名单版（第一次成功）</h3><p><strong>条件</strong>：亮屏解锁后拉起 App + 出生注入<br><strong>结果</strong>：✅ 进程存活 60 秒，抓到 <strong>8 条</strong>明文日志</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[RW] W ssl=0x... len=... | GET /02091eb.../video/tos/cn/.../?a=1128&amp;br=307&amp;mime_type=video_mp4&amp;...</span><br><span class="line">[RW] R ssl=0x... len=... | HTTP/1.1 206 Partial Content</span><br><span class="line">                          Server: AliyunOSS</span><br><span class="line">                          Content-Type: video/mp4</span><br><span class="line">                          Content-Length: 102400</span><br></pre></td></tr></table></figure>
+
+<p><strong>读出来的信息</strong>：</p>
+<ul>
+<li>走的是<strong>阿里云 OSS</strong>（<code>Server: AliyunOSS</code>）</li>
+<li><code>206 Partial Content</code> &#x3D; <strong>分段拉取</strong>（视频分片下载）</li>
+<li>URL 里的参数全部明文可读：<code>a=1128</code>（App ID&#x2F;版本标识）、<code>br=307</code>（码率 307kbps）、<code>mime_type=video_mp4</code>、签名参数 <code>rc=</code> 等</li>
+</ul>
+<p><strong>结论</strong>：<strong>「不搞中间人、直接 hook 发包点」这条路本项目实测走通了。</strong></p>
+<h3 id="5-2-白名单版（v2）"><a href="#5-2-白名单版（v2）" class="headerlink" title="5.2 白名单版（v2）"></a>5.2 白名单版（v2）</h3><p><strong>结果</strong>：✅ 视频流被正确过滤，抓到的第一条是业务 API：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[RW] W ssl=0x79ea486318 len=421 | GET /service/settings/v2/?caller_name=pcdn2_client_odl&amp;</span><br><span class="line">    app=1&amp;bid=10020&amp;device_platform=android_phone&amp;device_id=178540662752508&amp;</span><br><span class="line">    pcdn_ver=***&amp;aid=1128 HTTP/1.1\r\nAccept:*/*\r\nAccept-Language:zh-CN\r\nConnection:Kee...</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：<code>device_id</code>、<code>aid</code> 等设备标识<strong>直接明文可读</strong>。这类参数在真实业务里是风控关联的关键字段。</p>
+<h3 id="5-3-抓包日志的标志约定"><a href="#5-3-抓包日志的标志约定" class="headerlink" title="5.3 抓包日志的标志约定"></a>5.3 抓包日志的标志约定</h3><table>
+<thead>
+<tr>
+<th>标志</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[RW] W</code></td>
+<td><strong>发出</strong>的请求明文（对应 <code>SSL_write</code>）</td>
+</tr>
+<tr>
+<td><code>[RW] R</code></td>
+<td><strong>收到</strong>的响应明文（对应 <code>SSL_read</code>）</td>
+</tr>
+<tr>
+<td><code>HEX</code> 后缀</td>
+<td>该包是二进制（通常是 HTTP&#x2F;2 帧），以十六进制展示</td>
+</tr>
+<tr>
+<td><code>[SNI] 登记</code></td>
+<td>新建了 <code>ssl → Host</code> 映射（调试用）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-某音的-4-条出网通道（重要：SSL-write-只覆盖其中-1-条）"><a href="#6-某音的-4-条出网通道（重要：SSL-write-只覆盖其中-1-条）" class="headerlink" title="6. 某音的 4 条出网通道（重要：SSL_write 只覆盖其中 1 条）"></a>6. 某音的 4 条出网通道（重要：<code>SSL_write</code> 只覆盖其中 1 条）</h2><h3 id="6-1-实测证据（运行时-maps）"><a href="#6-1-实测证据（运行时-maps）" class="headerlink" title="6.1 实测证据（运行时 maps）"></a>6.1 实测证据（运行时 maps）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">P=$(adb shell pidof com.ss.android.ugc.aweme | <span class="built_in">tr</span> -d <span class="string">&quot;\r&quot;</span>)</span><br><span class="line">adb shell su -c <span class="string">&quot;cat /proc/<span class="variable">$P</span>/maps&quot;</span> | grep -o -E <span class="string">&quot;lib[a-zA-Z0-9_.-]+\.so&quot;</span> | <span class="built_in">sort</span> -u</span><br></pre></td></tr></table></figure>
+
+<p><strong>筛出网络&#x2F;加密相关的</strong>（✅ 实测输出，进程共加载 349 个 so）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">libttboringssl.so   ← BoringSSL：cronet 的 TLS   ★ 本文钩的就是它</span><br><span class="line">libttcrypto.so      ← 字节自有加密库</span><br><span class="line">libEncryptor.so     ← 加密器（签名 / 参数加密）</span><br><span class="line">libsscronet.so      ← cronet 主体（HTTP/2、连接池、QUIC 调度）</span><br><span class="line">libttquic.so        ← QUIC（HTTP/3）实现</span><br><span class="line">libssl.so           ← OpenSSL（另一套 TLS）</span><br><span class="line">libjavacrypto.so    ← Conscrypt（Java 层 TLS）</span><br><span class="line">libcrypto.so        ← OpenSSL 的算法库</span><br></pre></td></tr></table></figure>
+
+<p>安装包里共 267 个 so，其中有 <code>libsscronet-wrapper.so</code>、<code>libsscronet-wrapper-helper.so</code>、<code>libnetecho.so</code>、<code>libonetex.so</code>、<code>libquick.so</code>、<code>libropaencrypt.so</code>、<code>libnative_classloader.so</code> 等。</p>
+<h3 id="6-2-四条通道对照表"><a href="#6-2-四条通道对照表" class="headerlink" title="6.2 四条通道对照表"></a>6.2 四条通道对照表</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>通道</th>
+<th>走哪个库</th>
+<th><code>SSL_write</code> 能抓到吗</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>①</td>
+<td><strong>HTTPS&#x2F;1.1 + HTTPS&#x2F;2</strong>（绝大多数业务 API）</td>
+<td><code>libttboringssl.so</code></td>
+<td>✅ <strong>能</strong></td>
+</tr>
+<tr>
+<td>②</td>
+<td><strong>QUIC &#x2F; HTTP&#x2F;3</strong>（视频流、部分接口）</td>
+<td><code>libttquic.so</code></td>
+<td>❌ <strong>不能</strong></td>
+</tr>
+<tr>
+<td>③</td>
+<td><strong>Java 层老接口</strong>（部分三方 SDK）</td>
+<td><code>libjavacrypto.so</code>（Conscrypt）→ 另有一套 <code>SSL_write</code> 在 <code>libssl.so</code></td>
+<td>❌ 需要<strong>单独</strong>钩 <code>libssl.so</code> 的同名符号</td>
+</tr>
+<tr>
+<td>④</td>
+<td><strong>不走 TLS 的</strong>（明文 HTTP、PCDN 上报）</td>
+<td>直接 socket</td>
+<td>❌ 需要钩 <code>send</code> &#x2F; <code>sendto</code></td>
+</tr>
+</tbody></table>
+<p><strong>为什么 QUIC 抓不到</strong>：QUIC 把 TLS 记录层<strong>内联进了 QUIC 自己的加密帧</strong>，应用数据走 <code>SSL_provide_quic_data()</code> 这条路，**不经过 <code>SSL_write()</code>**。<br><strong>证据层级</strong>：⚠️ 机制层推断（基于 BoringSSL QUIC API 的设计）+ 本项目实测「QUIC 连接没有产生 <code>[RW]</code> 日志」的现象，未做逐帧对照实验。</p>
+<h3 id="6-3-回答「登录包也是这种吗？」"><a href="#6-3-回答「登录包也是这种吗？」" class="headerlink" title="6.3 回答「登录包也是这种吗？」"></a>6.3 回答「登录包也是这种吗？」</h3><p><strong>大概率是 ✅，但取决于该接口走 TCP 还是 QUIC。</strong></p>
+<ul>
+<li>登录接口（<code>/passport/...</code>、<code>id6.me</code> 一号通）在既往 pcap 里表现为 <strong>TLS over TCP</strong> → 属于通道 ①，<strong>就是 <code>SSL_write</code></strong></li>
+<li>⚠️ <strong>登录密码不是明文</strong>：某音在把密码放进 body <strong>之前</strong>，会在本地先加密一次（相关库：<code>libEncryptor.so</code>）。所以即便抓到登录请求明文，<strong>密码字段仍是密文</strong></li>
+<li><strong>最快验证法</strong>（无需改代码）：代码里已有 <code>[RW]</code> 日志，去 App 点「退出登录 → 重新登录」，然后在 logcat 里 grep <code>/passport/</code> 开头的请求</li>
+</ul>
+<h3 id="6-4-比登录更关键的一层：请求签名"><a href="#6-4-比登录更关键的一层：请求签名" class="headerlink" title="6.4 比登录更关键的一层：请求签名"></a>6.4 比登录更关键的一层：请求签名</h3><p>某音<strong>每个请求头</strong>都带签名参数（<code>X-Gorgon</code>、<code>X-Argus</code>、<code>X-Ladon</code>、<code>X-Khronos</code>、<code>msToken</code> 等），由 <code>libEncryptor.so</code> 算出。</p>
+<ul>
+<li>✅ 它们<strong>在 <code>SSL_write</code> 的明文里直接可见</strong>（就在请求头那几行）</li>
+<li>❌ 但<strong>「看得见」不等于「能伪造」</strong>—— 要重放&#x2F;改造请求，必须自己能<strong>算出</strong>这些签名</li>
+<li><strong>结论</strong>：抓包只是入门；能改写请求才是下一个台阶</li>
+</ul>
+<hr>
+<h2 id="7-环境与文件清单"><a href="#7-环境与文件清单" class="headerlink" title="7. 环境与文件清单"></a>7. 环境与文件清单</h2><h3 id="7-1-关键路径"><a href="#7-1-关键路径" class="headerlink" title="7.1 关键路径"></a>7.1 关键路径</h3><table>
+<thead>
+<tr>
+<th>位置</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>源码（Mac）</td>
+<td><code>~/Documents/androidsrc/AndroidInject-master/app/src/main/cpp/InlineHook/src/hook_entry.c</code></td>
+</tr>
+<tr>
+<td>构建脚本（Mac）</td>
+<td><code>~/Documents/androidsrc/AndroidInject-master/app/src/main/cpp/scripts/build-inject.sh</code></td>
+</tr>
+<tr>
+<td>手机上的 so</td>
+<td><code>/data/local/tmp/libinlinehook.so</code></td>
+</tr>
+<tr>
+<td>手机上的注入器</td>
+<td><code>/data/local/tmp/Inject.dbg</code></td>
+</tr>
+<tr>
+<td>注入器日志</td>
+<td><code>/data/local/tmp/watch.log</code></td>
+</tr>
+<tr>
+<td>拉出的原始 so（Mac）</td>
+<td><code>/tmp/libttboringssl.so</code>（367512 字节）</td>
+</tr>
+</tbody></table>
+<h3 id="7-2-NAS-侧的-patch-脚本（本次写入，均在-cache-scratch-）"><a href="#7-2-NAS-侧的-patch-脚本（本次写入，均在-cache-scratch-）" class="headerlink" title="7.2 NAS 侧的 patch 脚本（本次写入，均在 cache/scratch/）"></a>7.2 NAS 侧的 patch 脚本（本次写入，均在 <code>cache/scratch/</code>）</h3><table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>patch_sslrw.sh</code></td>
+<td>加 <code>SSL_write</code>&#x2F;<code>SSL_read</code> 钩子 + 代理函数</td>
+</tr>
+<tr>
+<td><code>patch_sni.sh</code></td>
+<td>加 Host 白名单过滤（v1，含调试日志）</td>
+</tr>
+<tr>
+<td><code>patch_sni_dbg.sh</code></td>
+<td>增强调试输出，定位「全被拦」原因</td>
+</tr>
+<tr>
+<td><code>patch_sni_fix.sh</code></td>
+<td>改用 so 基址 + 偏移算函数指针（v1 修复）</td>
+</tr>
+<tr>
+<td><code>patch_sni_v2.sh</code></td>
+<td>改为 Host 头映射表方案（<strong>当前方案</strong>）</td>
+</tr>
+<tr>
+<td><code>patch_h2.sh</code></td>
+<td>二进制包改打 HEX（v3）</td>
+</tr>
+</tbody></table>
+<h3 id="7-3-Mac-上的代码备份（共-11-个，308KB）"><a href="#7-3-Mac-上的代码备份（共-11-个，308KB）" class="headerlink" title="7.3 Mac 上的代码备份（共 11 个，308KB）"></a>7.3 Mac 上的代码备份（共 11 个，308KB）</h3><p>命名规则：<code>hook_entry.c.bak-&lt;改了什么&gt;-&lt;时刻&gt;</code></p>
+<table>
+<thead>
+<tr>
+<th>备份名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.bak-h2-115451</code></td>
+<td>改成 HEX 之前</td>
+</tr>
+<tr>
+<td><code>.bak-sni-v2-114324</code></td>
+<td>Host 映射表 v2 之前</td>
+</tr>
+<tr>
+<td><code>.bak-sni-fix-114012</code></td>
+<td>加 <code>get_so_base</code> 前置声明之前</td>
+</tr>
+<tr>
+<td><code>.bak-sni-dbg-113743</code></td>
+<td>加 SNI 调试日志之前</td>
+</tr>
+<tr>
+<td><code>.bak-sni-112949</code></td>
+<td><strong>加白名单之前（无过滤、能抓视频流，稳定版）</strong></td>
+</tr>
+<tr>
+<td><code>.bak-sslrw-110632</code></td>
+<td><strong>加 SSL 钩之前（只有原证书 8 钩）</strong></td>
+</tr>
+<tr>
+<td><code>.bak-modefix-20260928</code></td>
+<td>2026-09-28 mode 改动之前</td>
+</tr>
+<tr>
+<td><code>.bak-probe-20260928-195452</code></td>
+<td>2026-09-28 只读探针之前</td>
+</tr>
+<tr>
+<td><code>.bak-conscrypt.20260922_105208</code></td>
+<td>2026-09-22 Conscrypt 改动前</td>
+</tr>
+<tr>
+<td><code>.bak-reverify.20260922_103451</code></td>
+<td>2026-09-22 更早</td>
+</tr>
+<tr>
+<td><code>.bak-x509fix</code></td>
+<td>X509 指纹修复前（最早）</td>
+</tr>
+</tbody></table>
+<p><strong>回退方法</strong>（一条命令）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">M=~/Documents/androidsrc/AndroidInject-master/app/src/main/cpp/InlineHook/src</span><br><span class="line"><span class="built_in">cp</span> <span class="variable">$M</span>/hook_entry.c.bak-sni-112949 <span class="variable">$M</span>/hook_entry.c    <span class="comment"># 切到稳定版</span></span><br><span class="line"><span class="built_in">cd</span> ~/Documents/androidsrc/AndroidInject-master/app/src/main/cpp/scripts &amp;&amp; bash build-inject.sh push</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：<code>.bak-*</code> 是死文件，CMake 只编译 <code>hook_entry.c</code>，备份不会被编进去。</p>
+<h3 id="7-4-当前挂载的钩子"><a href="#7-4-当前挂载的钩子" class="headerlink" title="7.4 当前挂载的钩子"></a>7.4 当前挂载的钩子</h3><p><code>hook_entry.c</code> 第 528–529 行<strong>生效</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&quot;libttboringssl.so&quot;</span>, <span class="string">&quot;SSL_write&quot;</span>, (<span class="type">void</span> *) proxy_SSL_write, (<span class="type">void</span> **) &amp;orig_SSL_write&#125;,</span><br><span class="line">&#123;<span class="string">&quot;libttboringssl.so&quot;</span>, <span class="string">&quot;SSL_read&quot;</span>,  (<span class="type">void</span> *) proxy_SSL_read,  (<span class="type">void</span> **) &amp;orig_SSL_read&#125;,</span><br></pre></td></tr></table></figure>
+
+<p><strong>其余全部已注释</strong>（当时的证书绕过 8 钩、Conscrypt 4 钩、<code>libssl.so</code> 上的同名钩、<code>libttcrypto.so</code> 的 <code>X509_digest</code>）——这是一次<strong>干净的单点实验</strong>，排除了其他钩子的干扰。</p>
+<hr>
+<h2 id="8-踩坑记录（每条：现象-→-证据-→-结论）"><a href="#8-踩坑记录（每条：现象-→-证据-→-结论）" class="headerlink" title="8. 踩坑记录（每条：现象 → 证据 → 结论）"></a>8. 踩坑记录（每条：现象 → 证据 → 结论）</h2><h3 id="坑-1-—-SSL-get-servername-导出了，但直调会崩-⚠️"><a href="#坑-1-—-SSL-get-servername-导出了，但直调会崩-⚠️" class="headerlink" title="坑 #1 — SSL_get_servername 导出了，但直调会崩 ⚠️"></a>坑 #1 — <code>SSL_get_servername</code> 导出了，但直调会崩 ⚠️</h3><ul>
+<li><strong>现象</strong>：v1 白名单用 <code>SSL_get_servername(ssl, 0)</code> 拿 SNI，App 一启动就崩</li>
+<li><strong>证据</strong>：tombstone 栈 <code>sni_allowed+180 → &lt;unknown&gt;</code>（跳进了非法地址）</li>
+<li><strong>符号本身没问题</strong>：<code>nm -D</code> 实测 <code>0000000000049d6c T SSL_get_servername</code>，偏移确实是 <code>0x49d6c</code></li>
+<li><strong>结论</strong>：<strong>符号导出了 ≠ 任意时刻调用都安全</strong>。可能原因（<strong>未验证</strong>）：该函数内部依赖 <code>SSL*</code> 的某些状态&#x2F;锁，或调用约定在该库的导出表上有特殊处理</li>
+<li><strong>替代方案</strong>：见 §4.5，改用「从明文抓 Host 头」，<strong>零 BoringSSL 内部调用</strong></li>
+</ul>
+<h3 id="坑-2-—-dlopen-quot-libttboringssl-so-quot-RTLD-NOLOAD-返回-NULL"><a href="#坑-2-—-dlopen-quot-libttboringssl-so-quot-RTLD-NOLOAD-返回-NULL" class="headerlink" title="坑 #2 — dlopen(&quot;libttboringssl.so&quot;, RTLD_NOLOAD) 返回 NULL"></a>坑 #2 — <code>dlopen(&quot;libttboringssl.so&quot;, RTLD_NOLOAD)</code> 返回 NULL</h3><ul>
+<li><strong>现象</strong>：想用 <code>dlopen</code> + <code>dlsym</code> 拿函数指针，第一步就失败</li>
+<li><strong>结论</strong>：本注入环境（出生注入 + 进程 namespace）里，<code>RTLD_NOLOAD</code> 查不到目标库</li>
+<li><strong>替代方案</strong>：① <code>get_so_base(&quot;libttboringssl.so&quot;)</code> + 已知偏移；② 干脆不调（推荐，见 §4.5）</li>
+</ul>
+<h3 id="坑-3-—-C99-隐式函数声明编译报错"><a href="#坑-3-—-C99-隐式函数声明编译报错" class="headerlink" title="坑 #3 — C99 隐式函数声明编译报错"></a>坑 #3 — C99 隐式函数声明编译报错</h3><ul>
+<li><strong>现象</strong>：<code>get_so_base</code> 定义在 <code>hook_entry.c</code> 第 438 行，调用点在第 246 行 → 编译 3 个 error</li>
+<li><strong>结论</strong>：ISO C99 <strong>不允许隐式声明</strong>。调用点之前必须加前置声明：<code>static void *get_so_base(const char *soname);</code></li>
+</ul>
+<h3 id="坑-4-—-「某音一拉就退-x2F-卡启动页」：先查环境，别怪钩子-⭐"><a href="#坑-4-—-「某音一拉就退-x2F-卡启动页」：先查环境，别怪钩子-⭐" class="headerlink" title="坑 #4 — 「某音一拉就退 &#x2F; 卡启动页」：先查环境，别怪钩子 ⭐"></a>坑 #4 — 「某音一拉就退 &#x2F; 卡启动页」：先查环境，别怪钩子 ⭐</h3><p>这是本次最关键的一条方法论。</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>排查过程</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>注入后 15 秒 App 死</td>
+<td>查 tombstone：<code>EGL_NOT_INITIALIZED</code> abort，崩在 RenderThread</td>
+<td><strong>灭屏状态下拉起 App 的图形初始化问题</strong>，跟 TLS&#x2F;钩子无关。亮屏解锁后重测 → 存活 60 秒 ✅</td>
+</tr>
+<tr>
+<td>另一轮 tombstone：SIGSEGV @ <code>libbytehook</code></td>
+<td>崩溃在 Jit 线程</td>
+<td>某音自带 hook 库（xhook&#x2F;bytehook）内部问题，非本钩子</td>
+</tr>
+<tr>
+<td>卡在 <code>SplashActivity</code> 进不去主界面</td>
+<td>① <strong>不注入纯 App</strong> 也卡 → 排除注入因素<br>② 查内存：<code>3.4G / 3.6G</code> 已用，剩 560K</td>
+<td><strong>手机内存耗尽</strong>，与钩子无关</td>
+</tr>
+</tbody></table>
+<p><strong>§8.4 方法论总结 —— 三步对照法</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">① 不注入、纯 App 跑一遍   → 能进主界面？说明环境的锅</span><br><span class="line">② 注入「无钩版」跑一遍     → 能进？说明是钩子的锅</span><br><span class="line">③ 注入「带钩版」跑一遍     → 才能定位到具体钩子</span><br></pre></td></tr></table></figure>
+
+<p><strong>另外</strong>：换热点&#x2F;换网络后卡启动页，优先怀疑网络出口（本例中 Surfboard 代理仍指向旧网段的 Mac IP）。</p>
+<h3 id="坑-5-—-只抓到-1-条日志（HTTP-x2F-2-二进制过滤）"><a href="#坑-5-—-只抓到-1-条日志（HTTP-x2F-2-二进制过滤）" class="headerlink" title="坑 #5 — 只抓到 1 条日志（HTTP&#x2F;2 二进制过滤）"></a>坑 #5 — 只抓到 1 条日志（HTTP&#x2F;2 二进制过滤）</h3><ul>
+<li><strong>现象</strong>：v2 白名单生效后，<code>[RW]</code> 总共只有 1 条</li>
+<li><strong>原因</strong>：某音主 API 走 HTTP&#x2F;2，帧头是二进制 HPACK，「70% 可打印率」过滤器把 API 包全丢了，只有那条 HTTP&#x2F;1.1 的 PCDN 请求活下来</li>
+<li><strong>改法</strong>：v3 二进制包改打 HEX（§4.6）</li>
+</ul>
+<hr>
+<h2 id="9-未完成事项-x2F-未验证清单"><a href="#9-未完成事项-x2F-未验证清单" class="headerlink" title="9. 未完成事项 &#x2F; 未验证清单"></a>9. 未完成事项 &#x2F; 未验证清单</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v3（HEX 方案）完整验证</td>
+<td>⚠️ <strong>未完成</strong> —— 已编译推送，但测试时手机处于异常环境（内存耗尽），未取得有效结果</td>
+</tr>
+<tr>
+<td>登录包实测抓取</td>
+<td>⚠️ <strong>未验证</strong> —— 需要去 App 点一次登录</td>
+</tr>
+<tr>
+<td>QUIC 通道（②）如何抓</td>
+<td>⚠️ <strong>未开始</strong> —— 需要研究 <code>SSL_provide_quic_data</code> 或钩 QUIC 帧处理</td>
+</tr>
+<tr>
+<td>Java 层 &#x2F; <code>libssl.so</code> 通道（③）</td>
+<td>⚠️ <strong>未验证</strong> —— 钩子表里有对应行但已注释</td>
+</tr>
+<tr>
+<td>明文 HTTP（④）</td>
+<td>⚠️ <strong>未开始</strong> —— 需要钩 <code>send</code>&#x2F;<code>sendto</code></td>
+</tr>
+<tr>
+<td><code>SSL_get_servername</code> 崩溃根因</td>
+<td>⚠️ <strong>未深究</strong> —— 已用替代方案绕过</td>
+</tr>
+<tr>
+<td>手机内存问题</td>
+<td>⚠️ 建议重启手机后再继续测试</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-核对状态表"><a href="#10-核对状态表" class="headerlink" title="10. 核对状态表"></a>10. 核对状态表</h2><table>
+<thead>
+<tr>
+<th>结论</th>
+<th>证据层级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SSL_write</code>&#x2F;<code>SSL_read</code> 在 <code>libttboringssl.so</code> 导出表里</td>
+<td>✅ <strong>实测</strong>（<code>nm -D</code> 输出）</td>
+</tr>
+<tr>
+<td>在这两个符号挂钩能抓到明文</td>
+<td>✅ <strong>实测</strong>（8 条日志 + 明文内容）</td>
+</tr>
+<tr>
+<td><code>SSL_write</code> 的 <code>buf</code> 是请求明文</td>
+<td>✅ <strong>实测</strong></td>
+</tr>
+<tr>
+<td><code>SSL_read</code> 必须先调原函数才能读 <code>buf</code></td>
+<td>✅ <strong>实测</strong>（顺序写反抓不到）</td>
+</tr>
+<tr>
+<td>Host 头白名单能过滤掉视频流</td>
+<td>✅ <strong>实测</strong></td>
+</tr>
+<tr>
+<td><code>SSL_get_servername</code> 直调会崩</td>
+<td>✅ <strong>实测</strong>（tombstone）</td>
+</tr>
+<tr>
+<td>「灭屏拉起 App 会因 EGL 失败」</td>
+<td>✅ <strong>实测</strong>（对照实验）</td>
+</tr>
+<tr>
+<td>「卡启动页是内存耗尽」</td>
+<td>✅ <strong>实测</strong>（不注入也卡 + 内存数据）</td>
+</tr>
+<tr>
+<td>某音运行时加载 4 类 TLS&#x2F;加密库</td>
+<td>✅ <strong>实测</strong>（<code>/proc/&lt;pid&gt;/maps</code>）</td>
+</tr>
+<tr>
+<td>某音有 4 条独立出网通道</td>
+<td>✅ 实测（库存在）+ ⚠️ 推断（通道划分与覆盖面）</td>
+</tr>
+<tr>
+<td>QUIC 不走 <code>SSL_write</code></td>
+<td>⚠️ <strong>推断</strong>（BoringSSL QUIC API 设计 + 未产生日志的现象），未做逐帧对照</td>
+</tr>
+<tr>
+<td>登录包走 <code>SSL_write</code></td>
+<td>⚠️ <strong>推断</strong>（基于既往 pcap 表现为 TLS over TCP），未在登录流程实测</td>
+</tr>
+<tr>
+<td>登录密码在 body 里已是密文</td>
+<td>⚠️ <strong>推断</strong>（基于 <code>libEncryptor.so</code> 的存在），未实测</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="11-术语小抄"><a href="#11-术语小抄" class="headerlink" title="11. 术语小抄"></a>11. 术语小抄</h2><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>大白话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>TLS &#x2F; SSL</strong></td>
+<td>给网络数据「上锁」的协议。上锁前&#x2F;开锁后的样子就是<strong>明文</strong></td>
+</tr>
+<tr>
+<td><strong>BoringSSL</strong></td>
+<td>Google 从 OpenSSL 分出来的一个「上锁工具」实现，Chrome&#x2F;cronet 用它</td>
+</tr>
+<tr>
+<td><strong>cronet</strong></td>
+<td>字节从 Chrome 的网络库移植来的网络引擎，App 里的 HTTP 请求都走它</td>
+</tr>
+<tr>
+<td><strong>MITM（中间人）</strong></td>
+<td>你插在 App 和服务器中间冒充服务器，App 就会把明文交给你</td>
+</tr>
+<tr>
+<td><strong>证书 pin（绑定）</strong></td>
+<td>App 事先记下「真服务器的指纹」，看到不对的证书就拒绝</td>
+</tr>
+<tr>
+<td><strong>SNI</strong></td>
+<td>TLS 握手里明说的「我要连哪个域名」</td>
+</tr>
+<tr>
+<td><strong>NDK</strong></td>
+<td>编译 Android 原生代码（<code>.so</code>）用的工具链</td>
+</tr>
+<tr>
+<td><strong>ShadowHook</strong></td>
+<td>字节开源的 inline hook 框架，能改掉函数入口让代码先跑我们的函数</td>
+</tr>
+<tr>
+<td><strong>HPACK</strong></td>
+<td>HTTP&#x2F;2 压缩请求头用的编码，压完是二进制</td>
+</tr>
+<tr>
+<td><strong>QUIC &#x2F; HTTP&#x2F;3</strong></td>
+<td>跑在 UDP 上的新版 HTTP，把「上锁」这件事内联在自己的包里了</td>
+</tr>
+<tr>
+<td><strong>签名</strong></td>
+<td>用密钥算出的「防伪码」，服务器用来确认请求没被改过</td>
+</tr>
+<tr>
+<td><strong>出生注入</strong></td>
+<td>App 刚被 fork 出来、代码还没跑几行时就把 so 塞进去</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>文档路径：<code>data/reports/某音明文抓取-直接钩发包点实战记录.md</code></em></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/">http://ljm2007.github.io/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E6%8A%93%E5%8C%85/">抓包</a><a class="post-meta__tags" href="/tags/TLS/">TLS</a><a class="post-meta__tags" href="/tags/Hook/">Hook</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查"><img class="cover" src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-22</div><div class="title">2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查</div></div></a></div><div><a href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img class="cover" src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">grep 速查笔记（安卓逆向实战版）</div></div></a></div><div><a href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img class="cover" src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</div></div></a></div><div><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux &#x2F; adb 篇）"><img class="cover" src="/img/post-covers/android-adb-debug-manual.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">安卓调试命令拆解手册（Linux &#x2F; adb 篇）</div></div></a></div><div><a href="/2026/08/24/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95/" title="HTTPS 证书原理 · 问答全记录"><img class="cover" src="/img/post-covers/HTTPS%E8%AF%81%E4%B9%A6%E5%8E%9F%E7%90%86%C2%B7%E9%97%AE%E7%AD%94%E5%85%A8%E8%AE%B0%E5%BD%95.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-24</div><div class="title">HTTPS 证书原理 · 问答全记录</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">47</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%BB%93%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">0. 一句话结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%80%9D%E8%B7%AF%E8%BD%AC%E5%8F%98%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%94%BE%E5%BC%83%E4%B8%AD%E9%97%B4%E4%BA%BA"><span class="toc-number">2.</span> <span class="toc-text">1. 思路转变：为什么放弃中间人</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8E%9F%E7%90%86%EF%BC%9A%E6%98%8E%E6%96%87%E5%88%B0%E5%BA%95%E5%9C%A8%E5%93%AA%E4%B8%A4%E4%B8%AA%E5%87%BD%E6%95%B0%E9%87%8C"><span class="toc-number">3.</span> <span class="toc-text">2. 原理：明文到底在哪两个函数里</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E9%AA%8C%E8%AF%81%E7%AC%A6%E5%8F%B7%E7%9C%9F%E7%9A%84%E5%AD%98%E5%9C%A8%EF%BC%88%E4%B8%8D%E8%83%BD%E5%87%AD%E6%8E%A8%E7%90%86%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">3. 第一步：先验证符号真的存在（不能凭推理）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%93%8D%E4%BD%9C"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%9E%E6%B5%8B%E8%BE%93%E5%87%BA%EF%BC%88%E2%9C%85-%E8%AF%81%E6%8D%AE%EF%BC%9A%E5%91%BD%E4%BB%A4%E7%9C%9F%E5%AE%9E%E8%BE%93%E5%87%BA%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 实测输出（✅ 证据：命令真实输出）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%87%BD%E6%95%B0%E7%AD%BE%E5%90%8D%EF%BC%88BoringSSL-%E5%85%AC%E5%85%B1-API%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 函数签名（BoringSSL 公共 API）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%A1%BA%E5%B8%A6%E6%89%AB%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E3%80%8C%E7%9C%8B%E8%B5%B7%E6%9D%A5%E8%83%BD%E7%94%A8%E3%80%81%E5%AE%9E%E9%99%85%E4%B8%8D%E8%83%BD%E7%94%A8%E3%80%8D%E7%9A%84%E7%AC%A6%E5%8F%B7"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 顺带扫到的一个「看起来能用、实际不能用」的符号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%92%A9%E5%AD%90%E6%80%8E%E4%B9%88%E5%86%99"><span class="toc-number">5.</span> <span class="toc-text">4. 第二步：钩子怎么写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 技术栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%B8%89%E6%AE%B5%E5%BC%8F%E7%BB%93%E6%9E%84"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 三段式结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A0%EF%BC%9ASSL-read-%E7%9A%84%E6%97%B6%E5%BA%8F"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 关键设计点①：SSL_read 的时序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A1%EF%BC%9A%E9%99%90%E6%B5%81%EF%BC%88%E9%98%B2%E5%88%B7%E7%88%86-logcat%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4.4 关键设计点②：限流（防刷爆 logcat）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A2%EF%BC%9A%E5%8F%AA%E7%9C%8B%E4%B8%9A%E5%8A%A1-API%EF%BC%8C%E4%B8%8D%E7%9C%8B%E8%A7%86%E9%A2%91%E6%B5%81%EF%BC%88v2-x2F-v3-%E6%96%B9%E6%A1%88%EF%BC%89"><span class="toc-number">5.5.</span> <span class="toc-text">4.5 关键设计点③：只看业务 API，不看视频流（v2&#x2F;v3 方案）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%82%B9%E2%91%A3%EF%BC%9AHTTP-x2F-2-%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%B8%A7%EF%BC%88v3%EF%BC%89"><span class="toc-number">5.6.</span> <span class="toc-text">4.6 关键设计点④：HTTP&#x2F;2 的二进制帧（v3）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AE%9E%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-number">6.</span> <span class="toc-text">5. 实测结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%97%A0%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%88%90%E5%8A%9F%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 无白名单版（第一次成功）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%99%BD%E5%90%8D%E5%8D%95%E7%89%88%EF%BC%88v2%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 白名单版（v2）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8A%93%E5%8C%85%E6%97%A5%E5%BF%97%E7%9A%84%E6%A0%87%E5%BF%97%E7%BA%A6%E5%AE%9A"><span class="toc-number">6.3.</span> <span class="toc-text">5.3 抓包日志的标志约定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%9F%90%E9%9F%B3%E7%9A%84-4-%E6%9D%A1%E5%87%BA%E7%BD%91%E9%80%9A%E9%81%93%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%9ASSL-write-%E5%8F%AA%E8%A6%86%E7%9B%96%E5%85%B6%E4%B8%AD-1-%E6%9D%A1%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">6. 某音的 4 条出网通道（重要：SSL_write 只覆盖其中 1 条）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%9E%E6%B5%8B%E8%AF%81%E6%8D%AE%EF%BC%88%E8%BF%90%E8%A1%8C%E6%97%B6-maps%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">6.1 实测证据（运行时 maps）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%9B%9B%E6%9D%A1%E9%80%9A%E9%81%93%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 四条通道对照表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%9B%9E%E7%AD%94%E3%80%8C%E7%99%BB%E5%BD%95%E5%8C%85%E4%B9%9F%E6%98%AF%E8%BF%99%E7%A7%8D%E5%90%97%EF%BC%9F%E3%80%8D"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 回答「登录包也是这种吗？」</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%AF%94%E7%99%BB%E5%BD%95%E6%9B%B4%E5%85%B3%E9%94%AE%E7%9A%84%E4%B8%80%E5%B1%82%EF%BC%9A%E8%AF%B7%E6%B1%82%E7%AD%BE%E5%90%8D"><span class="toc-number">7.4.</span> <span class="toc-text">6.4 比登录更关键的一层：请求签名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E7%8E%AF%E5%A2%83%E4%B8%8E%E6%96%87%E4%BB%B6%E6%B8%85%E5%8D%95"><span class="toc-number">8.</span> <span class="toc-text">7. 环境与文件清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%85%B3%E9%94%AE%E8%B7%AF%E5%BE%84"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 关键路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-NAS-%E4%BE%A7%E7%9A%84-patch-%E8%84%9A%E6%9C%AC%EF%BC%88%E6%9C%AC%E6%AC%A1%E5%86%99%E5%85%A5%EF%BC%8C%E5%9D%87%E5%9C%A8-cache-scratch-%EF%BC%89"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 NAS 侧的 patch 脚本（本次写入，均在 cache&#x2F;scratch&#x2F;）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Mac-%E4%B8%8A%E7%9A%84%E4%BB%A3%E7%A0%81%E5%A4%87%E4%BB%BD%EF%BC%88%E5%85%B1-11-%E4%B8%AA%EF%BC%8C308KB%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">7.3 Mac 上的代码备份（共 11 个，308KB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%BD%93%E5%89%8D%E6%8C%82%E8%BD%BD%E7%9A%84%E9%92%A9%E5%AD%90"><span class="toc-number">8.4.</span> <span class="toc-text">7.4 当前挂载的钩子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95%EF%BC%88%E6%AF%8F%E6%9D%A1%EF%BC%9A%E7%8E%B0%E8%B1%A1-%E2%86%92-%E8%AF%81%E6%8D%AE-%E2%86%92-%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">8. 踩坑记录（每条：现象 → 证据 → 结论）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-1-%E2%80%94-SSL-get-servername-%E5%AF%BC%E5%87%BA%E4%BA%86%EF%BC%8C%E4%BD%86%E7%9B%B4%E8%B0%83%E4%BC%9A%E5%B4%A9-%E2%9A%A0%EF%B8%8F"><span class="toc-number">9.1.</span> <span class="toc-text">坑 #1 — SSL_get_servername 导出了，但直调会崩 ⚠️</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-2-%E2%80%94-dlopen-quot-libttboringssl-so-quot-RTLD-NOLOAD-%E8%BF%94%E5%9B%9E-NULL"><span class="toc-number">9.2.</span> <span class="toc-text">坑 #2 — dlopen(&quot;libttboringssl.so&quot;, RTLD_NOLOAD) 返回 NULL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-3-%E2%80%94-C99-%E9%9A%90%E5%BC%8F%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E7%BC%96%E8%AF%91%E6%8A%A5%E9%94%99"><span class="toc-number">9.3.</span> <span class="toc-text">坑 #3 — C99 隐式函数声明编译报错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-4-%E2%80%94-%E3%80%8C%E6%9F%90%E9%9F%B3%E4%B8%80%E6%8B%89%E5%B0%B1%E9%80%80-x2F-%E5%8D%A1%E5%90%AF%E5%8A%A8%E9%A1%B5%E3%80%8D%EF%BC%9A%E5%85%88%E6%9F%A5%E7%8E%AF%E5%A2%83%EF%BC%8C%E5%88%AB%E6%80%AA%E9%92%A9%E5%AD%90-%E2%AD%90"><span class="toc-number">9.4.</span> <span class="toc-text">坑 #4 — 「某音一拉就退 &#x2F; 卡启动页」：先查环境，别怪钩子 ⭐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%91-5-%E2%80%94-%E5%8F%AA%E6%8A%93%E5%88%B0-1-%E6%9D%A1%E6%97%A5%E5%BF%97%EF%BC%88HTTP-x2F-2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%87%E6%BB%A4%EF%BC%89"><span class="toc-number">9.5.</span> <span class="toc-text">坑 #5 — 只抓到 1 条日志（HTTP&#x2F;2 二进制过滤）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E6%9C%AA%E5%AE%8C%E6%88%90%E4%BA%8B%E9%A1%B9-x2F-%E6%9C%AA%E9%AA%8C%E8%AF%81%E6%B8%85%E5%8D%95"><span class="toc-number">10.</span> <span class="toc-text">9. 未完成事项 &#x2F; 未验证清单</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%A0%B8%E5%AF%B9%E7%8A%B6%E6%80%81%E8%A1%A8"><span class="toc-number">11.</span> <span class="toc-text">10. 核对状态表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%9C%AF%E8%AF%AD%E5%B0%8F%E6%8A%84"><span class="toc-number">12.</span> <span class="toc-text">11. 术语小抄</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"/></a><div class="content"><a class="title" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</a><time datetime="2026-09-29T04:14:15.000Z" title="发表于 2026-09-29 12:14:15">2026-09-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"/></a><div class="content"><a class="title" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</a><time datetime="2026-09-24T12:00:00.000Z" title="发表于 2026-09-24 20:00:00">2026-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"/></a><div class="content"><a class="title" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</a><time datetime="2026-09-23T03:26:18.000Z" title="发表于 2026-09-23 11:26:18">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="grep 速查笔记（安卓逆向实战版）"/></a><div class="content"><a class="title" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）">grep 速查笔记（安卓逆向实战版）</a><time datetime="2026-09-23T02:54:22.000Z" title="发表于 2026-09-23 10:54:22">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"><img src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查"/></a><div class="content"><a class="title" href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查">2026-09-22 实战命令总结 · 某音（正式版/极速版）注入与抓包排查</a><time datetime="2026-09-22T12:00:00.000Z" title="发表于 2026-09-22 20:00:00">2026-09-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
