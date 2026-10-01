@@ -1,0 +1,630 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>某音评论数据定位方法说明书 | IT李白白博客</title><meta name="keywords" content="Android,抓包,逆向,uiautomator"><meta name="author" content="IT李白白博客"><meta name="copyright" content="IT李白白博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="用途：以后遇到“界面能看见评论，但不知道评论数据从哪里来”时，按这份方法逐层追踪。 本文重点不是记住某个类名，而是学会一套从界面反推数据来源，再定位网络接口和接收链路的方法。 目标 APK：com.ss.android.ugc.aweme 本次分析版本：40.1.0，versionCode&#x3D;400101 本次设备：Android 12，aarch64，Pixel 3 XL 测试机   第 0 章">
+<meta property="og:type" content="article">
+<meta property="og:title" content="某音评论数据定位方法说明书">
+<meta property="og:url" content="http://ljm2007.github.io/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/index.html">
+<meta property="og:site_name" content="IT李白白博客">
+<meta property="og:description" content="用途：以后遇到“界面能看见评论，但不知道评论数据从哪里来”时，按这份方法逐层追踪。 本文重点不是记住某个类名，而是学会一套从界面反推数据来源，再定位网络接口和接收链路的方法。 目标 APK：com.ss.android.ugc.aweme 本次分析版本：40.1.0，versionCode&#x3D;400101 本次设备：Android 12，aarch64，Pixel 3 XL 测试机   第 0 章">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://ljm2007.github.io/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png">
+<meta property="article:published_time" content="2026-09-30T02:12:13.000Z">
+<meta property="article:modified_time" content="2026-10-01T02:24:16.479Z">
+<meta property="article:author" content="IT李白白博客">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="抓包">
+<meta property="article:tag" content="逆向">
+<meta property="article:tag" content="uiautomator">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://ljm2007.github.io/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '某音评论数据定位方法说明书',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-01 10:24:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">48</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">某音评论数据定位方法说明书</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-30T02:12:13.000Z" title="发表于 2026-09-30 10:12:13">2026-09-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-01T02:24:16.479Z" title="更新于 2026-10-01 10:24:16">2026-10-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="某音评论数据定位方法说明书"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>用途：以后遇到“界面能看见评论，但不知道评论数据从哪里来”时，按这份方法逐层追踪。</p>
+<p>本文重点不是记住某个类名，而是学会一套<strong>从界面反推数据来源，再定位网络接口和接收链路</strong>的方法。</p>
+<p>目标 APK：<code>com.ss.android.ugc.aweme</code></p>
+<p>本次分析版本：<code>40.1.0</code>，<code>versionCode=400101</code></p>
+<p>本次设备：Android 12，aarch64，Pixel 3 XL 测试机</p>
+</blockquote>
+<hr>
+<h2 id="第-0-章-先用一个比喻理解整条路线"><a href="#第-0-章-先用一个比喻理解整条路线" class="headerlink" title="第 0 章　先用一个比喻理解整条路线"></a>第 0 章　先用一个比喻理解整条路线</h2><p>把评论显示过程想象成餐馆上菜：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">后厨做菜       = 网络接口拿到评论数据</span><br><span class="line">传菜员端上菜   = Presenter / ViewModel 传递数据</span><br><span class="line">服务员摆盘     = Adapter / ViewHolder 绑定控件</span><br><span class="line">客人看到菜     = uiautomator 控件树</span><br></pre></td></tr></table></figure>
+
+<p>我们已经能看到“桌上的菜”，但不能只盯着菜名猜后厨在哪里。正确做法是沿着传菜路线反向追：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">界面控件</span><br><span class="line">  ↓</span><br><span class="line">控件所属组件</span><br><span class="line">  ↓</span><br><span class="line">Adapter / ViewHolder</span><br><span class="line">  ↓</span><br><span class="line">CommentItemList</span><br><span class="line">  ↓</span><br><span class="line">CommentFetchPresenter / Fetcher</span><br><span class="line">  ↓</span><br><span class="line">CommentListApi</span><br><span class="line">  ↓</span><br><span class="line">真实 URL</span><br><span class="line">  ↓</span><br><span class="line">HTTP/2 或 QUIC</span><br><span class="line">  ↓</span><br><span class="line">SSL_read / QUIC 接收与解码</span><br></pre></td></tr></table></figure>
+
+<p><strong>核心原则：控件树负责告诉我们“数据已经到了哪里”，APK 静态分析负责告诉我们“数据从哪里来”。</strong></p>
+<hr>
+<h2 id="第-1-章-本次最终找到的结果"><a href="#第-1-章-本次最终找到的结果" class="headerlink" title="第 1 章　本次最终找到的结果"></a>第 1 章　本次最终找到的结果</h2><h3 id="1-1-普通视频评论列表接口"><a href="#1-1-普通视频评论列表接口" class="headerlink" title="1.1 普通视频评论列表接口"></a>1.1 普通视频评论列表接口</h3><p>APK 源码中的 Retrofit 接口明确写着：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GET(&quot;https://aweme.snssdk.com/aweme/v2/comment/list/&quot;)</span></span><br><span class="line">Observable&lt;CommentItemList&gt; <span class="title function_">loadMoreComments</span><span class="params">(...)</span></span><br></pre></td></tr></table></figure>
+
+<p>因此，普通视频评论列表接口是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://aweme.snssdk.com/aweme/v2/comment/list/</span><br></pre></td></tr></table></figure>
+
+<p>这是<strong>源码实证</strong>，不是根据字符串猜测。</p>
+<h3 id="1-2-返回数据类型"><a href="#1-2-返回数据类型" class="headerlink" title="1.2 返回数据类型"></a>1.2 返回数据类型</h3><p>接口返回：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Observable&lt;CommentItemList&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">网络请求完成后，会得到一个 CommentItemList 评论列表对象</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-主要请求参数"><a href="#1-3-主要请求参数" class="headerlink" title="1.3 主要请求参数"></a>1.3 主要请求参数</h3><p>接口中已经确认的参数包括：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>大白话含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>aweme_id</code></td>
+<td>当前视频的 ID</td>
+</tr>
+<tr>
+<td><code>cursor</code></td>
+<td>评论翻页游标</td>
+</tr>
+<tr>
+<td><code>count</code></td>
+<td>本次要取多少条</td>
+</tr>
+<tr>
+<td><code>insert_ids</code></td>
+<td>需要插入或置顶的评论 ID</td>
+</tr>
+<tr>
+<td><code>channel_id</code></td>
+<td>渠道或场景编号</td>
+</tr>
+<tr>
+<td><code>city</code></td>
+<td>城市信息</td>
+</tr>
+<tr>
+<td><code>page_source</code></td>
+<td>从哪个页面进入</td>
+</tr>
+<tr>
+<td><code>aweme_author</code></td>
+<td>视频作者信息</td>
+</tr>
+<tr>
+<td><code>item_type</code></td>
+<td>视频类型</td>
+</tr>
+<tr>
+<td><code>comment_aggregation</code></td>
+<td>评论聚合相关参数</td>
+</tr>
+<tr>
+<td><code>top_query_word</code></td>
+<td>评论区顶部搜索词</td>
+</tr>
+<tr>
+<td><code>is_preload</code></td>
+<td>是否是预加载</td>
+</tr>
+<tr>
+<td><code>favorite_comment_timestamp</code></td>
+<td>重点&#x2F;收藏评论时间信息</td>
+</tr>
+<tr>
+<td><code>group_id</code></td>
+<td>视频所属分组 ID</td>
+</tr>
+<tr>
+<td><code>service_id</code></td>
+<td>服务类型</td>
+</tr>
+<tr>
+<td><code>comment_scene</code></td>
+<td>评论场景</td>
+</tr>
+<tr>
+<td><code>is_24_story</code></td>
+<td>是否为 24 小时动态类内容</td>
+</tr>
+<tr>
+<td><code>aweme_type</code></td>
+<td>视频类型</td>
+</tr>
+</tbody></table>
+<p>其中最关键的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aweme_id + cursor + count + is_preload</span><br></pre></td></tr></table></figure>
+
+<p>这四个字段基本对应：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">给哪个视频取评论</span><br><span class="line">从第几页开始</span><br><span class="line">取多少条</span><br><span class="line">是不是提前加载</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-评论操作接口"><a href="#1-4-评论操作接口" class="headerlink" title="1.4 评论操作接口"></a>1.4 评论操作接口</h3><p>同一个 <code>CommentListApi</code> 中还发现了其他接口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">POST /aweme/v1/comment/delete/</span><br><span class="line">GET  /aweme/v2/shop/promotion/comments/</span><br><span class="line">GET  /aweme/v2/shop/promotion/comment/action/</span><br></pre></td></tr></table></figure>
+
+<p>它们分别更像：</p>
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th>用途判断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/aweme/v1/comment/delete/</code></td>
+<td>删除评论</td>
+</tr>
+<tr>
+<td><code>/aweme/v2/shop/promotion/comments/</code></td>
+<td>商品&#x2F;团购评论</td>
+</tr>
+<tr>
+<td><code>/aweme/v2/shop/promotion/comment/action/</code></td>
+<td>商品评论操作</td>
+</tr>
+</tbody></table>
+<p>本文追踪的目标是普通视频评论，因此重点接口仍然是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/aweme/v2/comment/list/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="第-2-章-第一步：先从控件树开始"><a href="#第-2-章-第一步：先从控件树开始" class="headerlink" title="第 2 章　第一步：先从控件树开始"></a>第 2 章　第一步：先从控件树开始</h2><h3 id="2-1-为什么先看控件树"><a href="#2-1-为什么先看控件树" class="headerlink" title="2.1 为什么先看控件树"></a>2.1 为什么先看控件树</h3><p>如果直接从几百 MB 的 APK 里搜索，结果会非常多。先看界面，可以获得一批“已知答案”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">用户名</span><br><span class="line">评论正文</span><br><span class="line">发布时间</span><br><span class="line">IP 属地</span><br><span class="line">点赞数</span><br><span class="line">回复按钮</span><br></pre></td></tr></table></figure>
+
+<p>这些文字相当于“路标”。以后看到某个类或字段时，可以判断它是否真的对应评论显示。</p>
+<h3 id="2-2-控件树中能看到什么"><a href="#2-2-控件树中能看到什么" class="headerlink" title="2.2 控件树中能看到什么"></a>2.2 控件树中能看到什么</h3><p>之前评论区控件树中出现过类似内容：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">content-desc=&quot;悦欣,图一二 跟评，欣欣天天开心,8小时前, · 广西,回复 按钮,&quot;</span><br><span class="line">content-desc=&quot;指尖温柔,你不主动怎么有故事[比心],45分钟前, · 湖南,回复 按钮,&quot;</span><br><span class="line">content-desc=&quot;赞1,未选中&quot;</span><br><span class="line">content-desc=&quot;踩,未选中&quot;</span><br></pre></td></tr></table></figure>
+
+<p>这说明控件层已经拿到了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户名 + 正文 + 时间 + 属地 + 操作状态</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-控件树的局限"><a href="#2-3-控件树的局限" class="headerlink" title="2.3 控件树的局限"></a>2.3 控件树的局限</h3><p>控件树中的：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class=&quot;android.widget.TextView&quot;</span><br></pre></td></tr></table></figure>
+
+<p>只说明最后显示文字的控件类型，不等于真正的数据类。</p>
+<p>它不能单独告诉我们：</p>
+<ul>
+<li>哪个网络类获取了评论；</li>
+<li>哪个类解析了响应；</li>
+<li>评论是否来自缓存；</li>
+<li>评论是否通过 JSON、Protobuf 或其他格式传输。</li>
+</ul>
+<p>所以控件树是<strong>终点证据</strong>，不是完整调用链。</p>
+<hr>
+<h2 id="第-3-章-第二步：从控件文字推测数据字段"><a href="#第-3-章-第二步：从控件文字推测数据字段" class="headerlink" title="第 3 章　第二步：从控件文字推测数据字段"></a>第 3 章　第二步：从控件文字推测数据字段</h2><p>界面上看到的内容，可以先和常见数据字段建立对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>界面内容</th>
+<th>可能的字段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户名</td>
+<td><code>user_name</code></td>
+</tr>
+<tr>
+<td>评论正文</td>
+<td><code>text</code> 或 <code>comment</code></td>
+</tr>
+<tr>
+<td>时间</td>
+<td><code>create_time</code></td>
+</tr>
+<tr>
+<td>IP 属地</td>
+<td><code>ip_label</code></td>
+</tr>
+<tr>
+<td>点赞数</td>
+<td><code>digg_count</code></td>
+</tr>
+<tr>
+<td>评论唯一编号</td>
+<td><code>comment_id</code></td>
+</tr>
+<tr>
+<td>翻页位置</td>
+<td><code>cursor</code></td>
+</tr>
+<tr>
+<td>是否还有下一页</td>
+<td><code>has_more</code></td>
+</tr>
+</tbody></table>
+<p>注意：这一层只能叫“字段线索”。字段是否真的这样命名，要以 APK 反编译结果或响应模型为准。</p>
+<p>本次 APK 字符串扫描确实找到了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">comment_id</span><br><span class="line">create_time</span><br><span class="line">user_name</span><br><span class="line">digg_count</span><br><span class="line">ip_label</span><br><span class="line">cursor</span><br><span class="line">has_more</span><br></pre></td></tr></table></figure>
+
+<p>因此，这些字段线索得到了 APK 字符串层面的支持。</p>
+<hr>
+<h2 id="第-4-章-第三步：从-APK-中找评论业务组件"><a href="#第-4-章-第三步：从-APK-中找评论业务组件" class="headerlink" title="第 4 章　第三步：从 APK 中找评论业务组件"></a>第 4 章　第三步：从 APK 中找评论业务组件</h2><h3 id="4-1-不要只搜“评论”两个字"><a href="#4-1-不要只搜“评论”两个字" class="headerlink" title="4.1 不要只搜“评论”两个字"></a>4.1 不要只搜“评论”两个字</h3><p>大 APK 里“comment”可能出现几千次。更有效的搜索组合是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CommentFetchPresenter</span><br><span class="line">CommentListPageFragment</span><br><span class="line">CommentListState</span><br><span class="line">CommentEmbedLoadMore</span><br><span class="line">CommentListMergeParam</span><br><span class="line">CommentItemList</span><br><span class="line">CommentListApi</span><br><span class="line">loadMoreComments</span><br></pre></td></tr></table></figure>
+
+<p>搜索目标不是一个关键词，而是一条业务链。</p>
+<h3 id="4-2-本次找到的关键组件"><a href="#4-2-本次找到的关键组件" class="headerlink" title="4.2 本次找到的关键组件"></a>4.2 本次找到的关键组件</h3><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用判断</th>
+<th>证据级别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CommentFetchPresenter</code></td>
+<td>评论获取成功&#x2F;失败回调</td>
+<td>字符串中出现 <code>onSuccess</code>，较强线索</td>
+</tr>
+<tr>
+<td><code>CommentListPageFragment</code></td>
+<td>评论页面容器</td>
+<td>类名与页面职责直接对应</td>
+</tr>
+<tr>
+<td><code>CommentListState</code></td>
+<td>评论列表状态</td>
+<td>类名与状态字段对应</td>
+</tr>
+<tr>
+<td><code>CommentEmbedLoadMore</code></td>
+<td>评论区加载更多</td>
+<td>字符串出现 <code>fetch err</code></td>
+</tr>
+<tr>
+<td><code>CommentListMergeParam</code></td>
+<td>合并评论或预加载结果</td>
+<td>类名与合并参数对应</td>
+</tr>
+<tr>
+<td><code>CommentItemList</code></td>
+<td>评论列表响应对象</td>
+<td>Retrofit 返回类型，强证据</td>
+</tr>
+<tr>
+<td><code>CommentListApi</code></td>
+<td>Retrofit 网络接口</td>
+<td>源码接口定义，强证据</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-关键-Fetcher：X-C1H2V"><a href="#4-3-关键-Fetcher：X-C1H2V" class="headerlink" title="4.3 关键 Fetcher：X.C1H2V"></a>4.3 关键 Fetcher：<code>X.C1H2V</code></h3><p>反编译出的 <code>X.C1H2V</code> 中有：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AbstractFetcher&lt;</span><br><span class="line">    C2351601H2j,</span><br><span class="line">    CommentItemList,</span><br><span class="line">    C2351601H2j,</span><br><span class="line">    CommentItemList</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这说明：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：C2351601H2j 评论请求参数</span><br><span class="line">输出：CommentItemList 评论列表</span><br></pre></td></tr></table></figure>
+
+<p>它里面还调用了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">CommentListApi</span> <span class="variable">commentListApi</span> <span class="operator">=</span> C2376561I0j.LIZIZ;</span><br><span class="line">commentListApi.loadMoreComments(...);</span><br></pre></td></tr></table></figure>
+
+<p>并且返回：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Observable&lt;CommentItemList&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这已经把“评论页面”和“网络接口”连起来了。</p>
+<hr>
+<h2 id="第-5-章-第四步：确认-Retrofit-的真实接口"><a href="#第-5-章-第四步：确认-Retrofit-的真实接口" class="headerlink" title="第 5 章　第四步：确认 Retrofit 的真实接口"></a>第 5 章　第四步：确认 Retrofit 的真实接口</h2><h3 id="5-1-API-对象在哪里创建"><a href="#5-1-API-对象在哪里创建" class="headerlink" title="5.1 API 对象在哪里创建"></a>5.1 API 对象在哪里创建</h3><p>源码 <code>X.C2376561I0j</code> 中确认：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">CommentListApi</span> <span class="variable">LIZIZ</span> <span class="operator">=</span></span><br><span class="line">    RetrofitFactory.LIZIZ(<span class="literal">false</span>)</span><br><span class="line">        .createBuilder(<span class="string">&quot;https://aweme.snssdk.com&quot;</span>)</span><br><span class="line">        .build()</span><br><span class="line">        .create(CommentListApi.class);</span><br></pre></td></tr></table></figure>
+
+<p>大白话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">先选 aweme.snssdk.com 作为服务器</span><br><span class="line">再根据 CommentListApi 接口自动生成网络请求对象</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-接口定义"><a href="#5-2-接口定义" class="headerlink" title="5.2 接口定义"></a>5.2 接口定义</h3><p>源码中实际存在：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">CommentListApi</span> &#123;</span><br><span class="line">    <span class="meta">@GET(&quot;https://aweme.snssdk.com/aweme/v2/comment/list/&quot;)</span></span><br><span class="line">    Observable&lt;CommentItemList&gt; <span class="title function_">loadMoreComments</span><span class="params">(...)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这一条是本文最重要的静态证据。</p>
+<hr>
+<h2 id="第-6-章-第五步：确认评论是否预加载"><a href="#第-6-章-第五步：确认评论是否预加载" class="headerlink" title="第 6 章　第五步：确认评论是否预加载"></a>第 6 章　第五步：确认评论是否预加载</h2><p>之前只在“点击评论按钮”时抓包，可能看不到请求。源码和字符串给出了原因线索：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CommentListPageFragment preload</span><br><span class="line">comment_preload_real_time</span><br><span class="line">comment_preload_opt_ab_v2</span><br><span class="line">comment_preload_limit_fix_setting</span><br></pre></td></tr></table></figure>
+
+<p>接口参数中还明确有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">is_preload</span><br></pre></td></tr></table></figure>
+
+<p>因此更合理的流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">视频刚滑到屏幕</span><br><span class="line">  ↓</span><br><span class="line">评论列表预加载</span><br><span class="line">  ↓</span><br><span class="line">CommentListApi.loadMoreComments()</span><br><span class="line">  ↓</span><br><span class="line">CommentItemList</span><br><span class="line">  ↓</span><br><span class="line">打开评论面板时直接显示</span><br></pre></td></tr></table></figure>
+
+<p>这解释了之前的现象：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">点评论按钮后，Hook 没看到新的 comment 请求</span><br></pre></td></tr></table></figure>
+
+<p>这不等于“没有评论请求”，也可能是请求已经在点按钮之前完成。</p>
+<h3 id="证据等级说明"><a href="#证据等级说明" class="headerlink" title="证据等级说明"></a>证据等级说明</h3><ul>
+<li><code>is_preload</code> 出现在真实接口参数中：<strong>实测静态证据</strong>；</li>
+<li><code>CommentListPageFragment preload</code> 出现在 APK 字符串中：<strong>字符串证据</strong>；</li>
+<li>本次具体视频一定是在滑动时预加载：<strong>尚未用请求时间戳直接验证</strong>。</li>
+</ul>
+<p>所以本文写作时应说“很可能&#x2F;有证据支持预加载”，不写成“所有视频都一定预加载”。</p>
+<hr>
+<h2 id="第-7-章-完整调用链"><a href="#第-7-章-完整调用链" class="headerlink" title="第 7 章　完整调用链"></a>第 7 章　完整调用链</h2><p>目前可以把调用链写成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">界面上的评论控件</span><br><span class="line">    ↓</span><br><span class="line">评论列表 Adapter / ViewHolder</span><br><span class="line">    ↓</span><br><span class="line">CommentItemList</span><br><span class="line">    ↓</span><br><span class="line">CommentViewModel / CommentListState</span><br><span class="line">    ↓</span><br><span class="line">X.C1H2V</span><br><span class="line">    ↓</span><br><span class="line">C2376561I0j.LIZIZ</span><br><span class="line">    ↓</span><br><span class="line">CommentListApi.loadMoreComments()</span><br><span class="line">    ↓</span><br><span class="line">GET https://aweme.snssdk.com/aweme/v2/comment/list/</span><br><span class="line">    ↓</span><br><span class="line">Retrofit / TTNet / Cronet 网络层</span><br><span class="line">    ↓</span><br><span class="line">HTTP/2 或 HTTP/3 解帧</span><br><span class="line">    ↓</span><br><span class="line">响应体解码</span><br><span class="line">    ↓</span><br><span class="line">CommentItemList</span><br></pre></td></tr></table></figure>
+
+<p>这里有两条方向：</p>
+<h3 id="从界面向上追"><a href="#从界面向上追" class="headerlink" title="从界面向上追"></a>从界面向上追</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">TextView / content-desc</span><br><span class="line">  ↓</span><br><span class="line">ViewHolder</span><br><span class="line">  ↓</span><br><span class="line">Adapter</span><br><span class="line">  ↓</span><br><span class="line">CommentItemList</span><br></pre></td></tr></table></figure>
+
+<h3 id="从网络向下追"><a href="#从网络向下追" class="headerlink" title="从网络向下追"></a>从网络向下追</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CommentListApi</span><br><span class="line">  ↓</span><br><span class="line">Retrofit 请求</span><br><span class="line">  ↓</span><br><span class="line">TTNet / Cronet</span><br><span class="line">  ↓</span><br><span class="line">SSL 或 QUIC</span><br><span class="line">  ↓</span><br><span class="line">CommentItemList</span><br></pre></td></tr></table></figure>
+
+<p>两条路线在 <code>CommentItemList</code> 汇合。</p>
+<hr>
+<h2 id="第-8-章-如何把-Java-层继续连到接收封包位置"><a href="#第-8-章-如何把-Java-层继续连到接收封包位置" class="headerlink" title="第 8 章　如何把 Java 层继续连到接收封包位置"></a>第 8 章　如何把 Java 层继续连到接收封包位置</h2><h3 id="情况-A：普通-TCP-TLS"><a href="#情况-A：普通-TCP-TLS" class="headerlink" title="情况 A：普通 TCP + TLS"></a>情况 A：普通 TCP + TLS</h3><p>如果请求走普通 HTTPS，链路可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SSL_read()</span><br><span class="line">  ↓</span><br><span class="line">HTTP/2 解帧</span><br><span class="line">  ↓</span><br><span class="line">Retrofit 响应转换器</span><br><span class="line">  ↓</span><br><span class="line">CommentItemList</span><br></pre></td></tr></table></figure>
+
+<p>此时可以观察：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">libssl.so</span><br><span class="line">libttboringssl.so</span><br><span class="line">SSL_read</span><br></pre></td></tr></table></figure>
+
+<p>但 HTTP&#x2F;2 可能是二进制帧，<code>SSL_read</code> 日志里不一定出现完整 URL 或中文评论。</p>
+<h3 id="情况-B：QUIC-x2F-HTTP3"><a href="#情况-B：QUIC-x2F-HTTP3" class="headerlink" title="情况 B：QUIC &#x2F; HTTP3"></a>情况 B：QUIC &#x2F; HTTP3</h3><p>如果请求走 QUIC，链路可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">UDP 接收</span><br><span class="line">  ↓</span><br><span class="line">libttquic.so / libsscronet.so</span><br><span class="line">  ↓</span><br><span class="line">QUIC 解密</span><br><span class="line">  ↓</span><br><span class="line">HTTP/3 解帧</span><br><span class="line">  ↓</span><br><span class="line">CommentListApi</span><br></pre></td></tr></table></figure>
+
+<p>这时普通 <code>SSL_read</code> 可能看不到评论请求。</p>
+<h3 id="情况-C：本地缓存或预取"><a href="#情况-C：本地缓存或预取" class="headerlink" title="情况 C：本地缓存或预取"></a>情况 C：本地缓存或预取</h3><p>如果控件显示评论，但点击评论按钮时没有网络流量，可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">之前已经请求过</span><br><span class="line">  ↓</span><br><span class="line">评论数据保存在内存或缓存</span><br><span class="line">  ↓</span><br><span class="line">打开面板时直接绑定控件</span><br></pre></td></tr></table></figure>
+
+<p>因此必须把“滑到视频的时间”和“评论面板打开的时间”分开观察。</p>
+<hr>
+<h2 id="第-9-章-实战验证方法"><a href="#第-9-章-实战验证方法" class="headerlink" title="第 9 章　实战验证方法"></a>第 9 章　实战验证方法</h2><h3 id="9-1-先记录界面标记"><a href="#9-1-先记录界面标记" class="headerlink" title="9.1 先记录界面标记"></a>9.1 先记录界面标记</h3><p>从控件树记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">评论数量</span><br><span class="line">用户名</span><br><span class="line">评论正文前几个字</span><br><span class="line">时间</span><br><span class="line">属地</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">评论 29</span><br><span class="line">冷天,也是看到日出了</span><br><span class="line">千夜瑭月,东方欲晓</span><br></pre></td></tr></table></figure>
+
+<p>这些是“已知明文标记”。</p>
+<h3 id="9-2-再做动作"><a href="#9-2-再做动作" class="headerlink" title="9.2 再做动作"></a>9.2 再做动作</h3><p>本文流程建议的动作顺序：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1. 记录当前时间</span><br><span class="line">2. 滑到一个新视频</span><br><span class="line">3. 等待视频和评论数量出现</span><br><span class="line">4. 立刻记录 Hook 日志</span><br><span class="line">5. 打开评论区</span><br><span class="line">6. 再记录一次控件树</span><br><span class="line">7. 比较请求时间和评论出现时间</span><br></pre></td></tr></table></figure>
+
+<p>不要只在点击评论按钮后才开始抓，因为请求可能更早发生。</p>
+<h3 id="9-3-Hook-日志的判断"><a href="#9-3-Hook-日志的判断" class="headerlink" title="9.3 Hook 日志的判断"></a>9.3 Hook 日志的判断</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>更合理的解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>出现 <code>/aweme/v2/comment/list/</code></td>
+<td>已直接定位评论列表请求</td>
+</tr>
+<tr>
+<td>只有 <code>aweme.snssdk.com</code>，没有路径</td>
+<td>可能是 HTTP&#x2F;2 二进制或日志截断</td>
+</tr>
+<tr>
+<td><code>SSL_read</code> 有调用，评论文字搜不到</td>
+<td>可能是压缩、Protobuf 或 HTTP&#x2F;2 帧</td>
+</tr>
+<tr>
+<td>评论控件变化，但 SSL 日志不变</td>
+<td>可能来自缓存、预取、QUIC 或另一网络库</td>
+</tr>
+<tr>
+<td>只有视频 CDN 的 <code>206 Partial Content</code></td>
+<td>当前窗口主要是视频流，不是评论接口</td>
+</tr>
+<tr>
+<td>点击评论后没有新请求，但评论立即显示</td>
+<td>更像提前加载或缓存</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="第-10-章-这次没有确认的部分"><a href="#第-10-章-这次没有确认的部分" class="headerlink" title="第 10 章　这次没有确认的部分"></a>第 10 章　这次没有确认的部分</h2><p>以下内容目前不能写成确定结论：</p>
+<ol>
+<li><code>CommentItemList</code> 的全部字段名尚未完整还原；</li>
+<li>本次实际展示的评论是否来自 <code>/aweme/v2/comment/list/</code>，还没有用时间戳直接对账；</li>
+<li>评论请求具体走 TCP&#x2F;TLS 还是 QUIC&#x2F;HTTP3，尚未完成协议层确认；</li>
+<li>APK 字符串中的其他路径不一定属于当前视频评论流程；</li>
+<li><code>CommentFetchPresenter</code> 的完整包名和具体 <code>onSuccess</code> 实现还需要继续从反编译源码中定位；</li>
+<li>某些评论可能来自缓存、预加载或 Feed 一起返回，而不是打开面板时单独请求。</li>
+</ol>
+<p>这些是“待验证”，不是“已经证明”。</p>
+<hr>
+<h2 id="第-11-章-以后遇到类似问题的通用方法"><a href="#第-11-章-以后遇到类似问题的通用方法" class="headerlink" title="第 11 章　以后遇到类似问题的通用方法"></a>第 11 章　以后遇到类似问题的通用方法</h2><h3 id="第一步：先看界面"><a href="#第一步：先看界面" class="headerlink" title="第一步：先看界面"></a>第一步：先看界面</h3><p>问自己：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">界面显示了什么？</span><br><span class="line">哪些内容是动态变化的？</span><br><span class="line">控件的 text/content-desc 是什么？</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二步：找业务名词"><a href="#第二步：找业务名词" class="headerlink" title="第二步：找业务名词"></a>第二步：找业务名词</h3><p>不要只搜一个中文字，组合搜索：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Comment</span><br><span class="line">Fetch</span><br><span class="line">List</span><br><span class="line">State</span><br><span class="line">Presenter</span><br><span class="line">Adapter</span><br><span class="line">ViewHolder</span><br><span class="line">LoadMore</span><br><span class="line">Response</span><br><span class="line">Model</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三步：找数据类型"><a href="#第三步：找数据类型" class="headerlink" title="第三步：找数据类型"></a>第三步：找数据类型</h3><p>重点找：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Observable&lt;评论列表类型&gt;</span><br><span class="line">LiveData&lt;评论列表类型&gt;</span><br><span class="line">Response&lt;评论列表类型&gt;</span><br></pre></td></tr></table></figure>
+
+<p>本次找到的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Observable&lt;CommentItemList&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第四步：找网络接口注解"><a href="#第四步：找网络接口注解" class="headerlink" title="第四步：找网络接口注解"></a>第四步：找网络接口注解</h3><p>重点搜索：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@GET</span><br><span class="line">@POST</span><br><span class="line">@Query</span><br><span class="line">@Field</span><br><span class="line">loadMore</span><br><span class="line">fetch</span><br><span class="line">list</span><br></pre></td></tr></table></figure>
+
+<p>本次最终找到：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GET(&quot;https://aweme.snssdk.com/aweme/v2/comment/list/&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="第五步：再回到-native-接收层"><a href="#第五步：再回到-native-接收层" class="headerlink" title="第五步：再回到 native 接收层"></a>第五步：再回到 native 接收层</h3><p>只有在 Java&#x2F;Kotlin 层确认接口之后，才去判断：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SSL_read 是否能看到</span><br><span class="line">HTTP/2 是否需要解帧</span><br><span class="line">是否走 QUIC</span><br><span class="line">哪个 so 是真正的网络库</span><br></pre></td></tr></table></figure>
+
+<p>这样比一开始给所有 <code>read/recv</code> 函数都加日志更容易定位。</p>
+<hr>
+<h2 id="第-12-章-一分钟速记卡"><a href="#第-12-章-一分钟速记卡" class="headerlink" title="第 12 章　一分钟速记卡"></a>第 12 章　一分钟速记卡</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">控件树 = 看数据已经显示到哪里</span><br><span class="line">APK 静态分析 = 追数据经过哪些 Java/Kotlin 类</span><br><span class="line">CommentItemList = 评论列表响应对象</span><br><span class="line">CommentListApi = 评论网络接口</span><br><span class="line">loadMoreComments = 评论列表/分页请求方法</span><br><span class="line">is_preload = 是否预加载</span><br><span class="line">cursor = 翻页位置</span><br><span class="line">CommentListState = 评论列表状态</span><br></pre></td></tr></table></figure>
+
+<p>最重要的接口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET https://aweme.snssdk.com/aweme/v2/comment/list/</span><br></pre></td></tr></table></figure>
+
+<p>最重要的调用链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">控件</span><br><span class="line">→ CommentItemList</span><br><span class="line">→ X.C1H2V</span><br><span class="line">→ CommentListApi.loadMoreComments</span><br><span class="line">→ /aweme/v2/comment/list/</span><br><span class="line">→ TTNet/Cronet/SSL 或 QUIC</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="第-13-章-证据核对表"><a href="#第-13-章-证据核对表" class="headerlink" title="第 13 章　证据核对表"></a>第 13 章　证据核对表</h2><table>
+<thead>
+<tr>
+<th>结论</th>
+<th>证据状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>评论控件包含用户名、正文、时间、属地</td>
+<td>✅ 真机控件树实测</td>
+</tr>
+<tr>
+<td>APK 存在 <code>CommentItemList</code></td>
+<td>✅ JADX 源码引用</td>
+</tr>
+<tr>
+<td><code>X.C1H2V</code> 返回 <code>Observable&lt;CommentItemList&gt;</code></td>
+<td>✅ JADX 源码实测</td>
+</tr>
+<tr>
+<td>存在 <code>CommentListApi</code></td>
+<td>✅ JADX 源码实测</td>
+</tr>
+<tr>
+<td>调用了 <code>loadMoreComments(...)</code></td>
+<td>✅ JADX 源码实测</td>
+</tr>
+<tr>
+<td>真实评论列表 URL 是 <code>/aweme/v2/comment/list/</code></td>
+<td>✅ Retrofit <code>@GET</code> 源码实测</td>
+</tr>
+<tr>
+<td>评论支持分页</td>
+<td>✅ <code>cursor</code>、<code>count</code> 参数实测</td>
+</tr>
+<tr>
+<td>评论存在预加载参数</td>
+<td>✅ <code>is_preload</code> 参数实测</td>
+</tr>
+<tr>
+<td>本次评论一定由该 URL 获取</td>
+<td>⚠️ 尚未做时间戳对账</td>
+</tr>
+<tr>
+<td>本次评论一定走 TCP&#x2F;TLS</td>
+<td>⚠️ 未确认</td>
+</tr>
+<tr>
+<td>本次评论一定不走 QUIC</td>
+<td>⚠️ 未确认</td>
+</tr>
+<tr>
+<td><code>CommentItemList</code> 全部字段已还原</td>
+<td>⚠️ 待继续反编译</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="修订记录"><a href="#修订记录" class="headerlink" title="修订记录"></a>修订记录</h2><ul>
+<li>初版：整理控件树 → APK 静态分析 → Retrofit 接口 → 网络接收层的追踪方法。</li>
+<li>已纳入实测结果：APK 版本、<code>CommentListApi</code>、<code>loadMoreComments</code>、<code>CommentItemList</code>、真实评论 URL 和预加载参数。</li>
+<li>对尚未验证的“实际请求是否发生”“具体协议是什么”保留待验证标记，避免把推断写成事实。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/">http://ljm2007.github.io/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E6%8A%93%E5%8C%85/">抓包</a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%90%91/">逆向</a><a class="post-meta__tags" href="/tags/uiautomator/">uiautomator</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查"><img class="cover" src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-22</div><div class="title">2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查</div></div></a></div><div><a href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img class="cover" src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">grep 速查笔记（安卓逆向实战版）</div></div></a></div><div><a href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img class="cover" src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</div></div></a></div><div><a href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img class="cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-29</div><div class="title">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</div></div></a></div><div><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux &#x2F; adb 篇）"><img class="cover" src="/img/post-covers/android-adb-debug-manual.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">安卓调试命令拆解手册（Linux &#x2F; adb 篇）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">48</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-0-%E7%AB%A0-%E5%85%88%E7%94%A8%E4%B8%80%E4%B8%AA%E6%AF%94%E5%96%BB%E7%90%86%E8%A7%A3%E6%95%B4%E6%9D%A1%E8%B7%AF%E7%BA%BF"><span class="toc-number">1.</span> <span class="toc-text">第 0 章　先用一个比喻理解整条路线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-1-%E7%AB%A0-%E6%9C%AC%E6%AC%A1%E6%9C%80%E7%BB%88%E6%89%BE%E5%88%B0%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="toc-number">2.</span> <span class="toc-text">第 1 章　本次最终找到的结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%99%AE%E9%80%9A%E8%A7%86%E9%A2%91%E8%AF%84%E8%AE%BA%E5%88%97%E8%A1%A8%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 普通视频评论列表接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%BF%94%E5%9B%9E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 返回数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E4%B8%BB%E8%A6%81%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 主要请求参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E8%AF%84%E8%AE%BA%E6%93%8D%E4%BD%9C%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 评论操作接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-2-%E7%AB%A0-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E4%BB%8E%E6%8E%A7%E4%BB%B6%E6%A0%91%E5%BC%80%E5%A7%8B"><span class="toc-number">3.</span> <span class="toc-text">第 2 章　第一步：先从控件树开始</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%85%88%E7%9C%8B%E6%8E%A7%E4%BB%B6%E6%A0%91"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 为什么先看控件树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%8E%A7%E4%BB%B6%E6%A0%91%E4%B8%AD%E8%83%BD%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 控件树中能看到什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%8E%A7%E4%BB%B6%E6%A0%91%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 控件树的局限</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-3-%E7%AB%A0-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E4%BB%8E%E6%8E%A7%E4%BB%B6%E6%96%87%E5%AD%97%E6%8E%A8%E6%B5%8B%E6%95%B0%E6%8D%AE%E5%AD%97%E6%AE%B5"><span class="toc-number">4.</span> <span class="toc-text">第 3 章　第二步：从控件文字推测数据字段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-4-%E7%AB%A0-%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E4%BB%8E-APK-%E4%B8%AD%E6%89%BE%E8%AF%84%E8%AE%BA%E4%B8%9A%E5%8A%A1%E7%BB%84%E4%BB%B6"><span class="toc-number">5.</span> <span class="toc-text">第 4 章　第三步：从 APK 中找评论业务组件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%B8%8D%E8%A6%81%E5%8F%AA%E6%90%9C%E2%80%9C%E8%AF%84%E8%AE%BA%E2%80%9D%E4%B8%A4%E4%B8%AA%E5%AD%97"><span class="toc-number">5.1.</span> <span class="toc-text">4.1 不要只搜“评论”两个字</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%9C%AC%E6%AC%A1%E6%89%BE%E5%88%B0%E7%9A%84%E5%85%B3%E9%94%AE%E7%BB%84%E4%BB%B6"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 本次找到的关键组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%85%B3%E9%94%AE-Fetcher%EF%BC%9AX-C1H2V"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 关键 Fetcher：X.C1H2V</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-5-%E7%AB%A0-%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E7%A1%AE%E8%AE%A4-Retrofit-%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%8E%A5%E5%8F%A3"><span class="toc-number">6.</span> <span class="toc-text">第 5 章　第四步：确认 Retrofit 的真实接口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-API-%E5%AF%B9%E8%B1%A1%E5%9C%A8%E5%93%AA%E9%87%8C%E5%88%9B%E5%BB%BA"><span class="toc-number">6.1.</span> <span class="toc-text">5.1 API 对象在哪里创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%8E%A5%E5%8F%A3%E5%AE%9A%E4%B9%89"><span class="toc-number">6.2.</span> <span class="toc-text">5.2 接口定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-6-%E7%AB%A0-%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E7%A1%AE%E8%AE%A4%E8%AF%84%E8%AE%BA%E6%98%AF%E5%90%A6%E9%A2%84%E5%8A%A0%E8%BD%BD"><span class="toc-number">7.</span> <span class="toc-text">第 6 章　第五步：确认评论是否预加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%81%E6%8D%AE%E7%AD%89%E7%BA%A7%E8%AF%B4%E6%98%8E"><span class="toc-number">7.1.</span> <span class="toc-text">证据等级说明</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-7-%E7%AB%A0-%E5%AE%8C%E6%95%B4%E8%B0%83%E7%94%A8%E9%93%BE"><span class="toc-number">8.</span> <span class="toc-text">第 7 章　完整调用链</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E7%95%8C%E9%9D%A2%E5%90%91%E4%B8%8A%E8%BF%BD"><span class="toc-number">8.1.</span> <span class="toc-text">从界面向上追</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E7%BD%91%E7%BB%9C%E5%90%91%E4%B8%8B%E8%BF%BD"><span class="toc-number">8.2.</span> <span class="toc-text">从网络向下追</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-8-%E7%AB%A0-%E5%A6%82%E4%BD%95%E6%8A%8A-Java-%E5%B1%82%E7%BB%A7%E7%BB%AD%E8%BF%9E%E5%88%B0%E6%8E%A5%E6%94%B6%E5%B0%81%E5%8C%85%E4%BD%8D%E7%BD%AE"><span class="toc-number">9.</span> <span class="toc-text">第 8 章　如何把 Java 层继续连到接收封包位置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%85%E5%86%B5-A%EF%BC%9A%E6%99%AE%E9%80%9A-TCP-TLS"><span class="toc-number">9.1.</span> <span class="toc-text">情况 A：普通 TCP + TLS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%85%E5%86%B5-B%EF%BC%9AQUIC-x2F-HTTP3"><span class="toc-number">9.2.</span> <span class="toc-text">情况 B：QUIC &#x2F; HTTP3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%83%85%E5%86%B5-C%EF%BC%9A%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98%E6%88%96%E9%A2%84%E5%8F%96"><span class="toc-number">9.3.</span> <span class="toc-text">情况 C：本地缓存或预取</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-9-%E7%AB%A0-%E5%AE%9E%E6%88%98%E9%AA%8C%E8%AF%81%E6%96%B9%E6%B3%95"><span class="toc-number">10.</span> <span class="toc-text">第 9 章　实战验证方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%85%88%E8%AE%B0%E5%BD%95%E7%95%8C%E9%9D%A2%E6%A0%87%E8%AE%B0"><span class="toc-number">10.1.</span> <span class="toc-text">9.1 先记录界面标记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E5%86%8D%E5%81%9A%E5%8A%A8%E4%BD%9C"><span class="toc-number">10.2.</span> <span class="toc-text">9.2 再做动作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-Hook-%E6%97%A5%E5%BF%97%E7%9A%84%E5%88%A4%E6%96%AD"><span class="toc-number">10.3.</span> <span class="toc-text">9.3 Hook 日志的判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-10-%E7%AB%A0-%E8%BF%99%E6%AC%A1%E6%B2%A1%E6%9C%89%E7%A1%AE%E8%AE%A4%E7%9A%84%E9%83%A8%E5%88%86"><span class="toc-number">11.</span> <span class="toc-text">第 10 章　这次没有确认的部分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-11-%E7%AB%A0-%E4%BB%A5%E5%90%8E%E9%81%87%E5%88%B0%E7%B1%BB%E4%BC%BC%E9%97%AE%E9%A2%98%E7%9A%84%E9%80%9A%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-number">12.</span> <span class="toc-text">第 11 章　以后遇到类似问题的通用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E7%9C%8B%E7%95%8C%E9%9D%A2"><span class="toc-number">12.1.</span> <span class="toc-text">第一步：先看界面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E6%89%BE%E4%B8%9A%E5%8A%A1%E5%90%8D%E8%AF%8D"><span class="toc-number">12.2.</span> <span class="toc-text">第二步：找业务名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E6%89%BE%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">12.3.</span> <span class="toc-text">第三步：找数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E6%89%BE%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3%E6%B3%A8%E8%A7%A3"><span class="toc-number">12.4.</span> <span class="toc-text">第四步：找网络接口注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E5%86%8D%E5%9B%9E%E5%88%B0-native-%E6%8E%A5%E6%94%B6%E5%B1%82"><span class="toc-number">12.5.</span> <span class="toc-text">第五步：再回到 native 接收层</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-12-%E7%AB%A0-%E4%B8%80%E5%88%86%E9%92%9F%E9%80%9F%E8%AE%B0%E5%8D%A1"><span class="toc-number">13.</span> <span class="toc-text">第 12 章　一分钟速记卡</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC-13-%E7%AB%A0-%E8%AF%81%E6%8D%AE%E6%A0%B8%E5%AF%B9%E8%A1%A8"><span class="toc-number">14.</span> <span class="toc-text">第 13 章　证据核对表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E8%AE%A2%E8%AE%B0%E5%BD%95"><span class="toc-number">15.</span> <span class="toc-text">修订记录</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/" title="某音评论数据定位方法说明书"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音评论数据定位方法说明书"/></a><div class="content"><a class="title" href="/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/" title="某音评论数据定位方法说明书">某音评论数据定位方法说明书</a><time datetime="2026-09-30T02:12:13.000Z" title="发表于 2026-09-30 10:12:13">2026-09-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"/></a><div class="content"><a class="title" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</a><time datetime="2026-09-29T09:26:41.000Z" title="发表于 2026-09-29 17:26:41">2026-09-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"/></a><div class="content"><a class="title" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</a><time datetime="2026-09-24T12:00:00.000Z" title="发表于 2026-09-24 20:00:00">2026-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"/></a><div class="content"><a class="title" href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</a><time datetime="2026-09-23T03:26:18.000Z" title="发表于 2026-09-23 11:26:18">2026-09-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="grep 速查笔记（安卓逆向实战版）"/></a><div class="content"><a class="title" href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）">grep 速查笔记（安卓逆向实战版）</a><time datetime="2026-09-23T02:54:22.000Z" title="发表于 2026-09-23 10:54:22">2026-09-23</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
