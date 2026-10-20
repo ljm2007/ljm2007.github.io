@@ -1,0 +1,666 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>小可乐 · 「发送留言」请求链路定位手册 | IT李白白博客</title><meta name="keywords" content="Android,逆向,协议分析"><meta name="author" content="IT李白白博客"><meta name="copyright" content="IT李白白博客"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="适用对象：已经会用 jadx 反编译、想搞清「点一下发送，代码到底走到哪个 URL」的人目标 APP：小可乐（包名 com.ss.android.ugc.aweme，实测版本约 40.1.0）结论一句话：屏幕上的「发送」按钮最终走 POST &#x2F;aweme&#x2F;v1&#x2F;comment&#x2F;publish&#x2F;，表单编码，正文在 text 字段。文档性质：全部结论来自反编译源码 + 行号，不是猜测。拿不到的部分（">
+<meta property="og:type" content="article">
+<meta property="og:title" content="小可乐 · 「发送留言」请求链路定位手册">
+<meta property="og:url" content="http://ljm2007.github.io/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/index.html">
+<meta property="og:site_name" content="IT李白白博客">
+<meta property="og:description" content="适用对象：已经会用 jadx 反编译、想搞清「点一下发送，代码到底走到哪个 URL」的人目标 APP：小可乐（包名 com.ss.android.ugc.aweme，实测版本约 40.1.0）结论一句话：屏幕上的「发送」按钮最终走 POST &#x2F;aweme&#x2F;v1&#x2F;comment&#x2F;publish&#x2F;，表单编码，正文在 text 字段。文档性质：全部结论来自反编译源码 + 行号，不是猜测。拿不到的部分（">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://ljm2007.github.io/img/post-covers/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C.png">
+<meta property="article:published_time" content="2026-10-19T15:14:26.000Z">
+<meta property="article:modified_time" content="2026-10-20T04:25:06.262Z">
+<meta property="article:author" content="IT李白白博客">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="逆向">
+<meta property="article:tag" content="协议分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://ljm2007.github.io/img/post-covers/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="http://ljm2007.github.io/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '小可乐 · 「发送留言」请求链路定位手册',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-10-20 12:25:06'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post-covers/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">IT李白白博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/list/"><i class="fa-fw fas fa-list"></i><span> 列表</span></a></div><div class="menus_item"><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></div><div class="menus_item"><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">小可乐 · 「发送留言」请求链路定位手册</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-19T15:14:26.000Z" title="发表于 2026-10-19 23:14:26">2026-10-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-20T04:25:06.262Z" title="更新于 2026-10-20 12:25:06">2026-10-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AE%89%E5%85%A8%E7%A0%94%E7%A9%B6/">安全研究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="小可乐 · 「发送留言」请求链路定位手册"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p><strong>适用对象</strong>：已经会用 jadx 反编译、想搞清「点一下发送，代码到底走到哪个 URL」的人<br><strong>目标 APP</strong>：小可乐（包名 <code>com.ss.android.ugc.aweme</code>，实测版本约 40.1.0）<br><strong>结论一句话</strong>：屏幕上的「发送」按钮最终走 <code>POST /aweme/v1/comment/publish/</code>，表单编码，正文在 <code>text</code> 字段。<br><strong>文档性质</strong>：全部结论来自<strong>反编译源码 + 行号</strong>，不是猜测。拿不到的部分（真实字节、签名算法）在文末明确标注。</p>
+</blockquote>
+<blockquote>
+<p><strong>修订记录</strong></p>
+<ul>
+<li><strong>v1（2026-10-19）</strong>：建立静态链路、接口字段表、查找方法、坑清单。</li>
+<li><strong>v2（2026-10-19）</strong>：补入第 12 章「LSPosed 动态验证记录」；把「屏幕按钮走 <code>YR()</code>」由”推断”改为”<strong>仍未证实</strong>“（运行时钩子未命中）；证据等级表同步更新。</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="★-先看这段：被推翻的旧结论"><a href="#★-先看这段：被推翻的旧结论" class="headerlink" title="★ 先看这段：被推翻的旧结论"></a>★ 先看这段：被推翻的旧结论</h2><table>
+<thead>
+<tr>
+<th>原来的判断</th>
+<th>实测结果</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>屏幕按钮 → <code>PublishBtnViewModel.Wb0(&quot;留言文字&quot;)</code></td>
+<td>❌ 按钮走 <code>ICommentInputManagerAbility.YR(...)</code>；<code>Wb0</code> 只被<strong>键盘发送键</strong>和<strong>表情面板图标</strong>调用，参数是<strong>来源标记</strong>（<code>&quot;keyboard_send&quot;</code> &#x2F; <code>&quot;send_icon&quot;</code>），<strong>不是正文</strong></td>
+<td>之前按这个假设做的动态验证全部无效</td>
+</tr>
+<tr>
+<td><code>Wb0</code> 是”发送入口”</td>
+<td>⚠️ 它是 <code>IPublishBtnAbility</code> 接口里的一个能力方法，属于<strong>另一条入口</strong>，不是屏幕按钮那条</td>
+<td>两条入口最终汇到同一个请求，但链路不同</td>
+</tr>
+</tbody></table>
+<p>本文以下内容全部以<strong>反编译源码</strong>为准。</p>
+<hr>
+<h2 id="0-这份文档能让你拿到什么"><a href="#0-这份文档能让你拿到什么" class="headerlink" title="0. 这份文档能让你拿到什么"></a>0. 这份文档能让你拿到什么</h2><ul>
+<li><input checked disabled type="checkbox"> 「发送」按钮到网络请求的<strong>完整 6 跳调用链</strong>（每跳给 <code>文件:行号</code>）</li>
+<li><input checked disabled type="checkbox"> 最终请求的 <strong>URL、HTTP 方法、编码方式</strong></li>
+<li><input checked disabled type="checkbox"> 请求体的 <strong>字段表</strong>（哪些必填、哪些是埋点）</li>
+<li><input checked disabled type="checkbox"> 三个相似接口的<strong>区分表</strong>（<code>publish</code> &#x2F; <code>multi_publish</code> &#x2F; <code>publish_evaluate</code>）</li>
+<li><input checked disabled type="checkbox"> <strong>可复现的查找方法</strong>：怎么反编译、怎么用 <code>grep</code> 从 30 万个文件里定位到这几行</li>
+<li><input checked disabled type="checkbox"> 坑清单：反编译不全、grep 搜不到、<code>/tmp</code> 被清空</li>
+</ul>
+<hr>
+<h2 id="1-一句话原理（先讲通整件事）"><a href="#1-一句话原理（先讲通整件事）" class="headerlink" title="1. 一句话原理（先讲通整件事）"></a>1. 一句话原理（先讲通整件事）</h2><p>把「发一条留言」想成<strong>寄快递</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>现实</th>
+<th>代码里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>你按下”寄出”按钮</td>
+<td><code>onClick</code> 触发</td>
+</tr>
+<tr>
+<td>把手里的东西装进一个<strong>快递单</strong>（收件视频、内容、@了谁）</td>
+<td><code>ClickPublishParams</code>（混淆名 <code>C1HQW</code>）</td>
+</tr>
+<tr>
+<td>交给<strong>前台柜台</strong></td>
+<td><code>C1HMS.LIZJ()</code></td>
+</tr>
+<tr>
+<td>柜台转给<strong>发货部门</strong></td>
+<td><code>PublishAbility.Ao1()</code> → <code>PublishPresenter</code></td>
+</tr>
+<tr>
+<td>发货部门<strong>打包成标准包裹</strong>（表单字段）</td>
+<td><code>CommentPublishRequest</code></td>
+</tr>
+<tr>
+<td>交给<strong>快递公司</strong>（真正上网）</td>
+<td><code>CommentRealApi</code> → <code>POST /aweme/v1/comment/publish/</code></td>
+</tr>
+</tbody></table>
+<p>每一层都只是”往下交”，<strong>真正的 URL 只在最后一层</strong>。所以找数据包的正确姿势是：<strong>从按钮往下追，一直追到 <code>@POST</code> 那一行</strong>。</p>
+<hr>
+<h2 id="2-环境与素材"><a href="#2-环境与素材" class="headerlink" title="2. 环境与素材"></a>2. 环境与素材</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>路径 &#x2F; 值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>APK</td>
+<td>Mac 上 <code>/tmp/aweme.apk</code>（⚠️ 在 <code>/tmp</code>，重启会丢，建议复制到 <code>~/Desktop/android/</code>）</td>
+</tr>
+<tr>
+<td>旧反编译产物（<code>classes33.dex</code>，完整）</td>
+<td><code>~/Desktop/android/classes33/sources/</code>（6145 个 java 文件）</td>
+</tr>
+<tr>
+<td>全量反编译产物（56 dex，跑到 82%）</td>
+<td><code>~/Desktop/android/aweme_full/sources/</code>（318,493 个 java 文件，1.4G）</td>
+</tr>
+<tr>
+<td>jadx 版本</td>
+<td>1.5.6</td>
+</tr>
+<tr>
+<td>目标设备</td>
+<td>Pixel 3 XL &#x2F; Android 12（本文不依赖设备）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>为什么有两个目录</strong>：<code>classes33.dex</code> 之前单独反编译过、是完整的；后来做的全量反编译因为工程太大（38 万个类）在 82% 处报错退出，缺了一部分类。<strong>两个目录都要搜</strong>，这是本文最重要的实操经验。</p>
+</blockquote>
+<hr>
+<h2 id="3-调用链总图"><a href="#3-调用链总图" class="headerlink" title="3. 调用链总图"></a>3. 调用链总图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">① 屏幕「发送」按钮 onClick</span><br><span class="line">   Y/ACListenerS199S0100000_38.java:3873</span><br><span class="line">   └→ ICommentInputManagerAbility.YR(正文, text_extra列表, 输入框内容)</span><br><span class="line"></span><br><span class="line">② InputManagerViewModel.YR()</span><br><span class="line">   com/ss/android/ugc/aweme/comment/input/component/inputmanager/InputManagerViewModel.java:975</span><br><span class="line">   └→ new C1HQW(正文, extras, 输入框内容, &quot;send_icon&quot;, 埋点参数)</span><br><span class="line">         （C1HQW = ClickPublishParams，一个纯粹的数据包裹）</span><br><span class="line"></span><br><span class="line">③ C1HMS.LIZJ(params)</span><br><span class="line">   X/C1HMS.java:485</span><br><span class="line">   └→ publishAbility.Ao1(params)</span><br><span class="line"></span><br><span class="line">④ PublishPresenter.Ao1(params)</span><br><span class="line">   comment/commentinputmanager/presenter/PublishPresenter.java:1136</span><br><span class="line">   └→ 方法名标记 &quot;processClickPublishInternal&quot;，开始组装 Comment / C1HQT</span><br><span class="line"></span><br><span class="line">⑤ CommentPublishRequest（请求执行器）</span><br><span class="line">   comment/data/publish/CommentPublishRequest.java:4849</span><br><span class="line">   └→ commentRealApi.LJI(aweme_id, text, reply_id, text_extra, ...)</span><br><span class="line"></span><br><span class="line">⑥ CommentRealApi 接口</span><br><span class="line">   comment/api/CommentRealApi.java:55</span><br><span class="line">   └→ @POST(&quot;/aweme/v1/comment/publish/&quot;)   ← ★ 最终请求</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-每一跳的代码（可对照行号复核）"><a href="#4-每一跳的代码（可对照行号复核）" class="headerlink" title="4. 每一跳的代码（可对照行号复核）"></a>4. 每一跳的代码（可对照行号复核）</h2><h3 id="①-按钮点击-→-YR"><a href="#①-按钮点击-→-YR" class="headerlink" title="① 按钮点击 → YR()"></a>① 按钮点击 → <code>YR()</code></h3><p><code>Y/ACListenerS199S0100000_38.java:3873</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ICommentInputManagerAbility</span> <span class="variable">ability</span> <span class="operator">=</span></span><br><span class="line">        (ICommentInputManagerAbility) C1HI5.LIZ(ICommentInputManagerAbility.class, lifecycleOwner);</span><br><span class="line"><span class="keyword">if</span> (ability != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="type">C1HJL</span> <span class="variable">c1hjl7</span> <span class="operator">=</span> inputBarContainerModule2.l;</span><br><span class="line">    <span class="keyword">if</span> (c1hjl7 != <span class="literal">null</span>) &#123;</span><br><span class="line">        c07351HQgLLLLZ2 = c1hjl7.LLLLZ();      <span class="comment">// 输入框内容对象</span></span><br><span class="line">    &#125;</span><br><span class="line">    ability.YR(charSequence2, arrayList, c07351HQgLLLLZ2);   <span class="comment">// ← 正文 + @/话题 + 输入框</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>说明：这个类是个巨大的 Kotlin 合成监听器类，<code>onClick$NNN</code> 按类型分派。这一处位于 <code>InputBarContainerModule</code>（输入栏组件）分支，也就是<strong>屏幕上那个发送按钮</strong>。</p>
+</blockquote>
+<h3 id="②-组装「快递单」：ClickPublishParams（C1HQW）"><a href="#②-组装「快递单」：ClickPublishParams（C1HQW）" class="headerlink" title="② 组装「快递单」：ClickPublishParams（C1HQW）"></a>② 组装「快递单」：<code>ClickPublishParams</code>（<code>C1HQW</code>）</h3><p><code>X/C1HQW.java</code> —— 它的字段就是”要寄的东西”：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>名字（源码 toString 里）</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>LIZ</code></td>
+<td><code>textContent</code></td>
+<td><strong>留言正文</strong></td>
+</tr>
+<tr>
+<td><code>LIZIZ</code></td>
+<td><code>extraStructList</code></td>
+<td><code>List&lt;TextExtraStruct&gt;</code>，@人 &#x2F; 话题 的位置信息</td>
+</tr>
+<tr>
+<td><code>LIZJ</code></td>
+<td><code>inputContent</code></td>
+<td>输入框内容对象（<code>C07351HQg</code>）</td>
+</tr>
+<tr>
+<td><code>LIZLLL</code></td>
+<td><code>sendMethod</code></td>
+<td><strong>发送来源标记</strong>：<code>&quot;send_icon&quot;</code> &#x2F; <code>&quot;keyboard_send&quot;</code></td>
+</tr>
+<tr>
+<td><code>LJ</code></td>
+<td><code>emojiOrder</code></td>
+<td>表情顺序</td>
+</tr>
+<tr>
+<td><code>LJFF</code></td>
+<td><code>publishMobParam</code></td>
+<td>埋点参数</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">    sb.append(<span class="string">&quot;ClickPublishParams(textContent=&quot;</span>);</span><br><span class="line">    sb.append(<span class="built_in">this</span>.LIZ);</span><br><span class="line">    sb.append(<span class="string">&quot;, extraStructList=&quot;</span>);  sb.append(<span class="built_in">this</span>.LIZIZ);</span><br><span class="line">    sb.append(<span class="string">&quot;, inputContent=&quot;</span>);     sb.append(<span class="built_in">this</span>.LIZJ);</span><br><span class="line">    sb.append(<span class="string">&quot;, sendMethod=&quot;</span>);       sb.append(<span class="built_in">this</span>.LIZLLL);</span><br><span class="line">    sb.append(<span class="string">&quot;, emojiOrder=&quot;</span>);       sb.append(<span class="built_in">this</span>.LJ);</span><br><span class="line">    sb.append(<span class="string">&quot;, publishMobParam=&quot;</span>);  sb.append(<span class="built_in">this</span>.LJFF);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>实用技巧</strong>：这个类自带 <code>toString()</code>，会把正文原样打印出来。所以凡是在日志或调试里看到 <code>ClickPublishParams(textContent=...</code>，就知道已经走到发送流程了。</p>
+</blockquote>
+<h3 id="③-交给柜台"><a href="#③-交给柜台" class="headerlink" title="③ 交给柜台"></a>③ 交给柜台</h3><p><code>X/C1HMS.java:485</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">LIZJ</span><span class="params">(C1HQW c1hqw)</span> &#123;</span><br><span class="line">    <span class="type">C1HMT</span> <span class="variable">c1hmt</span> <span class="operator">=</span> <span class="built_in">this</span>.LIZIZ;</span><br><span class="line">    <span class="keyword">if</span> (c1hmt != <span class="literal">null</span> &amp;&amp; (publishAbility = c1hmt.G) != <span class="literal">null</span>) &#123;</span><br><span class="line">        publishAbility.Ao1(c1hqw);      <span class="comment">// 只是转发</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="④-发货部门：PublishPresenter-Ao1"><a href="#④-发货部门：PublishPresenter-Ao1" class="headerlink" title="④ 发货部门：PublishPresenter.Ao1"></a>④ 发货部门：<code>PublishPresenter.Ao1</code></h3><p><code>PublishPresenter.java:1136</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">Ao1</span><span class="params">(C1HQW c1hqw)</span> &#123;</span><br><span class="line">    <span class="type">C1GyS</span> <span class="variable">trace</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">C1GyS</span>(<span class="string">&quot;processClickPublishInternal&quot;</span>, ...);   <span class="comment">// 埋点名</span></span><br><span class="line">    trace.LJFF(<span class="string">&quot;sendMethod&quot;</span>, c1hqw.LIZLLL);                        <span class="comment">// 记录来源</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法很长（几百行），负责：判断场景（POI 评论&#x2F;普通评论）、组装 <code>Comment</code> 对象、决定用哪个接口（单条&#x2F;多条）。</p>
+<h3 id="⑤-请求执行器：CommentPublishRequest"><a href="#⑤-请求执行器：CommentPublishRequest" class="headerlink" title="⑤ 请求执行器：CommentPublishRequest"></a>⑤ 请求执行器：<code>CommentPublishRequest</code></h3><p><code>PublishPresenter.java:851</code> 创建它：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">LJI</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">CommentPublishRequest</span> <span class="variable">request</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CommentPublishRequest</span>();</span><br><span class="line">    <span class="built_in">this</span>.f = request;</span><br><span class="line">    request.LJIILJJIL = <span class="built_in">this</span>;                  <span class="comment">// 回调接口</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>真正发请求在 <code>CommentPublishRequest.java:4849</code>（普通单条留言分支）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Observable</span> <span class="variable">observable</span> <span class="operator">=</span> commentRealApi.LJI(</span><br><span class="line">        aweme_id,                       <span class="comment">// 视频 ID</span></span><br><span class="line">        text,                           <span class="comment">// 正文</span></span><br><span class="line">        reply_id,                       <span class="comment">// 回复的父评论</span></span><br><span class="line">        text_extra,                     <span class="comment">// @/话题 JSON</span></span><br><span class="line">        is_self_see ? <span class="number">1</span> : <span class="number">0</span>,</span><br><span class="line">        ...);</span><br></pre></td></tr></table></figure>
+
+<h3 id="⑥-最终接口"><a href="#⑥-最终接口" class="headerlink" title="⑥ 最终接口"></a>⑥ 最终接口</h3><p><code>CommentRealApi.java:55</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FormUrlEncoded</span></span><br><span class="line"><span class="meta">@POST(&quot;/aweme/v1/comment/publish/&quot;)</span></span><br><span class="line">Observable&lt;C1HQV&gt; <span class="title function_">LJI</span><span class="params">(<span class="meta">@Field(&quot;aweme_id&quot;)</span> String str, <span class="meta">@Field(&quot;text&quot;)</span> String str2, ...)</span>;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="5-三个相似接口的区分（容易搞混）"><a href="#5-三个相似接口的区分（容易搞混）" class="headerlink" title="5. 三个相似接口的区分（容易搞混）"></a>5. 三个相似接口的区分（容易搞混）</h2><table>
+<thead>
+<tr>
+<th>Retrofit 方法</th>
+<th>路径</th>
+<th>什么时候用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>LJI</code></td>
+<td><code>/aweme/v1/comment/publish/</code></td>
+<td>✅ <strong>普通发送留言</strong>（本文主线）</td>
+</tr>
+<tr>
+<td><code>LJIIZILJ</code></td>
+<td><code>/aweme/v1/comment/multi_publish/</code></td>
+<td>多段内容 &#x2F; 图片表情混合发送</td>
+</tr>
+<tr>
+<td><code>LJIIJ</code></td>
+<td><code>/aweme/v1/comment/publish_evaluate/</code></td>
+<td>AI 评价类留言（带 <code>reply_comment_text</code>）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-请求体（表单-application-x-www-form-urlencoded）"><a href="#6-请求体（表单-application-x-www-form-urlencoded）" class="headerlink" title="6. 请求体（表单 application/x-www-form-urlencoded）"></a>6. 请求体（表单 <code>application/x-www-form-urlencoded</code>）</h2><h3 id="必填核心"><a href="#必填核心" class="headerlink" title="必填核心"></a>必填核心</h3><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>aweme_id</code></td>
+<td>视频 ID</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>留言正文</td>
+</tr>
+</tbody></table>
+<h3 id="常用可选"><a href="#常用可选" class="headerlink" title="常用可选"></a>常用可选</h3><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>text_extra</code></td>
+<td>@ &#x2F; 话题 的位置 JSON（<code>List&lt;TextExtraStruct&gt;</code> 序列化）</td>
+</tr>
+<tr>
+<td><code>reply_id</code> &#x2F; <code>reply_to_reply_id</code> &#x2F; <code>reply_uid</code></td>
+<td>回复链</td>
+</tr>
+<tr>
+<td><code>is_self_see</code></td>
+<td>仅自己可见</td>
+</tr>
+<tr>
+<td><code>channel_id</code> &#x2F; <code>city</code> &#x2F; <code>action_type</code></td>
+<td>渠道、城市、动作</td>
+</tr>
+<tr>
+<td><code>enter_from</code> &#x2F; <code>previous_page</code> &#x2F; <code>publish_scene</code></td>
+<td>场景埋点</td>
+</tr>
+<tr>
+<td><code>comment_token</code> &#x2F; <code>item_token</code></td>
+<td>风控令牌</td>
+</tr>
+<tr>
+<td><code>need_risk_check</code></td>
+<td>是否过风控</td>
+</tr>
+<tr>
+<td><code>time_from_input_to_send</code></td>
+<td>输入到发送耗时（风控特征）</td>
+</tr>
+<tr>
+<td><code>time_from_video_to_cmt</code> &#x2F; <code>click_comment_time</code></td>
+<td>行为耗时埋点</td>
+</tr>
+<tr>
+<td><code>sticker_*</code></td>
+<td>表情贴纸信息</td>
+</tr>
+<tr>
+<td><code>common_data</code> &#x2F; <code>common_flags</code> &#x2F; <code>common_shark_param</code></td>
+<td>公共参数（设备&#x2F;会话指纹）</td>
+</tr>
+</tbody></table>
+<h3 id="鉴权"><a href="#鉴权" class="headerlink" title="鉴权"></a>鉴权</h3><ul>
+<li>Cookie：<code>sessionid</code> 等登录态</li>
+<li>请求头：<code>X-Gorgon</code>、<code>X-Khronos</code>（由 <code>libsscronet.so</code> 内的签名 SDK 现算）</li>
+</ul>
+<p>⚠️ <strong>未验证</strong>：具体签名算法本文未还原，只知道入口在 native 层。</p>
+<hr>
+<h2 id="7-查找方法（可复现）"><a href="#7-查找方法（可复现）" class="headerlink" title="7. 查找方法（可复现）"></a>7. 查找方法（可复现）</h2><h3 id="7-1-反编译"><a href="#7-1-反编译" class="headerlink" title="7.1 反编译"></a>7.1 反编译</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 单个类（快，几秒~2分钟）</span></span><br><span class="line">jadx --single-class <span class="string">&quot;X.C1HQW&quot;</span> --single-class-output /tmp/out.java /tmp/aweme.apk</span><br><span class="line"></span><br><span class="line"><span class="comment"># 全量（慢，本项目实测 1 小时以上，且中途可能报错退出）</span></span><br><span class="line">jadx -d /tmp/full --no-res --threads-count 4 /tmp/aweme.apk</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-定位顺序（关键：先收窄，再全量）"><a href="#7-2-定位顺序（关键：先收窄，再全量）" class="headerlink" title="7.2 定位顺序（关键：先收窄，再全量）"></a>7.2 定位顺序（关键：先收窄，再全量）</h3><ol>
+<li><strong>先找接口定义</strong>：搜接口名或注解路径，比直接搜方法名有效得多<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -rn --include=<span class="string">&quot;*.java&quot;</span> <span class="string">&quot;aweme/v1/comment/publish&quot;</span> ~/Desktop/android/aweme_full/sources</span><br></pre></td></tr></table></figure></li>
+<li><strong>再搜调用点</strong>：拿到接口所在类后，搜它的方法名调用<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -rn --include=<span class="string">&quot;*.java&quot;</span> <span class="string">&quot;\.LJI(&quot;</span> &lt;目录&gt;</span><br></pre></td></tr></table></figure></li>
+<li><strong>确认文件真的存在</strong>（<code>grep</code> 空结果的排查手段）<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find &lt;目录&gt; -name <span class="string">&quot;BaseInputBarEditViewModel.java&quot;</span></span><br></pre></td></tr></table></figure></li>
+<li><strong>两个目录都要搜</strong>（见第 2 节的说明）</li>
+</ol>
+<h3 id="7-3-目录结构速查"><a href="#7-3-目录结构速查" class="headerlink" title="7.3 目录结构速查"></a>7.3 目录结构速查</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">~/Desktop/android/aweme_full/sources/</span><br><span class="line">├── com/ss/android/ugc/aweme/    ← 业务代码，包名清晰，最好读</span><br><span class="line">├── X/                           ← 混淆类（C1HQW、C1HMS…）</span><br><span class="line">└── Y/                           ← 合成类 / lambda（ACListener…）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="8-坑清单（现象-→-原因-→-修法）"><a href="#8-坑清单（现象-→-原因-→-修法）" class="headerlink" title="8. 坑清单（现象 → 原因 → 修法）"></a>8. 坑清单（现象 → 原因 → 修法）</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>怎么修</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全量 <code>grep</code> 返回空，但旧目录能搜到</td>
+<td>jadx 是<strong>分批写文件</strong>的，那个类还没写到磁盘（进度 82% 时缺后 18%）</td>
+<td>先 <code>find</code> 确认文件在不在；不在就等，或换已完成的目录</td>
+</tr>
+<tr>
+<td><code>ERROR - finished with errors, count: 1301</code> 且进度停在 82%</td>
+<td>56 个 dex &#x2F; 38 万个类，巨型工程中途报错退出，<strong>不是</strong>“跑完了”</td>
+<td>用之前单独反编译的 <code>classes33/sources</code> 补齐；或按单个 dex 分别反编译</td>
+</tr>
+<tr>
+<td>反编译产物不见了</td>
+<td><code>/tmp</code> 在 macOS 重启时会被清空</td>
+<td>产物放 <code>~/Desktop/android/</code>，APK 也一起搬</td>
+</tr>
+<tr>
+<td>以为 <code>PublishBtnViewModel.Wb0</code> 是按钮入口</td>
+<td><code>Wb0</code> 参数是来源标记，被键盘发送键&#x2F;表情面板调用</td>
+<td>见文首对照表；屏幕按钮的真实类<strong>尚未证实</strong>（见 12.3）</td>
+</tr>
+<tr>
+<td><code>grep</code> 6 分钟没输出</td>
+<td>1.4G &#x2F; 31 万个文件在 macOS 上较慢</td>
+<td>先按目录或接口名收窄，别一上来全量搜</td>
+</tr>
+<tr>
+<td>LSPosed 模块装好了但一条日志都没有</td>
+<td><strong>重装 APK 后模块记录是新的 <code>enabled=0</code>、<code>scope</code> 为空</strong>（旧记录随卸载一起删除）</td>
+<td>进 LSPosed 管理器：模块 → 打开「启用模块」→ 勾选目标应用；或直接读 <code>/data/adb/lspd/config/modules_config.db</code> 的 <code>modules.enabled</code> 与 <code>scope</code> 表核实</td>
+</tr>
+<tr>
+<td>模块已启用，钩子仍 0 命中，误判为”App 反 Hook”</td>
+<td>用 <code>Activity.onResume</code> &#x2F; <code>TextView.setText</code> 当探针 —— <strong>子类会覆盖父类方法</strong>（<code>SplashActivity</code>、<code>AppCompatTextView</code>），钩父类收不到</td>
+<td>用<strong>静态方法</strong>或 App 自己的类做探针（本次用 <code>com.bytedance.memoryx.StringBuilderCache.get</code>，命中即证明钩子生效）</td>
+</tr>
+<tr>
+<td>挂上钩子后 App 卡在启动图（CPU 70%+、主线程空转）</td>
+<td>钩了<strong>极高频方法</strong>当探针（<code>StringBuilderCache.get</code> 每秒上万次），Xposed 调用开销把启动拖死</td>
+<td>探针只选”每次启动几次”的方法（如 <code>Instrumentation.callApplicationOnCreate</code>）；业务钩子选低频方法</td>
+</tr>
+<tr>
+<td>设备重启后 LSPosed 报 <code>DeadSystemException</code>、注入失效</td>
+<td><code>system_server</code> 崩过一次，<code>lspd</code> 状态失效</td>
+<td>重启手机重建环境</td>
+</tr>
+<tr>
+<td>手机无 WiFi 时 App 卡在 <code>SplashActivity</code></td>
+<td>启动强依赖网络；无 SIM、无 WiFi 时完全不可用</td>
+<td>USB 反向供网（gnirehtet）或接热点；重启后记得重跑并确认 VPN 授权弹窗</td>
+</tr>
+<tr>
+<td><code>X.C1HQW</code> 用 <code>findClass(&quot;X.C1HQW&quot;, cl)</code> 找不到</td>
+<td>该类可能由 App 内部类加载器加载，不在 zip 顶层 ClassLoader 视野内</td>
+<td>改成”先命中 <code>YR</code>，再用 <code>param.args[3].getClass()</code> 取真实类”再反射</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="9-证据等级表"><a href="#9-证据等级表" class="headerlink" title="9. 证据等级表"></a>9. 证据等级表</h2><table>
+<thead>
+<tr>
+<th>结论</th>
+<th>等级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>6 跳调用链的每一跳（含行号）</td>
+<td>✅ 实测：反编译源码原文</td>
+</tr>
+<tr>
+<td><code>CommentRealApi</code> 的注解路径与字段名</td>
+<td>✅ 实测：源码注解原文</td>
+</tr>
+<tr>
+<td>三个接口的用途区分</td>
+<td>✅ 实测：注解 + 参数特征（如 <code>publish_evaluate</code> 带 <code>reply_comment_text</code>）</td>
+</tr>
+<tr>
+<td>「屏幕按钮」确实走 <code>YR()</code></td>
+<td>⚠️ <strong>仍未证实</strong>。静态证据：<code>onClick</code> 调 <code>YR()</code> 且位于 <code>InputBarContainerModule</code> 分支。运行时反证：在真实评论面板点发送（评论数 834→836、输入框清空，<strong>消息确实发出</strong>）时，<code>InputManagerViewModel.YR</code> 与 <code>PublishPresenter.Ao1</code> 钩子 <strong>0 命中</strong></td>
+</tr>
+<tr>
+<td>线上真实请求字节</td>
+<td>❌ 未获取：TLS + 反注入，抓不到明文</td>
+</tr>
+<tr>
+<td><code>X-Gorgon</code> 签名算法</td>
+<td>❌ 未还原：native 层</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-一分钟速记卡"><a href="#10-一分钟速记卡" class="headerlink" title="10. 一分钟速记卡"></a>10. 一分钟速记卡</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">按钮 onclick → YR(正文, extras, 输入框)</span><br><span class="line">   → ClickPublishParams(text, extras, &quot;send_icon&quot;)</span><br><span class="line">      → C1HMS.LIZJ → PublishAbility.Ao1</span><br><span class="line">         → PublishPresenter.processClickPublishInternal</span><br><span class="line">            → CommentPublishRequest → CommentRealApi.LJI</span><br><span class="line">               → POST /aweme/v1/comment/publish/  (form)</span><br><span class="line">核心字段：aweme_id + text (+ text_extra)</span><br><span class="line">签名：X-Gorgon / X-Khronos（native，未还原）</span><br></pre></td></tr></table></figure>
+
+<h2 id="11-小词典"><a href="#11-小词典" class="headerlink" title="11. 小词典"></a>11. 小词典</h2><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>大白话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>混淆名（<code>C1HQW</code>）</td>
+<td>代码被”改名”后的假名，看反编译时靠<strong>调用关系</strong>认它，别靠名字猜</td>
+</tr>
+<tr>
+<td><code>@POST</code> &#x2F; <code>@Field</code></td>
+<td>Retrofit 的注解：前者写”发到哪个地址”，后者写”表单里的哪个格子”</td>
+</tr>
+<tr>
+<td><code>text_extra</code></td>
+<td>@了谁、哪个话题、在文本第几个字符——用 JSON 记下来一起发</td>
+</tr>
+<tr>
+<td><code>sendMethod</code></td>
+<td>你是从哪个按钮发的（界面上&#x2F;键盘上&#x2F;表情面板），用于埋点统计</td>
+</tr>
+<tr>
+<td><code>X-Gorgon</code></td>
+<td>请求头里的签名字段，防止有人伪造请求；由 native 库现算</td>
+</tr>
+<tr>
+<td><code>jadx</code></td>
+<td>把 APK 里的 dex 还原成 java 代码的工具</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="12-动态验证记录（LSPosed-实测，2026-10-19）"><a href="#12-动态验证记录（LSPosed-实测，2026-10-19）" class="headerlink" title="12. 动态验证记录（LSPosed 实测，2026-10-19）"></a>12. 动态验证记录（LSPosed 实测，2026-10-19）</h2><h3 id="12-1-环境"><a href="#12-1-环境" class="headerlink" title="12.1 环境"></a>12.1 环境</h3><table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>设备</td>
+<td>Pixel 3 XL &#x2F; Android 12 &#x2F; Magisk 30.7</td>
+</tr>
+<tr>
+<td>框架</td>
+<td>LSPosed 1.9.2 (7024)，Zygisk，<code>settings.denylist=0</code>（Shamiko 模式）</td>
+</tr>
+<tr>
+<td>模块</td>
+<td>DyCtrl（<code>com.dyctrl.module</code>），源码在 Mac <code>~/Documents/androidsrc/DyCtrl</code></td>
+</tr>
+<tr>
+<td>供网</td>
+<td>无 SIM、无 WiFi → Mac 上跑 <code>gnirehtet run 94NY19J44</code>（手机 <code>tun0=***</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="12-2-关键结论一：钩子能拦到-App-自己的调用"><a href="#12-2-关键结论一：钩子能拦到-App-自己的调用" class="headerlink" title="12.2 关键结论一：钩子能拦到 App 自己的调用"></a>12.2 关键结论一：钩子<strong>能</strong>拦到 App 自己的调用</h3><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>装回模块后直接启动 App</td>
+<td><strong>一条 DyCtrl 日志都没有</strong></td>
+</tr>
+<tr>
+<td>读 <code>/data/adb/lspd/config/modules_config.db</code></td>
+<td><code>modules: (35,&#39;com.dyctrl.module&#39;,...,enabled=0)</code>，<code>scope: []</code> ← <strong>根因</strong></td>
+</tr>
+<tr>
+<td>管理器里打开「启用模块」（<code>Switch checked=true</code>）</td>
+<td>注入成功，日志出现 <code>DyCtrl 模块已注入目标进程</code></td>
+</tr>
+<tr>
+<td>用 <code>StringBuilderCache.get</code> 做探针</td>
+<td><strong>命中 #1 #2 #3</strong> —— 钩子确实作用在 App 自己的代码上</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>结论：<strong>这台设备上 LSPosed 工作正常</strong>。此前多轮”0 命中”的主因是模块未启用 &#x2F; 探针选错，不是 App 反 Hook。</p>
+</blockquote>
+<h3 id="12-3-关键结论二：发送流程能跑通，但钩子的类不对"><a href="#12-3-关键结论二：发送流程能跑通，但钩子的类不对" class="headerlink" title="12.3 关键结论二：发送流程能跑通，但钩子的类不对"></a>12.3 关键结论二：发送流程能跑通，但钩子的类不对</h3><table>
+<thead>
+<tr>
+<th>动作</th>
+<th>观察</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UI 自动化：开评论区 → 输入文字 → 点「发送」</td>
+<td>评论数 <strong>834 → 836</strong>，输入框清空 → <strong>消息真实发出</strong></td>
+</tr>
+<tr>
+<td>钩 <code>InputManagerViewModel.YR</code> &#x2F; <code>PublishPresenter.Ao1</code></td>
+<td><strong>0 命中</strong></td>
+</tr>
+</tbody></table>
+<p>说明：<strong>评论面板那条路径不经过这两个类</strong>（面板用的是 <code>CommentListInputManagerViewModel</code>，其 <code>YR</code> 已补挂）。</p>
+<h3 id="12-4-未完成的一步（下次接着做）"><a href="#12-4-未完成的一步（下次接着做）" class="headerlink" title="12.4 未完成的一步（下次接着做）"></a>12.4 未完成的一步（下次接着做）</h3><ol>
+<li><code>X.C1HQW</code> 用 <code>findClass(&quot;X.C1HQW&quot;, cl)</code> <strong>找不到</strong>（<code>[PCH-E] 挂载失败</code>）→ 改为「先命中 <code>YR</code>，再用 <code>param.args[3].getClass()</code> 拿真实类」再反射打印。</li>
+<li>补钩 <code>CommentListInputManagerViewModel.YR</code> 后<strong>尚未完成一次成功的发送实测</strong>（最后一次输入未进入输入框，未触发送）。</li>
+<li>目标：拿到一行真实的<br><code>ClickPublishParams(textContent=..., extraStructList=..., sendMethod=...)</code>。</li>
+</ol>
+<h3 id="12-5-本轮的设备坑（会反复遇到）"><a href="#12-5-本轮的设备坑（会反复遇到）" class="headerlink" title="12.5 本轮的设备坑（会反复遇到）"></a>12.5 本轮的设备坑（会反复遇到）</h3><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>system_server</code> 崩溃 → <code>lspd</code> 报 <code>DeadSystemException</code></td>
+<td>重启手机</td>
+</tr>
+<tr>
+<td>冷启动卡 <code>SplashActivity</code> 5–15 分钟、CPU 80%+</td>
+<td>耐心等；实在不动就重启（重启后 1–3 分钟可用）</td>
+</tr>
+<tr>
+<td>重启后 <code>tun0</code> 消失</td>
+<td>重跑 <code>gnirehtet run</code>，并在手机上点掉 VPN 授权弹窗</td>
+</tr>
+<tr>
+<td>重装模块 APK</td>
+<td>会重置 LSPosed 的启用状态&#x2F;作用域，需回管理器重新打开</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io">IT李白白博客</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://ljm2007.github.io/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/">http://ljm2007.github.io/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://ljm2007.github.io" target="_blank">IT李白白博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Android/">Android</a><a class="post-meta__tags" href="/tags/%E9%80%86%E5%90%91/">逆向</a><a class="post-meta__tags" href="/tags/%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90/">协议分析</a></div><div class="post_share"><div class="social-share" data-image="/img/post-covers/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2026/10/03/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C/"><img class="next-cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">某音直播间弹幕抓取 —— 攻坚记录与实操手册</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2026/09/23/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0/" title="grep 速查笔记（安卓逆向实战版）"><img class="cover" src="/img/post-covers/grep%E9%80%9F%E6%9F%A5%E7%AC%94%E8%AE%B0.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">grep 速查笔记（安卓逆向实战版）</div></div></a></div><div><a href="/2026/09/23/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" title="从手机拖 so 到 Mac —— 完整操作手册（以某音为例）"><img class="cover" src="/img/post-covers/%E4%BB%8E%E6%89%8B%E6%9C%BA%E6%8B%96so%E5%88%B0Mac%E2%80%94%E2%80%94%E5%AE%8C%E6%95%B4%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-23</div><div class="title">从手机拖 so 到 Mac —— 完整操作手册（以某音为例）</div></div></a></div><div><a href="/2026/10/03/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C/" title="某音直播间弹幕抓取 —— 攻坚记录与实操手册"><img class="cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-03</div><div class="title">某音直播间弹幕抓取 —— 攻坚记录与实操手册</div></div></a></div><div><a href="/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/" title="某音评论数据定位方法说明书"><img class="cover" src="/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-30</div><div class="title">某音评论数据定位方法说明书</div></div></a></div><div><a href="/2026/09/22/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%8A%96%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5/" title="2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查"><img class="cover" src="/img/post-covers/2026-09-22%E5%AE%9E%E6%88%98%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93%C2%B7%E6%9F%90%E9%9F%B3%EF%BC%88%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%9E%81%E9%80%9F%E7%89%88%EF%BC%89%E6%B3%A8%E5%85%A5%E4%B8%8E%E6%8A%93%E5%8C%85%E6%8E%92%E6%9F%A5.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-22</div><div class="title">2026-09-22 实战命令总结 · 某音（正式版&#x2F;极速版）注入与抓包排查</div></div></a></div><div><a href="/2026/09/20/%E5%AE%89%E5%8D%93%E8%B0%83%E8%AF%95%E5%91%BD%E4%BB%A4%E6%8B%86%E8%A7%A3%E6%89%8B%E5%86%8C/" title="安卓调试命令拆解手册（Linux &#x2F; adb 篇）"><img class="cover" src="/img/post-covers/android-adb-debug-manual.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-20</div><div class="title">安卓调试命令拆解手册（Linux &#x2F; adb 篇）</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">IT李白白博客</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">39</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">19</div></a></div><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ljm2007" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%85-%E5%85%88%E7%9C%8B%E8%BF%99%E6%AE%B5%EF%BC%9A%E8%A2%AB%E6%8E%A8%E7%BF%BB%E7%9A%84%E6%97%A7%E7%BB%93%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">★ 先看这段：被推翻的旧结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E8%BF%99%E4%BB%BD%E6%96%87%E6%A1%A3%E8%83%BD%E8%AE%A9%E4%BD%A0%E6%8B%BF%E5%88%B0%E4%BB%80%E4%B9%88"><span class="toc-number">2.</span> <span class="toc-text">0. 这份文档能让你拿到什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8E%9F%E7%90%86%EF%BC%88%E5%85%88%E8%AE%B2%E9%80%9A%E6%95%B4%E4%BB%B6%E4%BA%8B%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">1. 一句话原理（先讲通整件事）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%8E%AF%E5%A2%83%E4%B8%8E%E7%B4%A0%E6%9D%90"><span class="toc-number">4.</span> <span class="toc-text">2. 环境与素材</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%B0%83%E7%94%A8%E9%93%BE%E6%80%BB%E5%9B%BE"><span class="toc-number">5.</span> <span class="toc-text">3. 调用链总图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%AF%8F%E4%B8%80%E8%B7%B3%E7%9A%84%E4%BB%A3%E7%A0%81%EF%BC%88%E5%8F%AF%E5%AF%B9%E7%85%A7%E8%A1%8C%E5%8F%B7%E5%A4%8D%E6%A0%B8%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">4. 每一跳的代码（可对照行号复核）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A0-%E6%8C%89%E9%92%AE%E7%82%B9%E5%87%BB-%E2%86%92-YR"><span class="toc-number">6.1.</span> <span class="toc-text">① 按钮点击 → YR()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A1-%E7%BB%84%E8%A3%85%E3%80%8C%E5%BF%AB%E9%80%92%E5%8D%95%E3%80%8D%EF%BC%9AClickPublishParams%EF%BC%88C1HQW%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">② 组装「快递单」：ClickPublishParams（C1HQW）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A2-%E4%BA%A4%E7%BB%99%E6%9F%9C%E5%8F%B0"><span class="toc-number">6.3.</span> <span class="toc-text">③ 交给柜台</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A3-%E5%8F%91%E8%B4%A7%E9%83%A8%E9%97%A8%EF%BC%9APublishPresenter-Ao1"><span class="toc-number">6.4.</span> <span class="toc-text">④ 发货部门：PublishPresenter.Ao1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A4-%E8%AF%B7%E6%B1%82%E6%89%A7%E8%A1%8C%E5%99%A8%EF%BC%9ACommentPublishRequest"><span class="toc-number">6.5.</span> <span class="toc-text">⑤ 请求执行器：CommentPublishRequest</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%91%A5-%E6%9C%80%E7%BB%88%E6%8E%A5%E5%8F%A3"><span class="toc-number">6.6.</span> <span class="toc-text">⑥ 最终接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%B8%89%E4%B8%AA%E7%9B%B8%E4%BC%BC%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8C%BA%E5%88%86%EF%BC%88%E5%AE%B9%E6%98%93%E6%90%9E%E6%B7%B7%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">5. 三个相似接口的区分（容易搞混）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E8%AF%B7%E6%B1%82%E4%BD%93%EF%BC%88%E8%A1%A8%E5%8D%95-application-x-www-form-urlencoded%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">6. 请求体（表单 application&#x2F;x-www-form-urlencoded）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%85%E5%A1%AB%E6%A0%B8%E5%BF%83"><span class="toc-number">8.1.</span> <span class="toc-text">必填核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%8F%AF%E9%80%89"><span class="toc-number">8.2.</span> <span class="toc-text">常用可选</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%89%B4%E6%9D%83"><span class="toc-number">8.3.</span> <span class="toc-text">鉴权</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%9F%A5%E6%89%BE%E6%96%B9%E6%B3%95%EF%BC%88%E5%8F%AF%E5%A4%8D%E7%8E%B0%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">7. 查找方法（可复现）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%8F%8D%E7%BC%96%E8%AF%91"><span class="toc-number">9.1.</span> <span class="toc-text">7.1 反编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%AE%9A%E4%BD%8D%E9%A1%BA%E5%BA%8F%EF%BC%88%E5%85%B3%E9%94%AE%EF%BC%9A%E5%85%88%E6%94%B6%E7%AA%84%EF%BC%8C%E5%86%8D%E5%85%A8%E9%87%8F%EF%BC%89"><span class="toc-number">9.2.</span> <span class="toc-text">7.2 定位顺序（关键：先收窄，再全量）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84%E9%80%9F%E6%9F%A5"><span class="toc-number">9.3.</span> <span class="toc-text">7.3 目录结构速查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%9D%91%E6%B8%85%E5%8D%95%EF%BC%88%E7%8E%B0%E8%B1%A1-%E2%86%92-%E5%8E%9F%E5%9B%A0-%E2%86%92-%E4%BF%AE%E6%B3%95%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">8. 坑清单（现象 → 原因 → 修法）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E8%AF%81%E6%8D%AE%E7%AD%89%E7%BA%A7%E8%A1%A8"><span class="toc-number">11.</span> <span class="toc-text">9. 证据等级表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E4%B8%80%E5%88%86%E9%92%9F%E9%80%9F%E8%AE%B0%E5%8D%A1"><span class="toc-number">12.</span> <span class="toc-text">10. 一分钟速记卡</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%B0%8F%E8%AF%8D%E5%85%B8"><span class="toc-number">13.</span> <span class="toc-text">11. 小词典</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E5%8A%A8%E6%80%81%E9%AA%8C%E8%AF%81%E8%AE%B0%E5%BD%95%EF%BC%88LSPosed-%E5%AE%9E%E6%B5%8B%EF%BC%8C2026-10-19%EF%BC%89"><span class="toc-number">14.</span> <span class="toc-text">12. 动态验证记录（LSPosed 实测，2026-10-19）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E7%8E%AF%E5%A2%83"><span class="toc-number">14.1.</span> <span class="toc-text">12.1 环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-%E5%85%B3%E9%94%AE%E7%BB%93%E8%AE%BA%E4%B8%80%EF%BC%9A%E9%92%A9%E5%AD%90%E8%83%BD%E6%8B%A6%E5%88%B0-App-%E8%87%AA%E5%B7%B1%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-number">14.2.</span> <span class="toc-text">12.2 关键结论一：钩子能拦到 App 自己的调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E5%85%B3%E9%94%AE%E7%BB%93%E8%AE%BA%E4%BA%8C%EF%BC%9A%E5%8F%91%E9%80%81%E6%B5%81%E7%A8%8B%E8%83%BD%E8%B7%91%E9%80%9A%EF%BC%8C%E4%BD%86%E9%92%A9%E5%AD%90%E7%9A%84%E7%B1%BB%E4%B8%8D%E5%AF%B9"><span class="toc-number">14.3.</span> <span class="toc-text">12.3 关键结论二：发送流程能跑通，但钩子的类不对</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-%E6%9C%AA%E5%AE%8C%E6%88%90%E7%9A%84%E4%B8%80%E6%AD%A5%EF%BC%88%E4%B8%8B%E6%AC%A1%E6%8E%A5%E7%9D%80%E5%81%9A%EF%BC%89"><span class="toc-number">14.4.</span> <span class="toc-text">12.4 未完成的一步（下次接着做）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-5-%E6%9C%AC%E8%BD%AE%E7%9A%84%E8%AE%BE%E5%A4%87%E5%9D%91%EF%BC%88%E4%BC%9A%E5%8F%8D%E5%A4%8D%E9%81%87%E5%88%B0%EF%BC%89"><span class="toc-number">14.5.</span> <span class="toc-text">12.5 本轮的设备坑（会反复遇到）</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/" title="小可乐 · 「发送留言」请求链路定位手册"><img src="/img/post-covers/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="小可乐 · 「发送留言」请求链路定位手册"/></a><div class="content"><a class="title" href="/2026/10/19/%E5%B0%8F%E5%8F%AF%E4%B9%90%C2%B7%E3%80%8C%E5%8F%91%E9%80%81%E7%95%99%E8%A8%80%E3%80%8D%E8%AF%B7%E6%B1%82%E9%93%BE%E8%B7%AF%E5%AE%9A%E4%BD%8D%E6%89%8B%E5%86%8C/" title="小可乐 · 「发送留言」请求链路定位手册">小可乐 · 「发送留言」请求链路定位手册</a><time datetime="2026-10-19T15:14:26.000Z" title="发表于 2026-10-19 23:14:26">2026-10-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/03/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C/" title="某音直播间弹幕抓取 —— 攻坚记录与实操手册"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音直播间弹幕抓取 —— 攻坚记录与实操手册"/></a><div class="content"><a class="title" href="/2026/10/03/%E6%9F%90%E9%9F%B3%E7%9B%B4%E6%92%AD%E9%97%B4%E5%BC%B9%E5%B9%95%E6%8A%93%E5%8F%96%E2%80%94%E2%80%94%E6%94%BB%E5%9D%9A%E8%AE%B0%E5%BD%95%E4%B8%8E%E5%AE%9E%E6%93%8D%E6%89%8B%E5%86%8C/" title="某音直播间弹幕抓取 —— 攻坚记录与实操手册">某音直播间弹幕抓取 —— 攻坚记录与实操手册</a><time datetime="2026-10-03T01:32:41.000Z" title="发表于 2026-10-03 09:32:41">2026-10-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/" title="某音评论数据定位方法说明书"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音评论数据定位方法说明书"/></a><div class="content"><a class="title" href="/2026/09/30/%E6%9F%90%E9%9F%B3%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%AF%B4%E6%98%8E%E4%B9%A6/" title="某音评论数据定位方法说明书">某音评论数据定位方法说明书</a><time datetime="2026-09-30T02:12:13.000Z" title="发表于 2026-09-30 10:12:13">2026-09-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录"/></a><div class="content"><a class="title" href="/2026/09/29/%E6%9F%90%E9%9F%B3%E6%98%8E%E6%96%87%E6%8A%93%E5%8F%96%EF%BC%9A%E4%BB%8E%E3%80%8C%E4%B8%AD%E9%97%B4%E4%BA%BA%E3%80%8D%E8%BD%AC%E5%90%91%E3%80%8C%E7%9B%B4%E6%8E%A5%E9%92%A9%E5%8F%91%E5%8C%85%E7%82%B9%E3%80%8D%E5%AE%9E%E6%88%98%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录">某音明文抓取：从「中间人」转向「直接钩发包点」实战全记录</a><time datetime="2026-09-29T09:26:41.000Z" title="发表于 2026-09-29 17:26:41">2026-09-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"><img src="/img/post-covers/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录"/></a><div class="content"><a class="title" href="/2026/09/24/%E6%9F%90%E9%9F%B3%E6%AD%A3%E5%BC%8F%E7%89%88TLSBypass%E2%80%94%E2%80%94cronet%E5%B4%A9%E6%BA%83%E6%8E%92%E9%9B%B7%E5%85%A8%E8%AE%B0%E5%BD%95/" title="某音正式版 TLS Bypass —— cronet 崩溃排雷全记录">某音正式版 TLS Bypass —— cronet 崩溃排雷全记录</a><time datetime="2026-09-24T12:00:00.000Z" title="发表于 2026-09-24 20:00:00">2026-09-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By IT李白白博客</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
